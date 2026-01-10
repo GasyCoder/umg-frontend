@@ -1,6 +1,7 @@
 import Container from "@/components/Container";
 import Link from "next/link";
-import { Building2, FileText, Landmark, Users, ArrowRight } from "lucide-react";
+import { Building2, FileText, Landmark, ArrowRight } from "lucide-react";
+import { AnimatedCounter } from "@/components/public";
 
 export const metadata = {
   title: "Université - Université de Mahajanga",
@@ -11,109 +12,122 @@ const sections = [
   {
     href: "/universite/historique",
     title: "Historique",
-    description: "L'histoire et l'évolution de l'Université de Mahajanga depuis sa création.",
+    description: "L'évolution de l'université, ses grandes étapes et ses accomplissements.",
     icon: FileText,
-    color: "blue",
+    color: "from-blue-500 to-indigo-600",
   },
   {
     href: "/universite/organisation",
     title: "Organisation",
-    description: "La présidence, les directions, les services et l'organigramme de l'université.",
+    description: "Présidence, directions et services structurants de l'université.",
     icon: Landmark,
-    color: "indigo",
+    color: "from-indigo-500 to-violet-600",
   },
   {
     href: "/universite/textes",
     title: "Textes & Arrêtés",
-    description: "Les textes réglementaires, décrets et arrêtés officiels.",
+    description: "Cadre réglementaire, textes officiels et documents institutionnels.",
     icon: FileText,
-    color: "amber",
-  },
-  {
-    href: "/etablissements",
-    title: "Établissements",
-    description: "Les facultés, écoles et instituts de l'Université de Mahajanga.",
-    icon: Building2,
-    color: "emerald",
+    color: "from-amber-500 to-orange-600",
   },
 ];
 
-const colorStyles: Record<string, { bg: string; text: string; hoverBg: string }> = {
-  blue: { bg: "bg-blue-100", text: "text-blue-600", hoverBg: "group-hover:bg-blue-600" },
-  indigo: { bg: "bg-indigo-100", text: "text-indigo-600", hoverBg: "group-hover:bg-indigo-600" },
-  amber: { bg: "bg-amber-100", text: "text-amber-600", hoverBg: "group-hover:bg-amber-600" },
-  emerald: { bg: "bg-emerald-100", text: "text-emerald-600", hoverBg: "group-hover:bg-emerald-600" },
-};
-
 export default function UniversitePage() {
   return (
-    <main>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-700 text-white">
+    <main className="bg-white dark:bg-slate-950">
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-700 text-white">
         <Container>
-          <div className="py-16 md:py-24">
+          <div className="py-20 md:py-28">
             <div className="max-w-3xl">
-              <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
-                L'Université de Mahajanga
+              <p className="text-sm uppercase tracking-[0.3em] text-indigo-200">Université</p>
+              <h1 className="mt-4 text-4xl md:text-6xl font-bold tracking-tight">
+                Une institution académique de référence à Madagascar
               </h1>
-              <p className="mt-4 text-lg md:text-xl text-indigo-100">
-                Institution d'enseignement supérieur et de recherche au service 
-                du développement de Madagascar et de la région Boeny.
+              <p className="mt-6 text-lg text-indigo-100">
+                L'Université de Mahajanga conjugue excellence académique, recherche et impact sociétal
+                pour former les leaders de demain.
               </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Link
+                  href="/universite/historique"
+                  className="rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg hover:bg-amber-300"
+                >
+                  Découvrir notre histoire
+                </Link>
+                <Link
+                  href="/etablissements"
+                  className="rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10"
+                >
+                  Voir les établissements
+                </Link>
+              </div>
             </div>
           </div>
         </Container>
       </section>
 
-      {/* Sections Grid */}
-      <section className="py-12 md:py-16">
+      <section className="py-16">
         <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {sections.map((section) => {
-              const styles = colorStyles[section.color];
-              return (
-                <Link
-                  key={section.href}
-                  href={section.href}
-                  className="group block p-6 bg-white rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`w-12 h-12 ${styles.bg} ${styles.hoverBg} rounded-xl flex items-center justify-center transition-colors`}>
-                      <section.icon className={`w-6 h-6 ${styles.text} group-hover:text-white transition-colors`} />
-                    </div>
-                    <div className="flex-1">
-                      <h2 className="text-lg font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors flex items-center gap-2">
-                        {section.title}
-                        <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                      </h2>
-                      <p className="mt-1 text-slate-600">{section.description}</p>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+          <div className="grid gap-6 md:grid-cols-3">
+            {sections.map((section) => (
+              <Link
+                key={section.href}
+                href={section.href}
+                className="group rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${section.color}`}>
+                  <section.icon className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="mt-4 text-xl font-semibold text-slate-900 group-hover:text-indigo-600 dark:text-white">
+                  {section.title}
+                </h2>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{section.description}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600">
+                  Explorer
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            ))}
+
+            <div className="rounded-3xl border border-slate-200/70 bg-slate-50/60 p-6 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600">
+                <Building2 className="h-6 w-6 text-white" />
+              </div>
+              <h2 className="mt-4 text-xl font-semibold text-slate-900 dark:text-white">Établissements</h2>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                Découvrez les facultés, écoles et instituts qui composent l'université.
+              </p>
+              <Link
+                href="/etablissements"
+                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600"
+              >
+                Voir les établissements
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </Container>
       </section>
 
-      {/* Quick Stats */}
-      <section className="py-12 bg-slate-50">
+      <section className="bg-slate-50 py-16 dark:bg-slate-900">
         <Container>
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">En quelques chiffres</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { value: "5+", label: "Établissements" },
-              { value: "10K+", label: "Étudiants" },
-              { value: "500+", label: "Enseignants" },
-              { value: "50+", label: "Filières" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-3xl md:text-4xl font-bold text-indigo-600">{stat.value}</p>
-                <p className="mt-1 text-slate-600">{stat.label}</p>
-              </div>
-            ))}
+          <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Impact</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Une université engagée au service du territoire
+              </h2>
+              <p className="mt-4 text-slate-600 dark:text-slate-300">
+                Enracinée dans la région Boeny, l'Université de Mahajanga valorise l'innovation,
+                la recherche appliquée et les partenariats pour accélérer le développement durable.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+              <AnimatedCounter value={5} suffix="+" label="Établissements" />
+              <AnimatedCounter value={10000} suffix="+" label="Étudiants" />
+              <AnimatedCounter value={500} suffix="+" label="Enseignants" />
+              <AnimatedCounter value={50} suffix="+" label="Filières" />
+            </div>
           </div>
         </Container>
       </section>
