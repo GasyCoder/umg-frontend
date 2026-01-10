@@ -1,0 +1,423 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Building2,
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Search,
+} from "lucide-react";
+import { Table } from "@/components/ui/Table";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { ConfirmModal, Modal } from "@/components/ui/Modal";
+import { StatCard } from "@/components/ui/StatCard";
+import { Input } from "@/components/ui/Input";
+import { SkeletonListPage } from "@/components/ui/Skeleton";
+
+type Etablissement = {
+  id: number;
+  name: string;
+  slug: string;
+  acronym: string | null;
+  description: string | null;
+  director_name: string | null;
+  director_title: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  facebook: string | null;
+  twitter: string | null;
+  linkedin: string | null;
+  logo: { id: number; url: string } | null;
+  cover_image: { id: number; url: string } | null;
+  order: number;
+  is_active: boolean;
+  created_at: string;
+};
+
+const emptyForm = {
+  name: "",
+  acronym: "",
+  description: "",
+  director_name: "",
+  director_title: "Directeur",
+  address: "",
+  phone: "",
+  email: "",
+  website: "",
+  facebook: "",
+  twitter: "",
+  linkedin: "",
+  is_active: true,
+};
+
+export default function AdminEtablissementsPage() {
+  const [data, setData] = useState<Etablissement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selected, setSelected] = useState<Etablissement | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    const res = await fetch("/api/admin/etablissements?per_page=50");
+    const json = await res.json();
+    setData(json?.data ?? []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  function openCreate() {
+    setSelected(null);
+    setForm(emptyForm);
+    setModalOpen(true);
+  }
+
+  function openEdit(item: Etablissement) {
+    setSelected(item);
+    setForm({
+      name: item.name,
+      acronym: item.acronym || "",
+      description: item.description || "",
+      director_name: item.director_name || "",
+      director_title: item.director_title || "Directeur",
+      address: item.address || "",
+      phone: item.phone || "",
+      email: item.email || "",
+      website: item.website || "",
+      facebook: item.facebook || "",
+      twitter: item.twitter || "",
+      linkedin: item.linkedin || "",
+      is_active: item.is_active,
+    });
+    setModalOpen(true);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const url = selected
+        ? `/api/admin/etablissements/${selected.id}`
+        : "/api/admin/etablissements";
+      const method = selected ? "PUT" : "POST";
+      
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (res.ok) {
+        setModalOpen(false);
+        load();
+      } else {
+        const body = await res.json();
+        alert(body.message || "Erreur");
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!selected) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/etablissements/${selected.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setDeleteModalOpen(false);
+        setSelected(null);
+        load();
+      }
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const columns = [
+    {
+      key: "name" as keyof Etablissement,
+      header: "Établissement",
+      sortable: true,
+      render: (item: Etablissement) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+            {item.logo ? (
+              <img src={item.logo.url} alt="" className="w-8 h-8 object-contain rounded" />
+            ) : (
+              <Building2 className="w-5 h-5" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium text-slate-900 dark:text-white truncate">
+              {item.name}
+              {item.acronym && <span className="text-slate-500 ml-1">({item.acronym})</span>}
+            </p>
+            {item.director_name && (
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {item.director_title}: {item.director_name}
+              </p>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "address" as keyof Etablissement,
+      header: "Contact",
+      render: (item: Etablissement) => (
+        <div className="text-sm space-y-1">
+          {item.phone && (
+            <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+              <Phone className="w-3.5 h-3.5" />
+              {item.phone}
+            </div>
+          )}
+          {item.email && (
+            <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+              <Mail className="w-3.5 h-3.5" />
+              {item.email}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "is_active" as keyof Etablissement,
+      header: "Statut",
+      render: (item: Etablissement) => (
+        <Badge variant={item.is_active ? "success" : "default"} dot>
+          {item.is_active ? "Actif" : "Inactif"}
+        </Badge>
+      ),
+    },
+  ];
+
+  if (loading) {
+    return <SkeletonListPage />;
+  }
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Établissements</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">
+            Gérez les établissements de l'université
+          </p>
+        </div>
+        <Button icon={<Plus className="w-4 h-4" />} onClick={openCreate}>
+          Nouvel établissement
+        </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard
+          title="Total"
+          value={data.length}
+          icon={<Building2 className="w-6 h-6" />}
+          color="indigo"
+        />
+        <StatCard
+          title="Actifs"
+          value={data.filter((e) => e.is_active).length}
+          icon={<Building2 className="w-6 h-6" />}
+          color="emerald"
+        />
+        <StatCard
+          title="Inactifs"
+          value={data.filter((e) => !e.is_active).length}
+          icon={<Building2 className="w-6 h-6" />}
+          color="blue"
+        />
+      </div>
+
+      {/* Table */}
+      <Table
+        columns={columns}
+        data={data}
+        keyField="id"
+        loading={loading}
+        emptyMessage="Aucun établissement"
+        searchPlaceholder="Rechercher un établissement..."
+        actions={(item) => (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => openEdit(item)}
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              title="Modifier"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                setSelected(item);
+                setDeleteModalOpen(true);
+              }}
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              title="Supprimer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      />
+
+      {/* Create/Edit Modal */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selected ? "Modifier l'établissement" : "Nouvel établissement"}
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Nom *"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Nom de l'établissement"
+            />
+            <Input
+              label="Sigle"
+              value={form.acronym}
+              onChange={(e) => setForm({ ...form, acronym: e.target.value })}
+              placeholder="Ex: ENSTIM, FSA"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Nom du responsable"
+              value={form.director_name}
+              onChange={(e) => setForm({ ...form, director_name: e.target.value })}
+              placeholder="Nom du directeur/doyen"
+            />
+            <Input
+              label="Titre"
+              value={form.director_title}
+              onChange={(e) => setForm({ ...form, director_title: e.target.value })}
+              placeholder="Directeur, Doyen, etc."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              Description
+            </label>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={3}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none"
+              placeholder="Description de l'établissement"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Téléphone"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              placeholder="+261 20 XX XXX XX"
+            />
+            <Input
+              label="Email"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              placeholder="contact@etablissement.mg"
+            />
+          </div>
+
+          <Input
+            label="Adresse"
+            value={form.address}
+            onChange={(e) => setForm({ ...form, address: e.target.value })}
+            placeholder="Adresse complète"
+          />
+
+          <Input
+            label="Site web"
+            value={form.website}
+            onChange={(e) => setForm({ ...form, website: e.target.value })}
+            placeholder="https://..."
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Input
+              label="Facebook"
+              value={form.facebook}
+              onChange={(e) => setForm({ ...form, facebook: e.target.value })}
+              placeholder="URL Facebook"
+            />
+            <Input
+              label="Twitter"
+              value={form.twitter}
+              onChange={(e) => setForm({ ...form, twitter: e.target.value })}
+              placeholder="URL Twitter"
+            />
+            <Input
+              label="LinkedIn"
+              value={form.linkedin}
+              onChange={(e) => setForm({ ...form, linkedin: e.target.value })}
+              placeholder="URL LinkedIn"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="is_active"
+              checked={form.is_active}
+              onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+              className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <label htmlFor="is_active" className="text-sm text-slate-700 dark:text-slate-300">
+              Établissement actif (visible sur le site public)
+            </label>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <Button variant="outline" onClick={() => setModalOpen(false)}>
+            Annuler
+          </Button>
+          <Button onClick={handleSave} loading={saving}>
+            {selected ? "Enregistrer" : "Créer"}
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Delete Modal */}
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Supprimer l'établissement"
+        message={`Êtes-vous sûr de vouloir supprimer "${selected?.name}" ?`}
+        confirmText="Supprimer"
+        variant="danger"
+        loading={deleting}
+      />
+    </div>
+  );
+}
