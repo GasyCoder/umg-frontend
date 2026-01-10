@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const token = req.cookies.get("umg_admin_token")?.value;
 
   const isAdminPath = req.nextUrl.pathname.startsWith("/admin");
