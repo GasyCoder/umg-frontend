@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Container from "@/components/Container";
-import { ArrowRight, GraduationCap, BookOpen, Users } from "lucide-react";
+import { ArrowRight, GraduationCap, Sparkles } from "lucide-react";
 
 interface HeroSectionProps {
   title?: string;
@@ -16,83 +16,74 @@ export function HeroSection({
   backgroundImage,
 }: HeroSectionProps) {
   return (
-    <section className="relative min-h-[600px] flex items-center overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
-        {backgroundImage && (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={backgroundImage}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay"
-            />
-          </>
-        )}
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <div className="absolute -top-1/2 -right-1/4 w-[800px] h-[800px] bg-indigo-600/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-1/2 -left-1/4 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-3xl" />
-        </div>
-        {/* Grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-          }}
+    <section className="relative overflow-hidden bg-gradient-to-br from-indigo-700 via-blue-700 to-indigo-900 text-white">
+      {backgroundImage && (
+        <img
+          src={backgroundImage}
+          alt="Campus Université de Mahajanga"
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
         />
-      </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/30 via-slate-950/50 to-slate-950/80" />
 
-      {/* Content */}
-      <Container className="relative z-10">
-        <div className="max-w-3xl">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-sm mb-6">
-            <GraduationCap className="w-4 h-4" />
-            <span>Établissement public d'enseignement supérieur</span>
+      <Container className="relative">
+        <div className="py-20 md:py-28 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/80">
+              <GraduationCap className="h-4 w-4" />
+              Excellence académique
+            </div>
+            <h1 className="mt-6 text-4xl md:text-6xl font-bold tracking-tight">
+              {title}
+            </h1>
+            <p className="mt-6 text-lg text-indigo-100 leading-relaxed max-w-2xl">
+              {subtitle}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link
+                href="/actualites"
+                className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg hover:bg-amber-300"
+              >
+                Découvrir nos actualités
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/universite"
+                className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10"
+              >
+                Présentation de l'université
+              </Link>
+            </div>
           </div>
 
-          {/* Title */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-            {title}
-          </h1>
-
-          {/* Subtitle */}
-          <p className="mt-6 text-xl text-white/80 leading-relaxed max-w-2xl">
-            {subtitle}
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="mt-10 flex flex-wrap gap-4">
-            <Link
-              href="/actualites"
-              className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-slate-900 font-semibold hover:bg-white/90 transition-all shadow-lg shadow-black/20"
-            >
-              Actualités
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/etablissements"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold hover:bg-white/20 transition-all"
-            >
-              Nos établissements
-            </Link>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">8</div>
-              <div className="text-sm text-white/60 mt-1">Établissements</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">15k+</div>
-              <div className="text-sm text-white/60 mt-1">Étudiants</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">50+</div>
-              <div className="text-sm text-white/60 mt-1">Formations</div>
-            </div>
+          <div className="grid gap-4">
+            {[
+              {
+                title: "Recherche & Innovation",
+                description: "Laboratoires multidisciplinaires et projets territoriaux.",
+              },
+              {
+                title: "Vie étudiante",
+                description: "Associations, événements et accompagnement des talents.",
+              },
+              {
+                title: "Partenariats stratégiques",
+                description: "Coopérations nationales et internationales durables.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="flex items-start gap-4 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15">
+                  <Sparkles className="h-5 w-5 text-amber-300" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-white">{item.title}</h3>
+                  <p className="mt-1 text-sm text-indigo-100">{item.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </Container>

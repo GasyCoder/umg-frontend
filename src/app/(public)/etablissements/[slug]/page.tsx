@@ -2,7 +2,8 @@ import Container from "@/components/Container";
 import { publicGet } from "@/lib/public-api";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Building2, MapPin, Phone, Mail, Globe, Facebook, Twitter, Linkedin, ArrowLeft } from "lucide-react";
+import { ArrowLeft, MapPin } from "lucide-react";
+import { EtablissementTabs } from "@/components/public";
 
 type Etablissement = {
   id: number;
@@ -22,6 +23,14 @@ type Etablissement = {
   logo: { url: string } | null;
   cover_image: { url: string } | null;
 };
+
+const formations = [
+  "Licence Sciences de la Santé",
+  "Master Management Public",
+  "Licence Informatique",
+  "Master Biodiversité",
+  "Doctorat Sciences Sociales",
+];
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -51,27 +60,33 @@ export default async function EtablissementDetailPage({
     notFound();
   }
 
+  const mapQuery = encodeURIComponent(etab.address || "Université de Mahajanga");
+  const cover =
+    etab.cover_image?.url ||
+    "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80";
+
   return (
-    <main>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white">
+    <main className="bg-white dark:bg-slate-950">
+      <section className="relative overflow-hidden bg-slate-900 text-white">
+        <img src={cover} alt={etab.name} className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/60 to-slate-950/90" />
         <Container>
-          <div className="py-12 md:py-16">
+          <div className="relative z-10 py-16 md:py-20">
             <Link
               href="/etablissements"
-              className="inline-flex items-center gap-2 text-emerald-100 hover:text-white mb-4 transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="h-4 w-4" />
               Retour aux établissements
             </Link>
-            <div className="flex items-center gap-6">
+            <div className="mt-6 flex flex-wrap items-center gap-6">
               {etab.logo && (
-                <div className="w-20 h-20 bg-white rounded-2xl p-2 flex items-center justify-center">
-                  <img src={etab.logo.url} alt="" className="max-h-full max-w-full object-contain" />
+                <div className="h-20 w-20 rounded-2xl bg-white/90 p-2">
+                  <img src={etab.logo.url} alt={etab.name} className="h-full w-full object-contain" />
                 </div>
               )}
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold">
+                <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
                   {etab.name}
                   {etab.acronym && <span className="ml-2 text-emerald-200">({etab.acronym})</span>}
                 </h1>
@@ -86,103 +101,51 @@ export default async function EtablissementDetailPage({
         </Container>
       </section>
 
-      {/* Content */}
-      <section className="py-12">
+      <section className="py-16">
         <Container>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2">
-              {etab.description ? (
-                <div
-                  className="prose prose-slate max-w-none"
-                  dangerouslySetInnerHTML={{ __html: etab.description }}
-                />
-              ) : (
-                <p className="text-slate-500">Aucune description disponible.</p>
-              )}
+          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="space-y-8">
+              <EtablissementTabs
+                presentation={etab.description}
+                formations={formations}
+                contacts={{
+                  address: etab.address,
+                  phone: etab.phone,
+                  email: etab.email,
+                  website: etab.website,
+                }}
+              />
             </div>
-
-            {/* Sidebar */}
             <div className="space-y-6">
-              {/* Contact Card */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-6">
-                <h3 className="font-semibold text-slate-900 mb-4">Contact</h3>
-                <div className="space-y-3">
-                  {etab.address && (
-                    <div className="flex items-start gap-3 text-sm">
-                      <MapPin className="w-4 h-4 text-slate-400 mt-0.5" />
-                      <span className="text-slate-600">{etab.address}</span>
-                    </div>
-                  )}
-                  {etab.phone && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <Phone className="w-4 h-4 text-slate-400" />
-                      <a href={`tel:${etab.phone}`} className="text-slate-600 hover:text-emerald-600">
-                        {etab.phone}
-                      </a>
-                    </div>
-                  )}
-                  {etab.email && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <Mail className="w-4 h-4 text-slate-400" />
-                      <a href={`mailto:${etab.email}`} className="text-slate-600 hover:text-emerald-600">
-                        {etab.email}
-                      </a>
-                    </div>
-                  )}
-                  {etab.website && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <Globe className="w-4 h-4 text-slate-400" />
-                      <a
-                        href={etab.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-emerald-600 hover:underline"
-                      >
-                        Site web
-                      </a>
-                    </div>
-                  )}
+              <div className="rounded-3xl border border-slate-200/70 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Localisation</h2>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  Retrouvez l'établissement sur la carte.
+                </p>
+                <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200/70 dark:border-slate-700">
+                  <iframe
+                    title={`Carte ${etab.name}`}
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=46.30%2C-15.76%2C46.40%2C-15.70&layer=mapnik&marker=-15.74%2C46.33&query=${mapQuery}`}
+                    className="h-64 w-full"
+                  />
                 </div>
+                <div className="mt-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                  <MapPin className="h-4 w-4 text-emerald-500" />
+                  {etab.address || "Mahajanga, Madagascar"}
+                </div>
+              </div>
 
-                {/* Social Links */}
-                {(etab.facebook || etab.twitter || etab.linkedin) && (
-                  <div className="mt-6 pt-4 border-t border-slate-100">
-                    <h4 className="text-sm font-medium text-slate-700 mb-3">Réseaux sociaux</h4>
-                    <div className="flex gap-3">
-                      {etab.facebook && (
-                        <a
-                          href={etab.facebook}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-colors"
-                        >
-                          <Facebook className="w-4 h-4" />
-                        </a>
-                      )}
-                      {etab.twitter && (
-                        <a
-                          href={etab.twitter}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 hover:bg-sky-500 hover:text-white transition-colors"
-                        >
-                          <Twitter className="w-4 h-4" />
-                        </a>
-                      )}
-                      {etab.linkedin && (
-                        <a
-                          href={etab.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 hover:bg-blue-700 hover:text-white transition-colors"
-                        >
-                          <Linkedin className="w-4 h-4" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                )}
+              <div className="rounded-3xl border border-slate-200/70 bg-gradient-to-br from-emerald-600 to-teal-600 p-6 text-white shadow-lg">
+                <h3 className="text-lg font-semibold">Contact direct</h3>
+                <p className="mt-2 text-sm text-emerald-100">
+                  Notre équipe vous répond pour toute question sur les formations et admissions.
+                </p>
+                <button
+                  type="button"
+                  className="mt-4 w-full rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white hover:bg-white/20"
+                >
+                  Prendre rendez-vous
+                </button>
               </div>
             </div>
           </div>

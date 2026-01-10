@@ -133,6 +133,11 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
@@ -151,6 +156,10 @@ body {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
 }
 
 /* Glass Effect */

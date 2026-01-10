@@ -1,3 +1,11 @@
-export default function Container({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto w-full max-w-6xl px-4">{children}</div>;
+import clsx from "clsx";
+
+export default function Container({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={clsx("mx-auto w-full max-w-7xl px-4", className)}>{children}</div>;
 }

@@ -34,8 +34,10 @@ type Partner = {
   website_url?: string | null;
 };
 
+const heroImage =
+  "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1600&q=80";
+
 export default async function HomePage() {
-  // Fetch all data in parallel
   const [postsRes, etablissementsRes, partnersRes] = await Promise.all([
     publicGet<{ data: Post[] }>("/posts?per_page=4&status=published", 60).catch(() => ({ data: [] })),
     publicGet<{ data: Etablissement[] }>("/etablissements?per_page=8", 300).catch(() => ({ data: [] })),
@@ -43,26 +45,21 @@ export default async function HomePage() {
   ]);
 
   return (
-    <main>
-      {/* Hero Section */}
+    <main className="bg-white dark:bg-slate-950">
       <HeroSection
         title="Université de Mahajanga"
         subtitle="Former les leaders de demain pour un Madagascar prospère. Excellence académique, recherche innovante et engagement communautaire."
+        backgroundImage={heroImage}
       />
 
-      {/* Stats Section */}
       <StatsSection />
 
-      {/* Recent News */}
       <NewsSection posts={postsRes.data} />
 
-      {/* Etablissements Grid */}
       <EtablissementsSection etablissements={etablissementsRes.data} />
 
-      {/* Partners Scrolling */}
       <PartnersSection partners={partnersRes.data} />
 
-      {/* Call to Actions */}
       <CTASection />
     </main>
   );
