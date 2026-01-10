@@ -1,0 +1,300 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Search, Upload, Check, Image as ImageIcon, Loader2 } from "lucide-react";
+import { clsx } from "clsx";
+
+export interface Media {
+  id: number;
+  url: string;
+  disk: string;
+  mime: string;
+  size: number;
+  alt?: string;
+  created_at?: string;
+}
+
+interface MediaPickerModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelect: (media: Media[]) => void;
+  multiple?: boolean;
+}
+
+export function MediaPickerModal({
+  isOpen,
+  onClose,
+  onSelect,
+  multiple = false,
+}: MediaPickerModalProps) {
+  const [activeTab, setActiveTab] = useState<"library" | "upload">("library");
+  const [loading, setLoading] = useState(false);
+  const [medias, setMedias] = useState<Media[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  
+  // Pagination / Search state
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+
+  // Upload state
+  const [uploading, setUploading] = useState(false);
+  const [uploadFiles, setUploadFiles] = useState<FileList | null>(null);
+
+  const fetchMedias = useCallback(async (p = 1, q = "") => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/media?page=${p}&q=${q}&per_page=18`);
+      const data = await res.json();
+      setMedias(data.data || []);
+      setTotalPages(data.meta?.last_page || 1);
+      setPage(data.meta?.current_page || 1);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && activeTab === "library") {
+      fetchMedias(1, search);
+    }
+  }, [isOpen, activeTab, fetchMedias, search]);
+
+  const handleSelect = (media: Media) => {
+    if (multiple) {
+      setSelectedIds((prev) =>
+        prev.includes(media.id)
+          ? prev.filter((id) => id !== media.id)
+          : [...prev, media.id]
+      );
+    } else {
+      setSelectedIds([media.id]);
+    }
+  };
+
+  const confirmSelection = () => {
+    const selected = medias.filter((m) => selectedIds.includes(m.id));
+    onSelect(selected);
+    onClose();
+    setSelectedIds([]);
+  };
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadFiles || uploadFiles.length === 0) return;
+
+    setUploading(true);
+    
+    try {
+      // Upload files sequentially or in parallel
+      const uploadPromises = Array.from(uploadFiles).map(async (file) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          const res = await fetch("/api/admin/media", {
+              method: "POST",
+              body: formData,
+          });
+          if (!res.ok) throw new Error(`Failed to upload ${file.name}`);
+          return res.json();
+      });
+
+      await Promise.all(uploadPromises);
+
+      setUploadFiles(null);
+      setActiveTab("library");
+      fetchMedias(1, ""); // Refresh library
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de l'upload. Vérifiez les fichiers.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Médiathèque"
+      size="xl"
+      footer={
+        activeTab === "library" ? (
+          <>
+            <div className="flex-1 text-sm text-slate-500">
+              {selectedIds.length} fichier(s) sélectionné(s)
+            </div>
+            <Button variant="ghost" onClick={onClose}>
+              Annuler
+            </Button>
+            <Button onClick={confirmSelection} disabled={selectedIds.length === 0}>
+              Insérer
+            </Button>
+          </>
+        ) : null
+      }
+    >
+      <div className="flex flex-col h-[60vh]">
+        {/* Tabs */}
+        <div className="flex gap-4 border-b border-slate-100 dark:border-slate-700 mb-4">
+          <button
+            onClick={() => setActiveTab("library")}
+            className={clsx(
+              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+              activeTab === "library"
+                ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400"
+            )}
+          >
+            Bibliothèque
+          </button>
+          <button
+            onClick={() => setActiveTab("upload")}
+            className={clsx(
+              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+              activeTab === "upload"
+                ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400"
+            )}
+          >
+            Téléverser
+          </button>
+        </div>
+
+        {activeTab === "library" && (
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Toolbar */}
+            <div className="flex gap-2 mb-4">
+              <Input
+                placeholder="Rechercher..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                icon={<Search className="w-4 h-4" />}
+                className="max-w-xs"
+              />
+            </div>
+
+            {/* Grid */}
+            <div className="flex-1 overflow-y-auto min-h-0 bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4">
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+                </div>
+              ) : medias.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                  <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
+                  <p>Aucun média trouvé</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {medias.map((media) => (
+                    <div
+                      key={media.id}
+                      onClick={() => handleSelect(media)}
+                      className={clsx(
+                        "group relative aspect-square rounded-lg overflow-hidden border cursor-pointer transition-all",
+                        selectedIds.includes(media.id)
+                          ? "border-indigo-600 ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-slate-900"
+                          : "border-slate-200 dark:border-slate-700 hover:border-indigo-300"
+                      )}
+                    >
+                      {/* Using img tag for simplicity within backend provided URLs, optionally use Next Image if domains configured */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={media.url}
+                        alt={media.alt || "Media"}
+                        className="w-full h-full object-cover"
+                      />
+                      
+                      {selectedIds.includes(media.id) && (
+                        <div className="absolute inset-0 bg-indigo-900/40 flex items-center justify-center">
+                          <Check className="w-8 h-8 text-white drop-shadow-md" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-4 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={page === 1}
+                  onClick={() => fetchMedias(page - 1, search)}
+                >
+                  Précédent
+                </Button>
+                <span className="text-sm text-slate-600 dark:text-slate-400">
+                  Page {page} / {totalPages}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={page === totalPages}
+                  onClick={() => fetchMedias(page + 1, search)}
+                >
+                  Suivant
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Upload Tab */}
+        {activeTab === "upload" && (
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="w-full max-w-md p-8 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl bg-slate-50 dark:bg-slate-800/50 text-center">
+              <div className="mb-4 flex justify-center">
+                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-full">
+                  <Upload className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                </div>
+              </div>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+                Sélectionnez un fichier
+              </h3>
+              <p className="text-sm text-slate-500 mb-6">
+                JPG, PNG, GIF, PDF jusqu'à 10MB
+              </p>
+              
+              <input
+                type="file"
+                id="file-upload"
+                className="hidden"
+                multiple
+                onChange={(e) => setUploadFiles(e.target.files)}
+                accept="image/*,application/pdf"
+              />
+              
+              {!uploadFiles ? (
+                <label
+                  htmlFor="file-upload"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer transition-colors"
+                >
+                  Choisir sur l'ordinateur
+                </label>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-sm font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-700 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600">
+                    {uploadFiles.length} fichier(s) sélectionné(s)
+                  </div>
+                  <div className="flex gap-2 justify-center">
+                    <Button variant="ghost" onClick={() => setUploadFiles(null)}>Annuler</Button>
+                    <Button onClick={handleUpload} loading={uploading}>Envoyer</Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}
