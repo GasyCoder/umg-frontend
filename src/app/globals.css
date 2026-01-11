@@ -1,71 +1,42 @@
 @import "tailwindcss";
 @variant dark (&:where(.dark, .dark *));
 
-:root {
-  /* UM Primary Colors */
-  --um-green: #1b4332;
-  --um-green-dark: #0f2920;
-  --um-green-light: #2d5a44;
-  --um-gold: #d4af37;
-  --um-gold-dark: #b8961f;
-  --um-gold-light: #e6c75a;
-
-  /* Background Colors */
-  --background-light: #fdfdfd;
-  --background-dark: #101622;
-
-  /* Primary Colors - Now using UM Green */
-  --primary-50: #f0fdf4;
-  --primary-100: #dcfce7;
-  --primary-200: #bbf7d0;
-  --primary-300: #86efac;
-  --primary-400: #4ade80;
-  --primary-500: #22c55e;
-  --primary-600: #1b4332;
-  --primary-700: #0f2920;
-  --primary-800: #0a1f17;
-  --primary-900: #052e16;
-
-  /* Neutral Colors - Slate */
-  --neutral-50: #f8fafc;
-  --neutral-100: #f1f5f9;
-  --neutral-200: #e2e8f0;
-  --neutral-300: #cbd5e1;
-  --neutral-400: #94a3b8;
-  --neutral-500: #64748b;
-  --neutral-600: #475569;
-  --neutral-700: #334155;
-  --neutral-800: #1e293b;
-  --neutral-900: #0f172a;
-  --neutral-950: #020617;
-
-  /* Semantic Colors */
-  --success-500: #22c55e;
-  --success-600: #16a34a;
-  --warning-500: #f59e0b;
-  --warning-600: #d97706;
-  --error-500: #ef4444;
-  --error-600: #dc2626;
-  --info-500: #3b82f6;
-  --info-600: #2563eb;
-
-  /* Background & Foreground */
-  --background: var(--background-light);
-  --foreground: #111318;
-  --background-secondary: #f8fafc;
-  --card-background: #ffffff;
-  --sidebar-background: #0f172a;
-  --sidebar-foreground: #e2e8f0;
+@layer base {
+  :root {
+    /* New Scheme Variables */
+    --primary: #002147;
+    --primary-light: #003366;
+    --accent: #F59E0B;
+    
+    --background-light: #F8FAFC;
+    --background-dark: #0B1120;
+    
+    /* Background & Foreground defaults */
+    --background: var(--background-light);
+    --foreground: #1e293b;
+    
+    --background-secondary: #f1f5f9;
+    --card-background: #ffffff;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-primary: var(--um-green);
-  --color-primary-hover: var(--um-green-dark);
-  --color-accent: var(--um-gold);
-  --font-sans: "Public Sans", "Inter", system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono);
+  
+  /* User requested colors */
+  --color-primary: #002147;
+  --color-primary-light: #003366;
+  --color-accent: #F59E0B;
+  
+  --color-background-light: #F8FAFC;
+  --color-background-dark: #0B1120;
+  
+  --color-text-main: #1e293b;
+  --color-text-muted: #64748b;
+
+  --font-display: var(--font-nunito);
+  --font-sans: var(--font-nunito), "Inter", system-ui, sans-serif;
 }
 
 /* Dark Mode */

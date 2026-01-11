@@ -16,7 +16,7 @@ export function PresidentMessageSection({ message }: PresidentMessageSectionProp
       <div className="max-w-[1400px] mx-auto px-4 lg:px-10">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           {/* Photo Side */}
-          <div className="w-full lg:w-5/12 relative">
+          <div className="w-full lg:w-1/3 relative">
             {/* Decoration Circle */}
             <div className="absolute -top-6 -left-6 w-32 h-32 bg-[#d4af37] rounded-full opacity-20"></div>
             

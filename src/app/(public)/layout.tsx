@@ -1,6 +1,6 @@
 import { Nunito } from "next/font/google";
 import { getSiteSettings } from "@/lib/public-api";
-import SiteHeader from "@/components/SiteHeader";
+import PublicHeader from "@/components/public/PublicHeader";
 import SiteFooter from "@/components/SiteFooter";
 import type { Metadata } from "next";
 
@@ -46,7 +46,7 @@ export default async function PublicLayout({ children }: { children: React.React
             font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
           }
        `}</style>
-       <SiteHeader settings={settings} />
+       <PublicHeader settings={settings} />
        <main className="flex-1 w-full flex flex-col">
          {children}
        </main>

@@ -1,20 +1,27 @@
 // Public site section components
-export { HeroSection } from "./HeroSection";
-export { StatsSection } from "./StatsSection";
-export { NewsSection } from "./NewsSection";
-export { PartnersSection } from "./PartnersSection";
+export { default as HeroSection } from "./HeroSection";
+export { default as StatsSection } from "./StatsSection";
+export { default as NewsSection } from "./NewsSection";
+export { default as PartnersSection } from "./PartnersSection";
+export { default as AboutSection } from "./AboutSection";
+export { default as PresidentMessage } from "./PresidentMessage";
+export { default as PublicHeader } from "./PublicHeader";
+
+// Other existing components (Reverting to named exports if they were named)
 export { CTASection } from "./CTASection";
 export { ResourcesSection } from "./ResourcesSection";
 export { EtablissementsSection } from "./EtablissementsSection";
+export { HeroSlider } from "./HeroSlider"; 
+export { PresidentMessageSection } from "./PresidentMessageSection";
+export { QuickLinksSection } from "./QuickLinksSection";
+
+// These were default
 export { default as AnimatedCounter } from "./AnimatedCounter";
 export { default as ArticleGallery } from "./ArticleGallery";
 export { default as ShareButtons } from "./ShareButtons";
 export { default as EtablissementTabs } from "./EtablissementTabs";
-export { HeroSlider } from "./HeroSlider";
-export { PresidentMessageSection } from "./PresidentMessageSection";
-export { QuickLinksSection } from "./QuickLinksSection";
 
-// Business card components
+// Business card components (These seem to be default based on Step 140 having 'default as')
 export { default as NewsCard } from "./NewsCard";
 export { default as AnnouncementCard, AnnouncementList } from "./AnnouncementCard";
 export { default as EventCard, EventList } from "./EventCard";
