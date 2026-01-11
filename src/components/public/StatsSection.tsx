@@ -1,55 +1,118 @@
 "use client";
 
-import Container from "@/components/Container";
-import { Users, GraduationCap, Building2, Handshake } from "lucide-react";
-import AnimatedCounter from "@/components/public/AnimatedCounter";
+import { useEffect, useRef, useState } from "react";
+import { Users, GraduationCap, Building2, FlaskConical } from "lucide-react";
 
-interface Stat {
+interface StatItemProps {
   icon: React.ElementType;
   value: number;
   suffix?: string;
   label: string;
-  description: string;
+  delay?: number;
 }
 
-const stats: Stat[] = [
-  { icon: Users, value: 15000, suffix: "+", label: "Étudiants", description: "Communauté étudiante active" },
-  { icon: GraduationCap, value: 50, suffix: "+", label: "Formations", description: "Parcours diplômants" },
-  { icon: Building2, value: 8, label: "Établissements", description: "Facultés & instituts" },
-  { icon: Handshake, value: 30, suffix: "+", label: "Partenaires", description: "Réseaux académiques" },
-];
+function StatItem({ icon: Icon, value, suffix = "", label, delay = 0 }: StatItemProps) {
+  const [count, setCount] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
 
-export function StatsSection() {
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          setIsVisible(true);
+          
+          setTimeout(() => {
+            const duration = 1500;
+            const start = performance.now();
+            
+            const animate = (now: number) => {
+              const progress = Math.min((now - start) / duration, 1);
+              const eased = 1 - Math.pow(1 - progress, 3);
+              setCount(Math.floor(eased * value));
+              if (progress < 1) requestAnimationFrame(animate);
+            };
+            
+            requestAnimationFrame(animate);
+          }, delay);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [value, delay]);
+
   return (
-    <section className="py-20 bg-gradient-to-b from-white via-slate-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <Container>
-        <div className="text-center mb-12">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Impact</p>
-          <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
-            L'Université en chiffres
-          </h2>
-          <p className="mt-3 text-slate-600 dark:text-slate-300 max-w-xl mx-auto">
-            Des décennies d'excellence académique et un engagement fort au service du développement régional.
-          </p>
+    <div 
+      ref={ref} 
+      className={`text-center p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all duration-500 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      <div className="flex justify-center mb-3">
+        <div className="w-12 h-12 rounded-xl bg-[#1b4332]/10 dark:bg-[#d4af37]/10 flex items-center justify-center">
+          <Icon className="w-6 h-6 text-[#1b4332] dark:text-[#d4af37]" />
         </div>
+      </div>
+      <div className="text-[#1b4332] dark:text-[#d4af37] text-4xl md:text-5xl font-black mb-2 tabular-nums">
+        {count.toLocaleString('fr-FR')}{suffix}
+      </div>
+      <div className="text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wider text-sm">
+        {label}
+      </div>
+    </div>
+  );
+}
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="group rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform dark:bg-indigo-500/20 dark:text-indigo-200">
-                <stat.icon className="h-6 w-6" />
-              </div>
-              <div className="mt-4">
-                <AnimatedCounter value={stat.value} suffix={stat.suffix} label={stat.label} />
-                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{stat.description}</p>
-              </div>
-            </div>
+interface Stats {
+  students: number;
+  staff: number;
+  formations: number;
+  establishments: number;
+  services: number;
+}
+
+interface StatsSectionProps {
+  stats?: Stats;
+}
+
+const defaultStats: Stats = {
+  students: 15000,
+  staff: 550,
+  formations: 50,
+  establishments: 10,
+  services: 45,
+};
+
+export function StatsSection({ stats = defaultStats }: StatsSectionProps) {
+  const statItems = [
+    { icon: Users, value: stats.students, suffix: "+", label: "Étudiants" },
+    { icon: GraduationCap, value: stats.staff, suffix: "+", label: "Enseignants" },
+    { icon: Building2, value: stats.establishments, suffix: "", label: "Établissements" },
+    { icon: FlaskConical, value: stats.services, suffix: "+", label: "Laboratoires" },
+  ];
+
+  return (
+    <section className="py-16 bg-white dark:bg-[#101622]">
+      <div className="max-w-[1400px] mx-auto px-4 lg:px-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          {statItems.map((stat, index) => (
+            <StatItem 
+              key={index} 
+              {...stat} 
+              delay={index * 100}
+            />
           ))}
         </div>
-      </Container>
+      </div>
     </section>
   );
 }

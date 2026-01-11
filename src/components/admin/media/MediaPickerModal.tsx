@@ -173,7 +173,7 @@ export function MediaPickerModal({
                 placeholder="Rechercher..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                icon={<Search className="w-4 h-4" />}
+                leftIcon={<Search className="w-4 h-4" />}
                 className="max-w-xs"
               />
             </div>

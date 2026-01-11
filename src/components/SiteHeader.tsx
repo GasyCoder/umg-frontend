@@ -4,20 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import Container from "./Container";
+import ThemeToggle from "./ThemeToggle";
 import {
   ChevronDown,
   Menu,
   X,
-  GraduationCap,
-  Building2,
+  Search,
   FileText,
   Landmark,
-  Users,
-  Phone,
 } from "lucide-react";
+import type { SiteSettings } from "@/lib/types";
 
 const nav = [
-  { href: "/", label: "Accueil" },
   {
     href: "/universite",
     label: "Université",
@@ -29,12 +27,15 @@ const nav = [
   },
   { href: "/etablissements", label: "Établissements" },
   { href: "/actualites", label: "Actualités" },
-  { href: "/documents", label: "Documents" },
-  { href: "/partenariats", label: "Partenariats" },
+  { href: "/partenaires", label: "Partenaires" },
   { href: "/contact", label: "Contact" },
 ];
 
-export default function SiteHeader() {
+interface SiteHeaderProps {
+  settings?: SiteSettings | null;
+}
+
+export default function SiteHeader({ settings }: SiteHeaderProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -45,98 +46,118 @@ export default function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
+    <header className="sticky top-0 z-50 w-full bg-white dark:bg-[#101622] border-b border-gray-100 dark:border-gray-800 transition-colors duration-200">
       <Container>
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div className="hidden sm:block">
-              <p className="font-bold text-slate-900 text-sm">Université de Mahajanga</p>
-              <p className="text-xs text-slate-500">Madagascar</p>
-            </div>
-          </Link>
+          <div className="flex items-center gap-10">
+            <Link href="/" className="flex items-center gap-3">
+              {settings?.logo_url ? (
+                <img 
+                  src={settings.logo_url} 
+                  alt={settings.site_name} 
+                  className="h-10 w-auto object-contain"
+                />
+              ) : (
+                <div className="size-10 text-[#1b4332] dark:text-[#d4af37]">
+                  <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z"></path>
+                  </svg>
+                </div>
+              )}
+              <div>
+                <h2 className="text-gray-900 dark:text-white text-base md:text-lg font-bold leading-tight">
+                  {settings?.site_name || "Université de Mahajanga"}
+                </h2>
+              </div>
+            </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {nav.map((item) => (
-              <div key={item.href} className="relative group">
-                {item.children ? (
-                  <>
-                    <button
-                      onClick={() => setOpenDropdown(openDropdown === item.href ? null : item.href)}
-                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            {/* Desktop Nav */}
+            <nav className="hidden xl:flex items-center gap-8">
+              {nav.map((item) => (
+                <div key={item.href} className="relative group">
+                  {item.children ? (
+                    <>
+                      <button
+                        onClick={() => setOpenDropdown(openDropdown === item.href ? null : item.href)}
+                        className={`flex items-center gap-1 text-sm font-semibold transition-colors ${
+                          isActive(item.href)
+                            ? "text-[#d4af37]"
+                            : "text-gray-900 dark:text-gray-300 hover:text-[#d4af37]"
+                        }`}
+                      >
+                        {item.label}
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+                      {/* Dropdown */}
+                      <div className="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                        <div className="bg-white dark:bg-[#101622] rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 py-2 min-w-[200px]">
+                          {item.children.map((child) => (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#1b4332] dark:hover:text-[#d4af37] transition-colors"
+                            >
+                              <child.icon className="w-4 h-4 text-gray-400" />
+                              {child.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={`text-sm font-semibold transition-colors ${
                         isActive(item.href)
-                          ? "text-indigo-600 bg-indigo-50"
-                          : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                          ? "text-[#d4af37]"
+                          : "text-gray-900 dark:text-gray-300 hover:text-[#d4af37]"
                       }`}
                     >
                       {item.label}
-                      <ChevronDown className="w-4 h-4" />
-                    </button>
-                    {/* Dropdown */}
-                    <div className="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                      <div className="bg-white rounded-xl shadow-xl border border-slate-200 py-2 min-w-[200px]">
-                        {item.children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
-                          >
-                            <child.icon className="w-4 h-4 text-slate-400" />
-                            {child.label}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive(item.href)
-                        ? "text-indigo-600 bg-indigo-50"
-                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </nav>
-
-          {/* Desktop Right */}
-          <div className="hidden lg:flex items-center gap-3">
-            <Link
-              href="/admin"
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-sm font-medium hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
-            >
-              Espace Admin
-            </Link>
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </nav>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
-          >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {/* Right Side */}
+          <div className="flex items-center gap-4">
+            {/* Search */}
+            <div className="hidden md:flex relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Rechercher..."
+                className="w-48 lg:w-64 pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border-none focus:ring-2 focus:ring-[#1b4332] text-sm text-gray-900 dark:text-white placeholder-gray-500"
+              />
+            </div>
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="xl:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
+              aria-label="Menu"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Nav */}
         {mobileOpen && (
-          <div className="lg:hidden py-4 space-y-1 border-t border-slate-100 animate-slide-in-up">
+          <div className="xl:hidden py-4 space-y-1 border-t border-gray-100 dark:border-gray-800 animate-slide-in-up">
             {nav.map((item) => (
               <div key={item.href}>
                 {item.children ? (
                   <>
                     <button
                       onClick={() => setOpenDropdown(openDropdown === item.href ? null : item.href)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-100"
+                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       {item.label}
                       <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === item.href ? "rotate-180" : ""}`} />
@@ -147,7 +168,7 @@ export default function SiteHeader() {
                           <Link
                             key={child.href}
                             href={child.href}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                             onClick={() => setMobileOpen(false)}
                           >
                             <child.icon className="w-4 h-4" />
@@ -161,7 +182,9 @@ export default function SiteHeader() {
                   <Link
                     href={item.href}
                     className={`block px-3 py-2.5 rounded-lg text-sm font-medium ${
-                      isActive(item.href) ? "text-indigo-600 bg-indigo-50" : "text-slate-700 hover:bg-slate-100"
+                      isActive(item.href)
+                        ? "text-[#d4af37] bg-[#1b4332]/10"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}
                     onClick={() => setMobileOpen(false)}
                   >
@@ -170,15 +193,6 @@ export default function SiteHeader() {
                 )}
               </div>
             ))}
-            <div className="pt-4 border-t border-slate-100">
-              <Link
-                href="/admin"
-                className="block w-full text-center px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium"
-                onClick={() => setMobileOpen(false)}
-              >
-                Espace Admin
-              </Link>
-            </div>
           </div>
         )}
       </Container>

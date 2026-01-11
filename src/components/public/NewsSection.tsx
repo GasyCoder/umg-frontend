@@ -1,129 +1,99 @@
 import Link from "next/link";
-import Container from "@/components/Container";
-import { ArrowRight, Calendar } from "lucide-react";
-
-interface Post {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt?: string | null;
-  published_at?: string | null;
-  cover_image?: { url: string } | null;
-  categories?: { id: number; name: string }[];
-}
+import type { Post } from "@/lib/types";
 
 interface NewsSectionProps {
   posts: Post[];
 }
 
 export function NewsSection({ posts }: NewsSectionProps) {
-  if (!posts || posts.length === 0) return null;
-
+  // Debug: always show section even if empty
   const formatDate = (dateStr: string | null | undefined) => {
     if (!dateStr) return "";
     return new Date(dateStr).toLocaleDateString("fr-FR", {
       day: "numeric",
-      month: "short",
-      year: "numeric",
+      month: "long",
+      year: "numeric"
     });
   };
 
-  const [featured, ...rest] = posts;
-
   return (
-    <section className="py-20 bg-white dark:bg-slate-950">
-      <Container>
-        <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Actualités</p>
-            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
-              Les dernières nouvelles
-            </h2>
-            <p className="mt-2 text-slate-600 dark:text-slate-300">
-              Suivez les annonces officielles, événements et initiatives du campus.
-            </p>
-          </div>
-          <Link
-            href="/actualites"
-            className="group inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-500 font-semibold"
-          >
-            Toutes les actualités
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
+    <section className="py-16 bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Header */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            📰 Actualités
+          </h2>
+          <p className="text-gray-600">
+            Les dernières nouvelles de l'Université de Mahajanga
+          </p>
         </div>
 
-        <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-8">
-          <Link
-            href={`/actualites/${featured.slug}`}
-            className="group relative overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
-          >
-            {featured.cover_image?.url ? (
-              <img
-                src={featured.cover_image.url}
-                alt={featured.title}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-blue-600" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/40 to-transparent" />
-            <div className="relative z-10 flex h-full flex-col justify-end p-6 text-white">
-              {featured.categories?.[0] && (
-                <span className="inline-flex w-fit rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
-                  {featured.categories[0].name}
-                </span>
-              )}
-              <h3 className="mt-3 text-2xl font-bold leading-tight">
-                {featured.title}
-              </h3>
-              <p className="mt-2 text-sm text-white/80 line-clamp-2">
-                {featured.excerpt}
-              </p>
-              <div className="mt-4 flex items-center gap-2 text-xs text-white/70">
-                <Calendar className="h-4 w-4" />
-                {formatDate(featured.published_at)}
-              </div>
-            </div>
-          </Link>
+        {/* Debug info */}
+        <div className="mb-6 p-4 bg-yellow-100 border border-yellow-400 rounded">
+          <p className="text-sm text-yellow-800">
+            <strong>Debug:</strong> {posts?.length ?? 0} article(s) reçu(s)
+          </p>
+        </div>
 
-          <div className="flex flex-col gap-4">
-            {rest.map((post) => (
-              <Link
-                key={post.id}
-                href={`/actualites/${post.slug}`}
-                className="group flex gap-4 rounded-2xl border border-slate-200/70 bg-white/80 p-4 shadow-sm transition hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
+        {/* Posts List */}
+        {posts && posts.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <article 
+                key={post.id} 
+                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
               >
-                {post.cover_image?.url ? (
-                  <img
-                    src={post.cover_image.url}
-                    alt={post.title}
-                    className="h-24 w-24 rounded-2xl object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-indigo-100 to-blue-100 flex-shrink-0 dark:from-indigo-500/30 dark:to-blue-500/30" />
+                {/* Category */}
+                {post.categories?.[0] && (
+                  <span className="inline-block text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded mb-3">
+                    {post.categories[0].name}
+                  </span>
                 )}
-                <div className="flex-1 min-w-0">
-                  {post.categories?.[0] && (
-                    <span className="text-xs font-semibold text-indigo-600">
-                      {post.categories[0].name}
-                    </span>
-                  )}
-                  <h3 className="mt-1 font-semibold text-slate-900 group-hover:text-indigo-600 dark:text-white line-clamp-2">
+                
+                {/* Title */}
+                <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                  <Link href={`/actualites/${post.slug}`} className="hover:text-green-700">
                     {post.title}
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
-                    {post.excerpt}
-                  </p>
-                  <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                    <Calendar className="h-3.5 w-3.5" />
-                    {formatDate(post.published_at)}
-                  </div>
-                </div>
-              </Link>
+                  </Link>
+                </h3>
+                
+                {/* Excerpt */}
+                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                  {post.excerpt || "Pas d'extrait disponible."}
+                </p>
+                
+                {/* Date */}
+                <p className="text-xs text-gray-400">
+                  {formatDate(post.published_at)}
+                </p>
+                
+                {/* Link */}
+                <Link 
+                  href={`/actualites/${post.slug}`}
+                  className="inline-block mt-4 text-sm text-green-700 font-medium hover:underline"
+                >
+                  Lire la suite →
+                </Link>
+              </article>
             ))}
           </div>
+        ) : (
+          <div className="text-center py-12 bg-white border border-gray-200 rounded-lg">
+            <p className="text-gray-500">Aucune actualité disponible pour le moment.</p>
+          </div>
+        )}
+
+        {/* View All Link */}
+        <div className="text-center mt-8">
+          <Link 
+            href="/actualites"
+            className="inline-block px-6 py-3 bg-green-700 text-white font-semibold rounded-lg hover:bg-green-800 transition-colors"
+          >
+            Voir toutes les actualités
+          </Link>
         </div>
-      </Container>
+      </div>
     </section>
   );
 }

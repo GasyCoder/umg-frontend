@@ -12,26 +12,37 @@ async function forward(req: Request, parts: string[]) {
   const url = new URL(req.url);
   const target = `${API_URL}/admin/${parts.join("/")}${url.search}`;
 
-  const headers = new Headers(req.headers);
-  headers.set("Authorization", `Bearer ${token}`);
-  headers.set("Accept", "application/json");
-
   const method = req.method.toUpperCase();
   const hasBody = !["GET", "HEAD"].includes(method);
+  
+  // Clone headers but handle Content-Type specially for multipart
+  const headers = new Headers();
+  headers.set("Authorization", `Bearer ${token}`);
+  headers.set("Accept", "application/json");
+  
+  // Preserve Content-Type from original request (important for multipart/form-data)
+  const contentType = req.headers.get("content-type");
+  if (contentType) {
+    headers.set("Content-Type", contentType);
+  }
+
+  // For file uploads, we need to read the body as ArrayBuffer
+  let body: ArrayBuffer | undefined;
+  if (hasBody) {
+    body = await req.arrayBuffer();
+  }
 
   const r = await fetch(target, {
     method,
     headers,
-    body: hasBody ? req.body : undefined,
-    // @ts-expect-error: Next.js RequestInit doesn't yet include duplex: 'half' in some versions
-    duplex: "half",
+    body: body,
     cache: "no-store",
   });
 
   const buffer = await r.arrayBuffer();
-  const contentType = r.headers.get("content-type") || "application/json";
+  const respContentType = r.headers.get("content-type") || "application/json";
 
-  return new NextResponse(buffer, { status: r.status, headers: { "content-type": contentType } });
+  return new NextResponse(buffer, { status: r.status, headers: { "content-type": respContentType } });
 }
 
 export const GET = async (req: Request, ctx: { params: Promise<{ path: string[] }> }) => forward(req, (await ctx.params).path);

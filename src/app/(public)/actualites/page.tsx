@@ -1,156 +1,199 @@
-import Container from "@/components/Container";
-import Link from "next/link";
-import { Search, SlidersHorizontal, Calendar, ArrowRight } from "lucide-react";
-import { publicGet } from "@/lib/public-api";
+import { Suspense } from 'react';
+import { publicGet } from '@/lib/public-api';
+import type { Post, Category, Tag, Event, Announcement, PaginatedResponse } from '@/lib/types';
+import { PageHeader } from '@/components/layout/PageLayout';
+import PageLayout from '@/components/layout/PageLayout';
+import { Breadcrumb } from '@/components/layout';
+import SidebarLeft, { SidebarWidget } from '@/components/layout/SidebarLeft';
+import SidebarRight, { EventsWidget, AnnouncementWidget, NewsletterWidget } from '@/components/layout/SidebarRight';
+import { NewsCard, EventList, AnnouncementList } from '@/components/public';
+import Pagination from '@/components/ui/Pagination';
+import SearchBox from '@/components/ui/SearchBox';
+import { CategoryFilter, TagFilter } from '@/components/public/CategoryFilter';
 
-const categories = [
-  "Toutes",
-  "Recherche",
-  "Campus",
-  "Vie étudiante",
-  "Partenariats",
-  "Innovation",
-];
+interface NewsPageSearchParams {
+  page?: string;
+  category?: string;
+  tags?: string;
+  q?: string;
+}
 
-const coverImages = [
-  "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1507537297725-24a1c029d3ca?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1487528278747-ba99ed528ebc?auto=format&fit=crop&w=1200&q=80",
-];
+interface NewsPageProps {
+  searchParams: Promise<NewsPageSearchParams>;
+}
 
-type Post = {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt?: string | null;
-  published_at?: string | null;
-};
+// Fetch posts with filters
+async function fetchPosts(params: NewsPageSearchParams) {
+  const page = params.page || '1';
+  const queryParts: string[] = [`per_page=9`, `page=${page}`, `status=published`];
+  
+  if (params.category) {
+    queryParts.push(`category=${params.category}`);
+  }
+  if (params.tags) {
+    queryParts.push(`tags=${params.tags}`);
+  }
+  if (params.q) {
+    queryParts.push(`q=${encodeURIComponent(params.q)}`);
+  }
+  
+  return publicGet<PaginatedResponse<Post>>(`/posts?${queryParts.join('&')}`, 60);
+}
 
-export default async function NewsPage() {
-  const res = await publicGet<{ data: Post[] }>("/posts?per_page=12", 30);
+// Fetch categories for sidebar
+async function fetchCategories() {
+  return publicGet<{ data: Category[] }>('/categories?with_count=true', 300).catch(() => ({ data: [] }));
+}
+
+// Fetch tags for sidebar
+async function fetchTags() {
+  return publicGet<{ data: Tag[] }>('/tags?with_count=true', 300).catch(() => ({ data: [] }));
+}
+
+// Fetch events for sidebar
+async function fetchEvents() {
+  return publicGet<{ data: Event[] }>('/events?upcoming=true&per_page=4', 300).catch(() => ({ data: [] }));
+}
+
+// Fetch announcements for sidebar
+async function fetchAnnouncements() {
+  return publicGet<{ data: Announcement[] }>('/announcements?active=true&per_page=4', 300).catch(() => ({ data: [] }));
+}
+
+export default async function NewsPage({ searchParams }: NewsPageProps) {
+  const params = await searchParams;
+  
+  // Parallel data fetching
+  const [postsRes, categoriesRes, tagsRes, eventsRes, announcementsRes] = await Promise.all([
+    fetchPosts(params),
+    fetchCategories(),
+    fetchTags(),
+    fetchEvents(),
+    fetchAnnouncements(),
+  ]);
+
+  const posts = postsRes.data || [];
+  const meta = postsRes.meta || { current_page: 1, last_page: 1, per_page: 9, total: 0 };
+  const categories = categoriesRes.data || [];
+  const tags = tagsRes.data || [];
+  const events = eventsRes.data || [];
+  const announcements = announcementsRes.data || [];
+
+  const activeTags = params.tags?.split(',').filter(Boolean) || [];
 
   return (
     <main className="bg-slate-50/60 dark:bg-slate-950">
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-700 text-white">
-        <Container>
-          <div className="py-16 md:py-20">
-            <p className="text-sm uppercase tracking-[0.2em] text-indigo-100">Actualités</p>
-            <h1 className="mt-3 text-3xl md:text-5xl font-bold tracking-tight">
-              Informations, événements et annonces officielles
-            </h1>
-            <p className="mt-4 max-w-2xl text-lg text-indigo-100">
-              Restez informé des temps forts de l'Université de Mahajanga : vie académique,
-              recherche, partenariats et initiatives étudiantes.
-            </p>
+      {/* Page Header */}
+      <PageHeader
+        label="Actualités"
+        title="Informations, événements et annonces officielles"
+        subtitle="Restez informé des temps forts de l'Université de Mahajanga : vie académique, recherche, partenariats et initiatives étudiantes."
+        variant="gradient"
+      >
+        {/* Search in header */}
+        <div className="mt-8 max-w-xl">
+          <Suspense fallback={<div className="h-12 bg-white/10 rounded-xl animate-pulse" />}>
+            <SearchBox 
+              placeholder="Rechercher un article, une actualité, un événement..."
+              paramName="q"
+              className="[&_input]:bg-white/10 [&_input]:border-white/20 [&_input]:text-white [&_input]:placeholder:text-indigo-100"
+            />
+          </Suspense>
+        </div>
+      </PageHeader>
 
-            <div className="mt-8 grid gap-4 rounded-3xl bg-white/10 p-4 backdrop-blur-sm md:grid-cols-[1.2fr_auto]">
-              <div className="flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-3">
-                <Search className="h-5 w-5 text-indigo-100" />
-                <label htmlFor="search" className="sr-only">
-                  Rechercher une actualité
-                </label>
-                <input
-                  id="search"
-                  type="search"
-                  placeholder="Rechercher un article, une actualité, un événement..."
-                  className="w-full bg-transparent text-sm text-white placeholder:text-indigo-100 focus:outline-none"
+      {/* Breadcrumb */}
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <Breadcrumb items={[{ label: 'Actualités' }]} />
+        </div>
+      </div>
+
+      {/* Main Content with 3-Column Layout */}
+      <PageLayout
+        variant="three-column"
+        sidebarLeft={
+          <SidebarLeft>
+            {/* Categories Widget */}
+            <SidebarWidget title="Catégories">
+              <Suspense fallback={<div className="h-20 animate-pulse bg-slate-100 rounded" />}>
+                <CategoryFilter 
+                  categories={categories} 
+                  activeSlug={params.category}
+                />
+              </Suspense>
+            </SidebarWidget>
+
+            {/* Tags Widget */}
+            {tags.length > 0 && (
+              <SidebarWidget title="Tags populaires">
+                <Suspense fallback={<div className="h-16 animate-pulse bg-slate-100 rounded" />}>
+                  <TagFilter 
+                    tags={tags} 
+                    activeSlugs={activeTags}
+                  />
+                </Suspense>
+              </SidebarWidget>
+            )}
+          </SidebarLeft>
+        }
+        sidebarRight={
+          <SidebarRight sticky>
+            {/* Announcements */}
+            <AnnouncementWidget variant="highlight">
+              <AnnouncementList announcements={announcements} maxItems={3} />
+            </AnnouncementWidget>
+
+            {/* Upcoming Events */}
+            <EventsWidget>
+              <EventList events={events} maxItems={4} />
+            </EventsWidget>
+
+            {/* Newsletter Signup */}
+            <NewsletterWidget />
+          </SidebarRight>
+        }
+      >
+        {/* Posts Grid */}
+        {posts.length > 0 ? (
+          <>
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-2">
+              {posts.map((post, index) => (
+                <NewsCard 
+                  key={post.id} 
+                  post={post} 
+                  priority={index < 2}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {meta.last_page > 1 && (
+              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+                <Pagination
+                  currentPage={meta.current_page}
+                  totalPages={meta.last_page}
+                  baseUrl="/actualites"
                 />
               </div>
-              <button
-                type="button"
-                className="flex items-center justify-center gap-2 rounded-2xl bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg hover:bg-amber-300"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                Filtrer
-              </button>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+              <svg className="w-10 h-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
             </div>
-
-            <div className="mt-6 flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  className="rounded-full border border-white/30 px-4 py-2 text-sm text-white/90 transition hover:bg-white/20"
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Aucune actualité trouvée
+            </h3>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+              Essayez de modifier vos filtres ou effectuez une nouvelle recherche.
+            </p>
           </div>
-        </Container>
-      </section>
-
-      <section className="py-16">
-        <Container>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {res.data.map((post, index) => (
-              <article
-                key={post.id}
-                className="group overflow-hidden rounded-2xl border border-white/60 bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
-              >
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={coverImages[index % coverImages.length]}
-                    alt="Illustration de l'actualité"
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-indigo-600">
-                    Communiqué
-                  </span>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-300">
-                    <Calendar className="h-4 w-4" />
-                    <span>
-                      {post.published_at
-                        ? new Date(post.published_at).toLocaleDateString("fr-FR", {
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                          })
-                        : "Mise à jour récente"}
-                    </span>
-                  </div>
-                  <h2 className="mt-3 text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                    {post.title}
-                  </h2>
-                  <p className="mt-3 text-sm text-slate-600 dark:text-slate-300 line-clamp-3">
-                    {post.excerpt ?? "Découvrez les dernières initiatives, annonces et réussites de l'université."}
-                  </p>
-                  <Link
-                    href={`/actualites/${post.slug}`}
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500"
-                  >
-                    Lire la suite
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white/80 px-6 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p className="text-sm text-slate-600 dark:text-slate-300">Page 1 sur 5</p>
-            <div className="flex items-center gap-2">
-              {[1, 2, 3, 4, 5].map((page) => (
-                <button
-                  key={page}
-                  type="button"
-                  className={`h-10 w-10 rounded-full text-sm font-semibold transition-colors ${
-                    page === 1
-                      ? "bg-indigo-600 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </section>
+        )}
+      </PageLayout>
     </main>
   );
 }

@@ -33,7 +33,7 @@ type Toast = {
 };
 
 export default function AdminSettingsPage() {
-  const [activeTab, setActiveTab] = useState<"general" | "seo" | "social" | "maintenance">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "seo" | "social" | "maintenance" | "stats">("general");
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -159,6 +159,7 @@ export default function AdminSettingsPage() {
 
   const tabs = [
     { id: "general", label: "Général", icon: <Globe className="w-4 h-4" /> },
+    { id: "stats", label: "Chiffres Clés", icon: <Globe className="w-4 h-4" /> },
     { id: "seo", label: "SEO", icon: <Search className="w-4 h-4" /> },
     { id: "social", label: "Réseaux sociaux", icon: <Share2 className="w-4 h-4" /> },
     { id: "maintenance", label: "Maintenance", icon: <Shield className="w-4 h-4" /> },
@@ -380,6 +381,56 @@ export default function AdminSettingsPage() {
                 </CardFooter>
               </Card>
             </>
+          )}
+
+          {activeTab === "stats" && (
+            <Card>
+              <CardHeader>Chiffres Clés</CardHeader>
+              <CardBody>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Input
+                    label="Étudiants"
+                    type="number"
+                    value={settings.stat_students || ""}
+                    onChange={(e) => updateSetting("stat_students", e.target.value)}
+                    placeholder="15000"
+                  />
+                  <Input
+                    label="Personnels"
+                    type="number"
+                    value={settings.stat_staff || ""}
+                    onChange={(e) => updateSetting("stat_staff", e.target.value)}
+                    placeholder="500"
+                  />
+                  <Input
+                    label="Formations"
+                    type="number"
+                    value={settings.stat_formations || ""}
+                    onChange={(e) => updateSetting("stat_formations", e.target.value)}
+                    placeholder="50"
+                  />
+                  <Input
+                    label="Établissements"
+                    type="number"
+                    value={settings.stat_establishments || ""}
+                    onChange={(e) => updateSetting("stat_establishments", e.target.value)}
+                    placeholder="8"
+                  />
+                  <Input
+                    label="Services"
+                    type="number"
+                    value={settings.stat_services || ""}
+                    onChange={(e) => updateSetting("stat_services", e.target.value)}
+                    placeholder="30"
+                  />
+                </div>
+              </CardBody>
+              <CardFooter>
+                <Button onClick={handleSave} loading={saving} icon={<Save className="w-4 h-4" />}>
+                  Enregistrer
+                </Button>
+              </CardFooter>
+            </Card>
           )}
 
           {activeTab === "seo" && (
