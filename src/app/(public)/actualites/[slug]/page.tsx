@@ -170,7 +170,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                       <Link
                         key={tag.id}
                         href={`/actualites?tags=${tag.slug}`}
-                        className="rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+                        className="rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:border-blue-300 hover:text-blue-600 transition-colors"
                       >
                         #{tag.name}
                       </Link>
@@ -234,7 +234,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </div>
               <Link
                 href="/actualites"
-                className="text-sm font-semibold text-indigo-600 hover:text-indigo-500 flex items-center gap-1"
+                className="text-sm font-semibold text-indigo-600 hover:text-blue-600 flex items-center gap-1"
               >
                 Voir toutes les actualités
                 <ArrowRight className="w-4 h-4" />

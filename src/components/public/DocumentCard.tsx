@@ -60,7 +60,7 @@ export default function DocumentCard({
         <div className="flex-1 min-w-0">
           <Link 
             href={`/documents/${document.slug}`}
-            className="text-sm font-medium text-slate-900 dark:text-white hover:text-indigo-600 line-clamp-1"
+            className="text-sm font-medium text-slate-900 dark:text-white hover:text-blue-600 line-clamp-1"
           >
             {document.title}
           </Link>
@@ -70,7 +70,7 @@ export default function DocumentCard({
         </div>
         <a
           href={downloadUrl}
-          className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+          className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
           title="Télécharger"
         >
           <Download className="w-4 h-4" />
@@ -97,7 +97,7 @@ export default function DocumentCard({
           <div className="min-w-0">
             <Link
               href={`/documents/${document.slug}`}
-              className="text-lg font-semibold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors"
+              className="text-lg font-semibold text-slate-900 dark:text-white hover:text-blue-600 transition-colors"
             >
               {document.title}
             </Link>
@@ -150,7 +150,7 @@ export default function DocumentCard({
           </div>
           <Link
             href={`/documents/${document.slug}`}
-            className="text-lg font-bold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors"
+            className="text-lg font-bold text-slate-900 dark:text-white hover:text-blue-600 transition-colors"
           >
             {document.title}
           </Link>
@@ -168,7 +168,7 @@ export default function DocumentCard({
         </span>
         <a
           href={downloadUrl}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-blue-600"
         >
           <Download className="w-4 h-4" />
           Télécharger
@@ -208,7 +208,7 @@ export function DocumentList({
       {documents.length > maxItems && (
         <Link
           href="/documents"
-          className="pt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          className="pt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-blue-600"
         >
           Voir tous les documents
           <ExternalLink className="w-4 h-4" />

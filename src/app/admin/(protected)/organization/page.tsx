@@ -7,8 +7,6 @@ import {
   Trash2,
   Landmark,
   FileText,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
@@ -61,10 +59,21 @@ export default function AdminOrganizationPage() {
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/admin/organization-pages?per_page=50");
-    const json = await res.json();
-    setData(json?.data ?? []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/organization-pages?per_page=50");
+      if (!res.ok) {
+        console.error("Failed to load organization pages", res.status);
+        setData([]);
+        return;
+      }
+      const json = await res.json().catch(() => ({ data: [] }));
+      setData(json?.data ?? []);
+    } catch (error) {
+      console.error("Error loading organization pages", error);
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -266,12 +275,13 @@ export default function AdminOrganizationPage() {
               placeholder="Titre de la page"
             />
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5" id="page_type_label">
                 Type de page *
               </label>
               <select
                 value={form.page_type}
                 onChange={(e) => setForm({ ...form, page_type: e.target.value })}
+                aria-labelledby="page_type_label"
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
               >
                 {PAGE_TYPES.map((type) => (

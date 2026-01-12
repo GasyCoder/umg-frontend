@@ -1,12 +1,16 @@
 import Container from "@/components/Container";
 import { publicGet } from "@/lib/public-api";
-import { Globe, ArrowUpRight } from "lucide-react";
+import { Globe, ArrowUpRight, Sparkles } from "lucide-react";
 
 type Partner = {
   id: number;
   name: string;
   type: "national" | "international";
   website_url?: string | null;
+  description?: string | null;
+  country?: string | null;
+  is_featured: boolean;
+  logo?: { url: string; alt?: string | null } | null;
 };
 
 const marqueeLogos = [
@@ -19,9 +23,11 @@ const marqueeLogos = [
 
 export default async function PartnershipsPage() {
   const res = await publicGet<{ data: Partner[] }>("/partners?per_page=100", 300);
+  const partners = res.data ?? [];
 
-  const national = res.data.filter((partner) => partner.type === "national");
-  const international = res.data.filter((partner) => partner.type === "international");
+  const featured = partners.filter((partner) => partner.is_featured);
+  const national = partners.filter((partner) => partner.type === "national" && !partner.is_featured);
+  const international = partners.filter((partner) => partner.type === "international" && !partner.is_featured);
 
   return (
     <main className="bg-slate-50/60 dark:bg-slate-950">
@@ -61,6 +67,65 @@ export default async function PartnershipsPage() {
             </div>
           </div>
 
+          {featured.length > 0 && (
+            <div className="mt-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="size-10 rounded-2xl bg-gradient-to-br from-amber-400 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/40">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Partenaires d'excellence</p>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Alliances stratégiques</h2>
+                </div>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                {featured.map((partner) => (
+                  <div
+                    key={partner.id}
+                    className="group rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 lg:p-8 shadow-lg shadow-indigo-500/10 hover:-translate-y-1.5 transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-4">
+                      {partner.logo?.url ? (
+                        <div className="size-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-100 dark:border-slate-700">
+                          <img
+                            src={partner.logo.url}
+                            alt={partner.logo.alt || partner.name}
+                            className="h-12 w-12 object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="size-16 rounded-2xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-200 flex items-center justify-center font-bold text-lg">
+                          {partner.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-indigo-500">{partner.type}</p>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">{partner.name}</h3>
+                        {partner.country && (
+                          <p className="text-sm text-slate-500 dark:text-slate-400">{partner.country}</p>
+                        )}
+                      </div>
+                    </div>
+                    {partner.description && (
+                      <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">{partner.description}</p>
+                    )}
+                    {partner.website_url && (
+                      <a
+                        href={partner.website_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400"
+                      >
+                        Visiter le site
+                        <ArrowUpRight className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mt-12 grid gap-10">
             {[
               { title: "Nationaux", data: national },
@@ -79,23 +144,40 @@ export default async function PartnershipsPage() {
                   {section.data.map((partner) => (
                     <div
                       key={partner.id}
-                      className="group rounded-3xl border border-white/60 bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
+                      className="group rounded-3xl border border-slate-200/80 bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
                     >
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-200">
-                        <Globe className="h-6 w-6" />
+                      <div className="flex items-center gap-3">
+                        {partner.logo?.url ? (
+                          <div className="size-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-100 dark:border-slate-700">
+                            <img
+                              src={partner.logo.url}
+                              alt={partner.logo.alt || partner.name}
+                              className="h-9 w-9 object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <div className="size-12 rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-200 flex items-center justify-center font-bold">
+                            {partner.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="text-lg font-semibold text-slate-900 group-hover:text-blue-600 dark:text-white">
+                            {partner.name}
+                          </h3>
+                          {partner.country && (
+                            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{partner.country}</p>
+                          )}
+                        </div>
                       </div>
-                      <h3 className="mt-4 text-lg font-semibold text-slate-900 group-hover:text-indigo-600 dark:text-white">
-                        {partner.name}
-                      </h3>
-                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                        Collaboration académique, mobilité et projets de recherche conjoints.
+                      <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                        {partner.description || "Partenariat actif autour de la recherche et de la mobilité étudiante."}
                       </p>
                       {partner.website_url && (
                         <a
                           href={partner.website_url}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600"
+                          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400"
                         >
                           Visiter le site
                           <ArrowUpRight className="h-4 w-4" />

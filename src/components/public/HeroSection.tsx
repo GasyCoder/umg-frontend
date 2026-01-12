@@ -109,7 +109,7 @@ export default function HeroSection({ slides }: HeroSectionProps) {
                   <div className="absolute bottom-6 right-6 flex items-center gap-3 z-20">
                     <div className="custom-dots flex gap-1.5 mr-4"></div>
                     
-                    <button className="custom-prev w-10 h-10 rounded-full bg-white/10 hover:bg-white backdrop-blur-md text-white hover:text-primary flex items-center justify-center transition-all border border-white/20">
+                    <button className="custom-prev w-10 h-10 rounded-full bg-white/10 hover:bg-white backdrop-blur-md text-white hover:text-blue-600 flex items-center justify-center transition-all border border-white/20">
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button className="custom-next w-10 h-10 rounded-full bg-white text-primary flex items-center justify-center transition-all shadow-lg hover:bg-accent hover:text-white">

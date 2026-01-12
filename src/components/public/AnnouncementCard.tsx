@@ -58,7 +58,7 @@ export default function AnnouncementCard({
             {announcement.link_url && (
               <Link 
                 href={announcement.link_url}
-                className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-blue-600"
               >
                 En savoir plus
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -117,7 +117,7 @@ export default function AnnouncementCard({
         <div className="mt-3 pl-8">
           <Link 
             href={announcement.link_url}
-            className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-blue-600"
           >
             En savoir plus
             <ExternalLink className="w-3.5 h-3.5" />

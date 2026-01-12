@@ -79,11 +79,11 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
                         <span className="h-px flex-grow bg-white/10 ml-2"></span>
                     </h4>
                     <ul className="flex flex-col gap-3 text-sm text-blue-100/80">
-                         <li><Link className="hover:text-accent hover:translate-x-1 transition-all inline-block" href="#">Calendrier Universitaire</Link></li>
-                        <li><Link className="hover:text-accent hover:translate-x-1 transition-all inline-block" href="#">Bibliothèque Numérique</Link></li>
-                        <li><Link className="hover:text-accent hover:translate-x-1 transition-all inline-block" href="#">Offres de Stage</Link></li>
-                        <li><Link className="hover:text-accent hover:translate-x-1 transition-all inline-block" href="#">Vie Associative</Link></li>
-                        <li><Link className="hover:text-accent hover:translate-x-1 transition-all inline-block" href="#">Bourses et Aides</Link></li>
+                         <li><Link className="hover:text-blue-600 hover:translate-x-1 transition-all inline-block" href="#">Calendrier Universitaire</Link></li>
+                        <li><Link className="hover:text-blue-600 hover:translate-x-1 transition-all inline-block" href="#">Bibliothèque Numérique</Link></li>
+                        <li><Link className="hover:text-blue-600 hover:translate-x-1 transition-all inline-block" href="#">Offres de Stage</Link></li>
+                        <li><Link className="hover:text-blue-600 hover:translate-x-1 transition-all inline-block" href="#">Vie Associative</Link></li>
+                        <li><Link className="hover:text-blue-600 hover:translate-x-1 transition-all inline-block" href="#">Bourses et Aides</Link></li>
                     </ul>
                 </div>
 
@@ -94,11 +94,11 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
                         <span className="h-px flex-grow bg-white/10 ml-2"></span>
                     </h4>
                     <ul className="flex flex-col gap-3 text-sm text-blue-100/80">
-                        <li><Link className="hover:text-accent hover:translate-x-1 transition-all inline-block" href="/president-message">Présidence</Link></li>
-                        <li><Link className="hover:text-accent hover:translate-x-1 transition-all inline-block" href="#">Recherche</Link></li>
-                        <li><Link className="hover:text-accent hover:translate-x-1 transition-all inline-block" href="/partenaires">International</Link></li>
-                        <li><Link className="hover:text-accent hover:translate-x-1 transition-all inline-block" href="#">Alumni</Link></li>
-                        <li><Link className="hover:text-accent hover:translate-x-1 transition-all inline-block" href="/contact">Recrutement</Link></li>
+                        <li><Link className="hover:text-blue-600 hover:translate-x-1 transition-all inline-block" href="/president-message">Présidence</Link></li>
+                        <li><Link className="hover:text-blue-600 hover:translate-x-1 transition-all inline-block" href="#">Recherche</Link></li>
+                        <li><Link className="hover:text-blue-600 hover:translate-x-1 transition-all inline-block" href="/partenaires">International</Link></li>
+                        <li><Link className="hover:text-blue-600 hover:translate-x-1 transition-all inline-block" href="#">Alumni</Link></li>
+                        <li><Link className="hover:text-blue-600 hover:translate-x-1 transition-all inline-block" href="/contact">Recrutement</Link></li>
                     </ul>
                 </div>
 
@@ -108,9 +108,9 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
             <div className="pt-8 border-t border-white/10 text-center md:text-left flex flex-col md:flex-row justify-between items-center text-xs text-blue-200/60">
                 <p>© {currentYear} {settings?.site_name || "Université de Mahajanga"}. Tous droits réservés.</p>
                 <div className="flex gap-6 mt-4 md:mt-0">
-                    <Link className="hover:text-white transition-colors" href="#">Mentions Légales</Link>
-                    <Link className="hover:text-white transition-colors" href="#">Politique de Confidentialité</Link>
-                    <Link className="hover:text-white transition-colors" href="#">Plan du Site</Link>
+                    <Link className="hover:text-blue-400 transition-colors" href="#">Mentions Légales</Link>
+                    <Link className="hover:text-blue-400 transition-colors" href="#">Politique de Confidentialité</Link>
+                    <Link className="hover:text-blue-400 transition-colors" href="#">Plan du Site</Link>
                 </div>
             </div>
         </div>

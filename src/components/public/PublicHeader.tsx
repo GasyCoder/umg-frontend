@@ -10,7 +10,11 @@ import {
   ChevronDown, 
   Search, 
   Menu, 
-  X
+  X,
+  History,
+  Building2,
+  FileText,
+  Briefcase
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { SiteSettings } from "@/lib/types";
@@ -22,6 +26,7 @@ interface PublicHeaderProps {
 interface NavItem {
   label: string;
   href?: string;
+  icon?: any;
   children?: NavItem[];
 }
 
@@ -33,12 +38,13 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
     {
       label: 'Université',
       children: [
-        { label: 'Historique', href: '/universite/historique' },
-        { label: 'Organisation', href: '/universite/organisation' },
-        { label: 'Textes et arrêtés', href: '/universite/textes' },
+        { label: 'Historique', href: '/universite/historique', icon: History },
+        { label: 'Organisation', href: '/universite/organisation', icon: Building2 },
+        { label: 'Textes et arrêtés', href: '/universite/textes', icon: FileText },
       ]
     },
     { label: 'Établissements', href: '/etablissements' },
+    { label: 'Services', href: '/services' },
     { label: 'Actualités', href: '/actualites' },
     { label: 'Partenariats', href: '/partenaires' },
     { label: 'Contact', href: '/contact' },
@@ -50,18 +56,18 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
       <div className="relative z-[60] bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 py-2 px-4 md:px-10 text-xs font-medium transition-colors">
         <div className="max-w-7xl mx-auto px-4 md:px-10 flex justify-between items-center">
           <div className="flex gap-6">
-            <Link className="hover:text-primary dark:hover:text-blue-400 transition-colors flex items-center gap-1.5" href="#">
+            <Link className="hover:text-blue-600 dark:hover:text-blue-500 transition-colors flex items-center gap-1.5" href="#">
               <GraduationCap className="w-4 h-4 text-accent" /> Bibliothèque
             </Link>
-            <Link className="hover:text-primary dark:hover:text-blue-400 transition-colors flex items-center gap-1.5" href="#">
+            <Link className="hover:text-blue-600 dark:hover:text-blue-500 transition-colors flex items-center gap-1.5" href="#">
               <Laptop className="w-4 h-4 text-accent" /> Espaces Numériques
             </Link>
           </div>
           <div className="flex gap-4 items-center">
             <div className="hidden md:flex gap-4 items-center">
-              <Link className="hover:text-primary dark:hover:text-blue-400 transition-colors" href="https://webmail.univ-mahajanga.mg" target="_blank">Webmail</Link>
+              <Link className="hover:text-blue-600 dark:hover:text-blue-500 transition-colors" href="https://webmail.univ-mahajanga.mg" target="_blank">Webmail</Link>
               <span className="text-slate-300">|</span>
-              <Link className="hover:text-primary dark:hover:text-blue-400 transition-colors flex items-center gap-1" href="/admin/login">
+              <Link className="hover:text-blue-600 dark:hover:text-blue-500 transition-colors flex items-center gap-1" href="/admin/login">
                 <Lock className="w-3 h-3" /> Intranet
               </Link>
             </div>
@@ -100,7 +106,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
               <div key={item.label} className="relative group/dropdown">
                 {item.children ? (
                   <button 
-                    className="flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400 px-3 py-2 text-sm font-semibold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    className="flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 px-3 py-2 text-sm font-semibold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                   >
                     {item.label}
                     <ChevronDown className="w-4 h-4" />
@@ -108,7 +114,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                 ) : (
                   <Link 
                     href={item.href || '#'}
-                    className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400 px-3 py-2 text-sm font-semibold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 px-3 py-2 text-sm font-semibold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                   >
                     {item.label}
                   </Link>
@@ -118,15 +124,19 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                 {item.children && (
                   <div className="absolute top-full left-0 w-56 pt-2 opacity-0 invisible group-hover/dropdown:opacity-100 group-hover/dropdown:visible transition-all transform translate-y-2 group-hover/dropdown:translate-y-0">
                     <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden py-1">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.label}
-                          href={child.href || '#'}
-                          className="block px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-blue-400 transition-colors"
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
+                      {item.children.map((child) => {
+                        const Icon = child.icon;
+                        return (
+                          <Link
+                            key={child.label}
+                            href={child.href || '#'}
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-500 transition-colors"
+                          >
+                            {Icon && <Icon className="w-4 h-4" />}
+                            {child.label}
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -136,7 +146,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
           
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <button className="size-10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors">
+            <button className="size-10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors">
               <Search className="w-5 h-5" />
             </button>
             <button className="hidden md:flex bg-accent hover:bg-amber-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-amber-500/20 items-center gap-2 hover:-translate-y-0.5">
@@ -161,30 +171,34 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                            <>
                               <button 
                                 onClick={() => setDropdownOpen(dropdownOpen === item.label ? null : item.label)}
-                                className="flex w-full items-center justify-between text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400 px-4 py-3 text-sm font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                className="flex w-full items-center justify-between text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 px-4 py-3 text-sm font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                               >
                                 {item.label}
                                 <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen === item.label ? 'rotate-180' : ''}`} />
                               </button>
                               {dropdownOpen === item.label && (
                                 <div className="pl-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg mb-2">
-                                  {item.children.map((child) => (
-                                    <Link
-                                      key={child.label}
-                                      href={child.href || '#'}
-                                      className="block px-4 py-3 text-sm text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 border-l-2 border-transparent hover:border-primary dark:hover:border-blue-400 ml-2"
-                                      onClick={() => setMobileMenuOpen(false)}
-                                    >
-                                      {child.label}
-                                    </Link>
-                                  ))}
+                                  {item.children.map((child) => {
+                                    const Icon = child.icon;
+                                    return (
+                                      <Link
+                                        key={child.label}
+                                        href={child.href || '#'}
+                                        className="flex items-center gap-2 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 border-l-2 border-transparent hover:border-blue-600 dark:hover:border-blue-500 ml-2"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                      >
+                                        {Icon && <Icon className="w-4 h-4" />}
+                                        {child.label}
+                                      </Link>
+                                    );
+                                  })}
                                 </div>
                               )}
                            </>
                          ) : (
                             <Link 
                                 href={item.href || '#'}
-                                className="block text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400 px-4 py-3 text-sm font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                className="block text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 px-4 py-3 text-sm font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                 onClick={() => setMobileMenuOpen(false)}
                             >
                                 {item.label}

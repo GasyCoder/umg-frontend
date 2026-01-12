@@ -78,7 +78,7 @@ export default function UniversitePage() {
                 <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${section.color}`}>
                   <section.icon className="h-6 w-6 text-white" />
                 </div>
-                <h2 className="mt-4 text-xl font-semibold text-slate-900 group-hover:text-indigo-600 dark:text-white">
+                <h2 className="mt-4 text-xl font-semibold text-slate-900 group-hover:text-blue-600 dark:text-white">
                   {section.title}
                 </h2>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{section.description}</p>

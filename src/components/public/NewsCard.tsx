@@ -96,7 +96,7 @@ export default function NewsCard({
           <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
             {categoryName}
           </span>
-          <h3 className="mt-1 text-sm font-semibold text-slate-900 dark:text-white line-clamp-2 group-hover:text-indigo-600 transition-colors">
+          <h3 className="mt-1 text-sm font-semibold text-slate-900 dark:text-white line-clamp-2 group-hover:text-blue-600 transition-colors">
             <Link href={`/actualites/${post.slug}`}>
               {post.title}
             </Link>
@@ -128,7 +128,7 @@ export default function NewsCard({
             <Calendar className="w-3.5 h-3.5" />
             {formattedDate}
           </div>
-          <h3 className="mt-2 text-xl font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">
+          <h3 className="mt-2 text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
             <Link href={`/actualites/${post.slug}`}>
               {post.title}
             </Link>
@@ -140,7 +140,7 @@ export default function NewsCard({
           )}
           <Link
             href={`/actualites/${post.slug}`}
-            className="mt-auto pt-4 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+            className="mt-auto pt-4 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-blue-600"
           >
             Lire la suite
             <ArrowRight className="w-4 h-4" />
@@ -187,7 +187,7 @@ export default function NewsCard({
         )}
         <Link
           href={`/actualites/${post.slug}`}
-          className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+          className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-blue-600"
         >
           Lire la suite
           <ArrowRight className="h-4 w-4" />

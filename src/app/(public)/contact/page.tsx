@@ -93,13 +93,13 @@ export default function ContactPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="h-4 w-4 text-indigo-500" />
-                    <a href="tel:+261320000000" className="hover:text-indigo-600">
+                    <a href="tel:+261320000000" className="hover:text-blue-600">
                       +261 32 00 000 00
                     </a>
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="h-4 w-4 text-indigo-500" />
-                    <a href="mailto:contact@umg.mg" className="hover:text-indigo-600">
+                    <a href="mailto:contact@umg.mg" className="hover:text-blue-600">
                       contact@umg.mg
                     </a>
                   </div>

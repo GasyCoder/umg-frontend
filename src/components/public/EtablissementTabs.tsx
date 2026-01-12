@@ -80,7 +80,7 @@ export default function EtablissementTabs({ presentation, formations = [], conta
             {contacts.phone && (
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-slate-400" />
-                <a className="hover:text-indigo-600" href={`tel:${contacts.phone}`}>
+                <a className="hover:text-blue-600" href={`tel:${contacts.phone}`}>
                   {contacts.phone}
                 </a>
               </div>
@@ -88,7 +88,7 @@ export default function EtablissementTabs({ presentation, formations = [], conta
             {contacts.email && (
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-slate-400" />
-                <a className="hover:text-indigo-600" href={`mailto:${contacts.email}`}>
+                <a className="hover:text-blue-600" href={`mailto:${contacts.email}`}>
                   {contacts.email}
                 </a>
               </div>

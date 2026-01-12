@@ -160,7 +160,7 @@ export function EventList({
       {events.length > maxItems && (
         <Link 
           href="/agenda"
-          className="pt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          className="pt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-blue-600"
         >
           Voir tout l'agenda
           <ArrowRight className="w-4 h-4" />
