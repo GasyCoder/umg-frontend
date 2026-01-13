@@ -161,63 +161,63 @@ export default function NewsSection({ posts, documents }: NewsSectionProps) {
           </div>
         </div>
 
-        <div className="mt-16 rounded-3xl bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 border border-white/10 p-6 lg:p-10 text-white shadow-2xl shadow-indigo-900/30">
-          <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-center">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 lg:p-8 border border-white/15 shadow-lg shadow-indigo-900/20">
-              <p className="text-sm uppercase tracking-[0.4em] text-blue-200 flex items-center gap-2">
-                <Mail className="w-4 h-4" />
+        <div className="mt-16 grid gap-6 lg:grid-cols-2">
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2 mb-3">
+              <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400 font-semibold">
                 Newsletter
               </p>
-              <h3 className="mt-4 text-2xl font-bold">Recevez les infos essentielles de l'UMG</h3>
-              <p className="mt-2 text-sm text-blue-100">
-                Publications officielles, calendriers académiques et événements majeurs directement dans votre boîte mail.
-              </p>
-              <form onSubmit={handleNewsletterSubmit} className="mt-6 flex flex-col sm:flex-row gap-3">
-                <input
-                  type="email"
-                  value={newsletterEmail}
-                  onChange={(event) => setNewsletterEmail(event.target.value)}
-                  placeholder="Votre e-mail institutionnel"
-                  className="flex-1 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
-                />
-                <button
-                  type="submit"
-                  disabled={newsletterStatus === "loading"}
-                  className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-amber-500/30 hover:bg-amber-300 transition disabled:opacity-60"
-                >
-                  {newsletterStatus === "loading" ? "Envoi..." : "Je m'abonne"}
-                </button>
-              </form>
-              {newsletterMessage && (
-                <p
-                  className={`mt-3 text-sm ${newsletterStatus === "success" ? "text-emerald-200" : "text-rose-200"}`}
-                >
-                  {newsletterMessage}
-                </p>
-              )}
             </div>
-
-            <div className="rounded-2xl border border-white/15 p-6 lg:p-8 bg-white/5 backdrop-blur-lg shadow-xl shadow-slate-900/20">
-              <p className="text-sm uppercase tracking-[0.4em] text-emerald-200">Candidature</p>
-              <h3 className="mt-4 text-3xl font-extrabold leading-tight">S'inscrire à l'Université de Mahajanga</h3>
-              <p className="mt-3 text-sm text-slate-100/80">
-                Explorez nos filières, rencontrez nos équipes pédagogiques et choisissez l'établissement qui vous correspond.
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Recevez les infos essentielles de l'UMG</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Publications officielles, calendriers académiques et événements majeurs directement dans votre boîte mail.
+            </p>
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="email"
+                value={newsletterEmail}
+                onChange={(event) => setNewsletterEmail(event.target.value)}
+                placeholder="Votre e-mail"
+                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <button
+                type="submit"
+                disabled={newsletterStatus === "loading"}
+                className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition disabled:opacity-50 whitespace-nowrap"
+              >
+                {newsletterStatus === "loading" ? "Envoi..." : "Je m'abonne"}
+              </button>
+            </form>
+            {newsletterMessage && (
+              <p
+                className={`mt-2 text-xs ${newsletterStatus === "success" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+              >
+                {newsletterMessage}
               </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href="/universite"
-                  className="inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 px-5 py-3 text-sm font-semibold shadow-lg shadow-slate-900/20"
-                >
-                  S'inscrire à l'Université
-                  <ArrowUpRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/etablissements"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/40 text-white px-5 py-3 text-sm font-semibold hover:bg-white/10 transition"
-                >
-                  Choisir votre établissement
-                </Link>
-              </div>
+            )}
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+            <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400 font-semibold mb-3">Candidature</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">S'inscrire à l'Université</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Explorez nos filières, rencontrez nos équipes pédagogiques et choisissez l'établissement qui vous correspond.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/universite"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 text-white px-4 py-2.5 text-sm font-semibold hover:bg-blue-700 transition"
+              >
+                S'inscrire
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+              <Link
+                href="/etablissements"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-4 py-2.5 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              >
+                Nos établissements
+              </Link>
             </div>
           </div>
         </div>
