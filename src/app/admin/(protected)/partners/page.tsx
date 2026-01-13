@@ -14,7 +14,8 @@ export default function PartnersPage() {
   const fetchPartners = async () => {
     try {
       const res = await fetch("/api/admin/partners", {
-        headers: { Accept: "application/json" }
+        headers: { Accept: "application/json" },
+        credentials: "include",
       });
       if (res.ok) {
         const data = await res.json();
@@ -37,7 +38,8 @@ export default function PartnersPage() {
     setDeleting(id);
     try {
       const res = await fetch(`/api/admin/partners/${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        credentials: "include",
       });
 
       if (res.ok) {

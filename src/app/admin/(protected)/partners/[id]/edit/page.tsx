@@ -28,7 +28,9 @@ export default function EditPartnerPage() {
   useEffect(() => {
     const fetchPartner = async () => {
       try {
-        const res = await fetch(`/api/admin/partners/${partnerId}`);
+        const res = await fetch(`/api/admin/partners/${partnerId}`, {
+          credentials: "include",
+        });
         if (res.ok) {
           const data = await res.json();
           setPartner(data);
@@ -86,6 +88,7 @@ export default function EditPartnerPage() {
       const res = await fetch(`/api/admin/partners/${partnerId}`, {
         method: "PUT",
         body: data,
+        credentials: "include",
       });
 
       if (res.ok) {

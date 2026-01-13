@@ -49,6 +49,7 @@ export default function CreatePartnerPage() {
       const res = await fetch("/api/admin/partners", {
         method: "POST",
         body: data,
+        credentials: "include",
       });
 
       if (res.ok) {
