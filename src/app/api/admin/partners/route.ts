@@ -47,12 +47,24 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
       body: formData,
     });
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
+    const text = await res.text();
+
+    // Try to parse as JSON, otherwise return the raw error
+    try {
+      const data = JSON.parse(text);
+      return NextResponse.json(data, { status: res.status });
+    } catch {
+      console.error("Backend returned non-JSON:", text.substring(0, 500));
+      return NextResponse.json(
+        { error: "Backend error", status: res.status, details: text.substring(0, 200) },
+        { status: res.status }
+      );
+    }
   } catch (error) {
     console.error("Error creating partner:", error);
     return NextResponse.json(
