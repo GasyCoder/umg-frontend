@@ -7,8 +7,7 @@ export { default as AboutSection } from "./AboutSection";
 export { default as PresidentMessage } from "./PresidentMessage";
 export { default as PublicHeader } from "./PublicHeader";
 
-// Other existing components (Reverting to named exports if they were named)
-export { CTASection } from "./CTASection";
+// Other existing components (named exports)
 export { ResourcesSection } from "./ResourcesSection";
 export { EtablissementsSection } from "./EtablissementsSection";
 export { HeroSlider } from "./HeroSlider"; 
