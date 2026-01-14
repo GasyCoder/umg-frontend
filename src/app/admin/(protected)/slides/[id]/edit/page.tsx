@@ -12,6 +12,12 @@ interface Post {
   slug: string;
 }
 
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 interface Slide {
   id: number;
   title: string;
@@ -22,6 +28,9 @@ interface Slide {
   cta_text: string | null;
   cta_url: string | null;
   post_id: number | null;
+  category_id: number | null;
+  bg_color_light: string;
+  bg_color_dark: string;
   order: number;
   is_active: boolean;
 }
@@ -32,6 +41,7 @@ export default function EditSlidePage({ params }: { params: Promise<{ id: string
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
@@ -43,6 +53,9 @@ export default function EditSlidePage({ params }: { params: Promise<{ id: string
     cta_text: "",
     cta_url: "",
     post_id: "",
+    category_id: "",
+    bg_color_light: "bg-blue-900",
+    bg_color_dark: "bg-slate-800",
     order: "0",
     is_active: true,
   });
@@ -50,9 +63,10 @@ export default function EditSlidePage({ params }: { params: Promise<{ id: string
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [slideRes, postsRes] = await Promise.all([
+        const [slideRes, postsRes, categoriesRes] = await Promise.all([
           fetch(`/api/admin/slides/${id}`, { credentials: "include" }),
           fetch("/api/admin/posts?per_page=100&status=published", { credentials: "include" }),
+          fetch("/api/admin/categories?per_page=100", { credentials: "include" }),
         ]);
 
         if (slideRes.ok) {
@@ -65,6 +79,9 @@ export default function EditSlidePage({ params }: { params: Promise<{ id: string
             cta_text: slide.cta_text || "",
             cta_url: slide.cta_url || "",
             post_id: slide.post_id?.toString() || "",
+            category_id: slide.category_id?.toString() || "",
+            bg_color_light: slide.bg_color_light || "bg-blue-900",
+            bg_color_dark: slide.bg_color_dark || "bg-slate-800",
             order: slide.order?.toString() || "0",
             is_active: slide.is_active,
           });
@@ -77,6 +94,11 @@ export default function EditSlidePage({ params }: { params: Promise<{ id: string
         if (postsRes.ok) {
           const postsData = await postsRes.json();
           setPosts(postsData.data?.data || postsData.data || []);
+        }
+
+        if (categoriesRes.ok) {
+          const categoriesData = await categoriesRes.json();
+          setCategories(categoriesData.data?.data || categoriesData.data || []);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -117,6 +139,9 @@ export default function EditSlidePage({ params }: { params: Promise<{ id: string
       formData.append("cta_text", form.cta_text);
       formData.append("cta_url", form.cta_url);
       formData.append("post_id", form.post_id);
+      formData.append("category_id", form.category_id);
+      formData.append("bg_color_light", form.bg_color_light);
+      formData.append("bg_color_dark", form.bg_color_dark);
       formData.append("order", form.order);
       formData.append("is_active", form.is_active ? "1" : "0");
       if (imageFile) formData.append("image", imageFile);
@@ -321,6 +346,99 @@ export default function EditSlidePage({ params }: { params: Promise<{ id: string
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
               Publication
             </h3>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Catégorie
+              </label>
+              <select
+                value={form.category_id}
+                onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">-- Sélectionner une catégorie --</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Couleur de fond (mode clair)
+              </label>
+              <select
+                value={form.bg_color_light}
+                onChange={(e) => setForm({ ...form, bg_color_light: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="bg-blue-900">Bleu foncé (défaut)</option>
+                <option value="bg-blue-800">Bleu</option>
+                <option value="bg-blue-700">Bleu moyen</option>
+                <option value="bg-indigo-900">Indigo foncé</option>
+                <option value="bg-indigo-800">Indigo</option>
+                <option value="bg-purple-900">Violet foncé</option>
+                <option value="bg-purple-800">Violet</option>
+                <option value="bg-pink-900">Rose foncé</option>
+                <option value="bg-pink-800">Rose</option>
+                <option value="bg-red-900">Rouge foncé</option>
+                <option value="bg-red-800">Rouge</option>
+                <option value="bg-orange-900">Orange foncé</option>
+                <option value="bg-orange-800">Orange</option>
+                <option value="bg-amber-900">Ambre foncé</option>
+                <option value="bg-amber-800">Ambre</option>
+                <option value="bg-yellow-900">Jaune foncé</option>
+                <option value="bg-yellow-800">Jaune</option>
+                <option value="bg-green-900">Vert foncé</option>
+                <option value="bg-green-800">Vert</option>
+                <option value="bg-emerald-900">Émeraude foncé</option>
+                <option value="bg-emerald-800">Émeraude</option>
+                <option value="bg-teal-900">Sarcelle foncé</option>
+                <option value="bg-teal-800">Sarcelle</option>
+                <option value="bg-cyan-900">Cyan foncé</option>
+                <option value="bg-cyan-800">Cyan</option>
+                <option value="bg-sky-900">Ciel foncé</option>
+                <option value="bg-sky-800">Ciel</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Couleur de fond (mode sombre)
+              </label>
+              <select
+                value={form.bg_color_dark}
+                onChange={(e) => setForm({ ...form, bg_color_dark: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="bg-slate-950">Ardoise très foncé</option>
+                <option value="bg-slate-900">Ardoise foncé</option>
+                <option value="bg-slate-800">Ardoise (défaut)</option>
+                <option value="bg-slate-700">Ardoise moyen</option>
+                <option value="bg-gray-950">Gris très foncé</option>
+                <option value="bg-gray-900">Gris foncé</option>
+                <option value="bg-gray-800">Gris</option>
+                <option value="bg-zinc-950">Zinc très foncé</option>
+                <option value="bg-zinc-900">Zinc foncé</option>
+                <option value="bg-zinc-800">Zinc</option>
+                <option value="bg-neutral-950">Neutre très foncé</option>
+                <option value="bg-neutral-900">Neutre foncé</option>
+                <option value="bg-neutral-800">Neutre</option>
+                <option value="bg-stone-950">Pierre très foncé</option>
+                <option value="bg-stone-900">Pierre foncé</option>
+                <option value="bg-stone-800">Pierre</option>
+                <option value="bg-blue-950">Bleu très foncé</option>
+                <option value="bg-blue-900">Bleu foncé</option>
+                <option value="bg-indigo-950">Indigo très foncé</option>
+                <option value="bg-indigo-900">Indigo foncé</option>
+                <option value="bg-purple-950">Violet très foncé</option>
+                <option value="bg-purple-900">Violet foncé</option>
+                <option value="bg-green-950">Vert très foncé</option>
+                <option value="bg-green-900">Vert foncé</option>
+              </select>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">

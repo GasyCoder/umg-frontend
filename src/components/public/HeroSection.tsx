@@ -20,6 +20,8 @@ export interface Slide {
   cta_url?: string | null;
   post?: { id: number; title: string; slug: string } | null;
   category?: { id: number; name: string; slug: string } | null;
+  bg_color_light?: string;
+  bg_color_dark?: string;
 }
 
 // Helper function to limit text to max words
@@ -28,6 +30,13 @@ function limitWords(text: string | null | undefined, maxWords: number): string {
   const words = text.split(/\s+/);
   if (words.length <= maxWords) return text;
   return words.slice(0, maxWords).join(" ") + "...";
+}
+
+// Helper function to parse bg color and build proper Tailwind classes
+function buildBgClasses(lightColor?: string, darkColor?: string): string {
+  const light = lightColor?.replace("bg-", "") || "blue-900";
+  const dark = darkColor?.replace("bg-", "") || "slate-800";
+  return `bg-${light} dark:bg-${dark}`;
 }
 
 interface HeroSectionProps {
@@ -47,14 +56,23 @@ export default function HeroSection({ slides }: HeroSectionProps) {
           cta_text: "Découvrir",
           cta_url: "/etablissements",
           category: { id: 0, name: "Université de Mahajanga", slug: "umg" },
+          bg_color_light: "bg-blue-900",
+          bg_color_dark: "bg-slate-800",
         }
       ];
     }
     return slides;
   }, [slides]);
 
+  // Get background colors from the first slide (all slides share the same background)
+  const bgClasses = buildBgClasses(
+    verifiedSlides[0]?.bg_color_light,
+    verifiedSlides[0]?.bg_color_dark
+  );
+
   return (
-    <section className="relative bg-blue-900 dark:bg-slate-800 overflow-hidden pb-16 pt-8 lg:pt-16 lg:pb-20">
+    <section className={`relative ${bgClasses} overflow-hidden pb-16 pt-8 lg:pt-16 lg:pb-20`}>
+      {/* Background Effects */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-10 relative z-10">
@@ -62,8 +80,12 @@ export default function HeroSection({ slides }: HeroSectionProps) {
           modules={[Autoplay, EffectFade, Pagination, Navigation]}
           effect="fade"
           fadeEffect={{ crossFade: true }}
-          speed={700}
-          autoplay={{ delay: 6000, disableOnInteraction: false }}
+          speed={1000}
+          autoplay={{
+            delay: 6000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true
+          }}
           loop={verifiedSlides.length > 1}
           className="w-full"
           navigation={{
@@ -81,7 +103,7 @@ export default function HeroSection({ slides }: HeroSectionProps) {
             <SwiperSlide key={slide.id}>
               <div className="grid lg:grid-cols-2 gap-12 items-center">
                 {/* Text Content */}
-                <div className="flex flex-col gap-8">
+                <div className="flex flex-col gap-6">
                   {(slide.category || slide.subtitle) && (
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-sm w-fit">
                       <span className="size-2 rounded-full bg-accent animate-pulse"></span>
@@ -96,8 +118,8 @@ export default function HeroSection({ slides }: HeroSectionProps) {
                   </h1>
 
                   {slide.description && (
-                    <p className="text-blue-100 text-lg md:text-xl font-light leading-relaxed max-w-lg">
-                      {limitWords(slide.description, 25)}
+                    <p className="text-blue-100 text-base md:text-lg font-light leading-relaxed max-w-lg">
+                      {limitWords(slide.description, 20)}
                     </p>
                   )}
 
