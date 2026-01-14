@@ -1,5 +1,6 @@
 import { getSiteSettings } from "@/lib/public-api";
 import type { Post, Etablissement, PresidentMessage as PresidentMessageType, Document } from "@/lib/types";
+import type { Slide } from "@/components/public/HeroSection";
 
 // New Components
 import HeroSection from "@/components/public/HeroSection";
@@ -8,6 +9,7 @@ import AboutSection from "@/components/public/AboutSection";
 import PresidentMessage from "@/components/public/PresidentMessage";
 import NewsSection from "@/components/public/NewsSection";
 import PartnersSection from "@/components/public/PartnersSection";
+import NewsletterSection from "@/components/public/NewsletterSection";
 
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
@@ -30,16 +32,16 @@ async function fetchData<T>(path: string): Promise<T | null> {
 
 export default async function HomePage() {
   // Parallel data fetching
-  const [postsData, slidePostsData, presidentData, statsData, documentsData] = await Promise.all([
+  const [postsData, slidesData, presidentData, statsData, documentsData] = await Promise.all([
     fetchData<{ data: Post[] }>("/posts?per_page=4"),
-    fetchData<{ data: Post[] }>("/posts?is_slide=1&per_page=5"),
+    fetchData<{ data: Slide[] }>("/slides"),
     fetchData<{ data: PresidentMessageType }>("/president-message"),
     fetchData<any>("/stats"),
     fetchData<{ data: Document[] }>("/documents?per_page=5"),
   ]);
 
   const posts = postsData?.data || [];
-  const slidePosts = slidePostsData?.data || [];
+  const slides = slidesData?.data || [];
   const president = presidentData?.data || null;
   const stats = statsData || { students: 12000, staff: 450, formations: 50 };
   const documents = documentsData?.data || [];
@@ -47,16 +49,16 @@ export default async function HomePage() {
   // Map stats to new structure
   const mappedStats = {
       students: stats.students || 12000,
-      teachers: stats.staff || 500, // API usually returns 'staff'
-      establishments: 6, 
-      graduates: 30000 
+      teachers: stats.teachers || 500,
+      staff: stats.staff || 200,
+      establishments: stats.establishments || 6,
   };
 
   return (
     <div className="bg-slate-50 dark:bg-[#101622] min-h-screen">
-      
+
       {/* Hero with Slider */}
-      <HeroSection slides={slidePosts} />
+      <HeroSection slides={slides} />
 
       {/* Stats with negative margin overlap */}
       <StatsSection stats={mappedStats} />
@@ -72,6 +74,9 @@ export default async function HomePage() {
 
       {/* Partners */}
       <PartnersSection />
+
+      {/* Newsletter & Candidature */}
+      <NewsletterSection />
 
     </div>
   );

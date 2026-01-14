@@ -13,6 +13,8 @@ import {
   X,
   CheckCircle,
   AlertCircle,
+  Link2,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -33,7 +35,7 @@ type Toast = {
 };
 
 export default function AdminSettingsPage() {
-  const [activeTab, setActiveTab] = useState<"general" | "seo" | "social" | "maintenance" | "stats">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "topbar" | "seo" | "social" | "maintenance" | "stats">("general");
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -159,7 +161,8 @@ export default function AdminSettingsPage() {
 
   const tabs = [
     { id: "general", label: "Général", icon: <Globe className="w-4 h-4" /> },
-    { id: "stats", label: "Chiffres Clés", icon: <Globe className="w-4 h-4" /> },
+    { id: "topbar", label: "Barre supérieure", icon: <Link2 className="w-4 h-4" /> },
+    { id: "stats", label: "Chiffres Clés", icon: <BarChart3 className="w-4 h-4" /> },
     { id: "seo", label: "SEO", icon: <Search className="w-4 h-4" /> },
     { id: "social", label: "Réseaux sociaux", icon: <Share2 className="w-4 h-4" /> },
     { id: "maintenance", label: "Maintenance", icon: <Shield className="w-4 h-4" /> },
@@ -383,45 +386,115 @@ export default function AdminSettingsPage() {
             </>
           )}
 
+          {activeTab === "topbar" && (
+            <Card>
+              <CardHeader>Liens de la barre supérieure</CardHeader>
+              <CardBody>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                  Configurez les liens affichés dans la barre supérieure du site public.
+                </p>
+                <div className="space-y-6">
+                  {/* Bibliothèque */}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-3">
+                    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Bibliothèque</h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Input
+                        label="Libellé"
+                        value={settings.topbar_library_label || ""}
+                        onChange={(e) => updateSetting("topbar_library_label", e.target.value)}
+                        placeholder="Bibliothèque"
+                      />
+                      <Input
+                        label="URL"
+                        value={settings.topbar_library_url || ""}
+                        onChange={(e) => updateSetting("topbar_library_url", e.target.value)}
+                        placeholder="https://bibliotheque.univ-mahajanga.mg"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Webmail */}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-3">
+                    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Webmail</h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Input
+                        label="Libellé"
+                        value={settings.topbar_webmail_label || ""}
+                        onChange={(e) => updateSetting("topbar_webmail_label", e.target.value)}
+                        placeholder="Webmail"
+                      />
+                      <Input
+                        label="URL"
+                        value={settings.topbar_webmail_url || ""}
+                        onChange={(e) => updateSetting("topbar_webmail_url", e.target.value)}
+                        placeholder="https://webmail.univ-mahajanga.mg"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Espace Numérique */}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-3">
+                    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Espace Numérique</h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Input
+                        label="Libellé"
+                        value={settings.topbar_digital_label || ""}
+                        onChange={(e) => updateSetting("topbar_digital_label", e.target.value)}
+                        placeholder="Espace Numérique"
+                      />
+                      <Input
+                        label="URL"
+                        value={settings.topbar_digital_url || ""}
+                        onChange={(e) => updateSetting("topbar_digital_url", e.target.value)}
+                        placeholder="https://espace.univ-mahajanga.mg"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardBody>
+              <CardFooter>
+                <Button onClick={handleSave} loading={saving} icon={<Save className="w-4 h-4" />}>
+                  Enregistrer
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+
           {activeTab === "stats" && (
             <Card>
               <CardHeader>Chiffres Clés</CardHeader>
               <CardBody>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                  Ces statistiques sont affichées sur la page d'accueil du site public.
+                </p>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Input
                     label="Étudiants"
                     type="number"
                     value={settings.stat_students || ""}
                     onChange={(e) => updateSetting("stat_students", e.target.value)}
-                    placeholder="15000"
+                    placeholder="12000"
                   />
                   <Input
-                    label="Personnels"
+                    label="Enseignants"
                     type="number"
-                    value={settings.stat_staff || ""}
-                    onChange={(e) => updateSetting("stat_staff", e.target.value)}
+                    value={settings.stat_teachers || ""}
+                    onChange={(e) => updateSetting("stat_teachers", e.target.value)}
                     placeholder="500"
                   />
                   <Input
-                    label="Formations"
+                    label="Personnels Administratifs"
                     type="number"
-                    value={settings.stat_formations || ""}
-                    onChange={(e) => updateSetting("stat_formations", e.target.value)}
-                    placeholder="50"
+                    value={settings.stat_staff || ""}
+                    onChange={(e) => updateSetting("stat_staff", e.target.value)}
+                    placeholder="200"
                   />
                   <Input
                     label="Établissements"
                     type="number"
                     value={settings.stat_establishments || ""}
                     onChange={(e) => updateSetting("stat_establishments", e.target.value)}
-                    placeholder="8"
-                  />
-                  <Input
-                    label="Services"
-                    type="number"
-                    value={settings.stat_services || ""}
-                    onChange={(e) => updateSetting("stat_services", e.target.value)}
-                    placeholder="30"
+                    placeholder="6"
                   />
                 </div>
               </CardBody>

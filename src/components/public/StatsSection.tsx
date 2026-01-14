@@ -1,68 +1,73 @@
 "use client";
 
-import { Users, School, Building, Award } from "lucide-react";
+import { Users, GraduationCap, UserCog, Building2 } from "lucide-react";
 
 interface StatsProps {
   stats?: {
     students: number;
     teachers: number;
+    staff: number;
     establishments: number;
-    graduates: number;
   };
 }
 
 export default function StatsSection({ stats }: StatsProps) {
+  const statsData = [
+    {
+      icon: Users,
+      value: stats?.students ? stats.students.toLocaleString('fr-FR') : "12 000",
+      label: "Étudiants",
+      color: "text-blue-600 dark:text-blue-400",
+      bg: "bg-blue-50 dark:bg-blue-900/30"
+    },
+    {
+      icon: GraduationCap,
+      value: stats?.teachers ? stats.teachers.toLocaleString('fr-FR') : "500",
+      label: "Enseignants",
+      color: "text-amber-600 dark:text-amber-400",
+      bg: "bg-amber-50 dark:bg-amber-900/30"
+    },
+    {
+      icon: UserCog,
+      value: stats?.staff ? stats.staff.toLocaleString('fr-FR') : "200",
+      label: "Personnels Administratifs",
+      color: "text-purple-600 dark:text-purple-400",
+      bg: "bg-purple-50 dark:bg-purple-900/30"
+    },
+    {
+      icon: Building2,
+      value: stats?.establishments?.toString() || "6",
+      label: "Établissements",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-50 dark:bg-emerald-900/30"
+    },
+  ];
+
   return (
-    <section className="py-12 -mt-8 relative z-20">
+    <section className="relative z-20 -mt-10 pb-4">
       <div className="max-w-7xl mx-auto px-4 md:px-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-soft dark:shadow-none border border-slate-100 dark:border-slate-700 flex items-start gap-4 hover:-translate-y-1 transition-transform duration-300">
-            <div className="size-12 rounded-lg bg-blue-50 dark:bg-slate-700 text-primary dark:text-primary-light flex items-center justify-center shrink-0">
-              <Users className="w-6 h-6 fill-current" />
-            </div>
-            <div>
-              <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                {stats?.students ? `${(stats.students / 1000).toFixed(0)}k+` : "12k+"}
-              </h3>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Étudiants inscrits</p>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-soft dark:shadow-none border border-slate-100 dark:border-slate-700 flex items-start gap-4 hover:-translate-y-1 transition-transform duration-300">
-            <div className="size-12 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-accent flex items-center justify-center shrink-0">
-              <School className="w-6 h-6 fill-current" />
-            </div>
-            <div>
-              <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                {stats?.teachers ? `${stats.teachers}+` : "500+"}
-              </h3>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Enseignants</p>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-soft dark:shadow-none border border-slate-100 dark:border-slate-700 flex items-start gap-4 hover:-translate-y-1 transition-transform duration-300">
-            <div className="size-12 rounded-lg bg-blue-50 dark:bg-slate-700 text-primary dark:text-primary-light flex items-center justify-center shrink-0">
-              <Building className="w-6 h-6 fill-current" />
-            </div>
-            <div>
-              <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                {stats?.establishments || "6"}
-              </h3>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Établissements</p>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-soft dark:shadow-none border border-slate-100 dark:border-slate-700 flex items-start gap-4 hover:-translate-y-1 transition-transform duration-300">
-            <div className="size-12 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-accent flex items-center justify-center shrink-0">
-              <Award className="w-6 h-6 fill-current" />
-            </div>
-            <div>
-              <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                {stats?.graduates ? `${(stats.graduates / 1000).toFixed(0)}k+` : "30k+"}
-              </h3>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Diplômés</p>
-            </div>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+          {statsData.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={index}
+                className="bg-white dark:bg-slate-800 rounded-xl px-4 py-3 shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 flex items-center gap-3"
+              >
+                <div className={`size-9 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-lg font-bold text-slate-900 dark:text-white leading-none">
+                    {stat.value}
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    {stat.label}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

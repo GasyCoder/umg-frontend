@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { Calendar, ArrowRight, FileText, Download, Mail, ArrowUpRight } from "lucide-react";
+import { Calendar, ArrowRight, FileText, Download } from "lucide-react";
 import type { Post, Document } from "@/lib/types";
-import { publicPost } from "@/lib/public-api";
 
 interface NewsSectionProps {
   posts: Post[];
@@ -21,34 +19,6 @@ export default function NewsSection({ posts, documents }: NewsSectionProps) {
       month: "short",
       year: "numeric"
     });
-  };
-
-  const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [newsletterMessage, setNewsletterMessage] = useState("");
-
-  const handleNewsletterSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!newsletterEmail) {
-      setNewsletterStatus("error");
-      setNewsletterMessage("Merci de renseigner votre adresse e-mail.");
-      return;
-    }
-
-    try {
-      setNewsletterStatus("loading");
-      setNewsletterMessage("");
-      const res = await publicPost<{ message: string }>("/newsletter/subscribe", { email: newsletterEmail });
-
-      setNewsletterStatus("success");
-      setNewsletterMessage(res.message || "Merci ! Vérifiez votre boîte mail pour confirmer votre inscription.");
-      setNewsletterEmail("");
-    } catch (error) {
-      console.error(error);
-      const message = error instanceof Error ? error.message : "Impossible d'envoyer votre inscription. Réessayez dans un instant.";
-      setNewsletterStatus("error");
-      setNewsletterMessage(message);
-    }
   };
 
   return (
@@ -73,7 +43,7 @@ export default function NewsSection({ posts, documents }: NewsSectionProps) {
           <div className="w-full lg:w-2/3 flex flex-col gap-6">
             {posts && posts.length > 0 ? (
                 posts.slice(0, 4).map((post) => (
-                    <article key={post.id} className="group flex flex-col md:flex-row gap-6 bg-white dark:bg-slate-900 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border border-slate-100 dark:border-slate-800">
+                    <article key={post.id} className="group relative flex flex-col md:flex-row gap-6 bg-white dark:bg-slate-900 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border border-slate-100 dark:border-slate-800">
                         <div className="w-full md:w-48 h-32 shrink-0 rounded-xl overflow-hidden relative bg-slate-100">
                             <Image
                                 src={post.cover_image?.url || "/images/placeholder.jpg"}
@@ -157,67 +127,6 @@ export default function NewsSection({ posts, documents }: NewsSectionProps) {
                 <Link href="/documents" className="mt-8 block w-full text-center py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-500 transition-colors">
                     Accéder à la bibliothèque
                 </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-16 grid gap-6 lg:grid-cols-2">
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 mb-3">
-              <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400 font-semibold">
-                Newsletter
-              </p>
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Recevez les infos essentielles de l'UMG</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Publications officielles, calendriers académiques et événements majeurs directement dans votre boîte mail.
-            </p>
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="email"
-                value={newsletterEmail}
-                onChange={(event) => setNewsletterEmail(event.target.value)}
-                placeholder="Votre e-mail"
-                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <button
-                type="submit"
-                disabled={newsletterStatus === "loading"}
-                className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition disabled:opacity-50 whitespace-nowrap"
-              >
-                {newsletterStatus === "loading" ? "Envoi..." : "Je m'abonne"}
-              </button>
-            </form>
-            {newsletterMessage && (
-              <p
-                className={`mt-2 text-xs ${newsletterStatus === "success" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
-              >
-                {newsletterMessage}
-              </p>
-            )}
-          </div>
-
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-            <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400 font-semibold mb-3">Candidature</p>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">S'inscrire à l'Université</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Explorez nos filières, rencontrez nos équipes pédagogiques et choisissez l'établissement qui vous correspond.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/universite"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 text-white px-4 py-2.5 text-sm font-semibold hover:bg-blue-700 transition"
-              >
-                S'inscrire
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </Link>
-              <Link
-                href="/etablissements"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-4 py-2.5 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-              >
-                Nos établissements
-              </Link>
             </div>
           </div>
         </div>

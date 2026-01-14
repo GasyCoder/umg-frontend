@@ -22,6 +22,7 @@ import {
   User,
   Briefcase,
   Handshake,
+  Presentation,
 } from "lucide-react";
 
 interface NavItem {
@@ -33,6 +34,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: <LayoutDashboard className="w-5 h-5" /> },
+  { label: "Slides", href: "/admin/slides", icon: <Presentation className="w-5 h-5" /> },
   { label: "Articles", href: "/admin/posts", icon: <FileText className="w-5 h-5" /> },
   { label: "Documents", href: "/admin/documents", icon: <FolderOpen className="w-5 h-5" /> },
   { label: "Établissements", href: "/admin/etablissements", icon: <Building2 className="w-5 h-5" /> },

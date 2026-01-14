@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function AboutSection() {
   return (
-    <section className="py-16 bg-white dark:bg-slate-900 transition-colors">
+    <section className="py-16 dark:bg-slate-900 transition-colors">
       <div className="max-w-7xl mx-auto px-4 md:px-10">
         <div className="flex flex-col lg:flex-row gap-16 items-center">
           {/* Content */}
@@ -69,8 +69,8 @@ export default function AboutSection() {
             </div>
             
             <div className="mt-8">
-              <a href="#" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-primary hover:bg-primary-light transition-colors shadow-lg shadow-blue-900/10">
-                En savoir plus sur l'université
+              <a href="/etablissements" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-primary hover:bg-primary-light transition-colors shadow-lg shadow-blue-900/10">
+                Voir tous nos établissements
               </a>
             </div>
           </div>

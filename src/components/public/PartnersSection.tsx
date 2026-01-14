@@ -1,137 +1,36 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Handshake, ExternalLink } from "lucide-react";
+import { Handshake, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Partner } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 
-function PartnerCard({ partner }: { partner: Partner }) {
-  const content = (
-    <div className="group relative flex items-center justify-center w-40 h-24 md:w-48 md:h-28 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1">
-      {partner.logo_url ? (
-        <Image
-          src={partner.logo_url}
-          alt={partner.name}
-          fill
-          className="object-contain p-4 filter grayscale group-hover:grayscale-0 transition-all duration-300"
-          unoptimized
-        />
-      ) : (
-        <span className="text-sm font-semibold text-gray-600 dark:text-gray-300 text-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-          {partner.name}
-        </span>
-      )}
-
-      {/* Hover overlay with name */}
-      <div className="absolute inset-0 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <div className="bg-gradient-to-t from-black/70 via-black/20 to-transparent absolute inset-0 rounded-xl" />
-        <div className="relative pb-2 flex items-center gap-1">
-          <span className="text-xs font-medium text-white truncate max-w-[140px]">
-            {partner.name}
-          </span>
-          {partner.website_url && (
-            <ExternalLink className="w-3 h-3 text-white/80" />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  if (partner.website_url) {
-    return (
-      <Link
-        href={partner.website_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block flex-shrink-0"
-      >
-        {content}
-      </Link>
-    );
-  }
-
-  return <div className="flex-shrink-0">{content}</div>;
-}
-
-function InfiniteCarousel({ partners, direction = "left" }: { partners: Partner[]; direction?: "left" | "right" }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const scrollContainer = scrollRef.current;
-    if (!scrollContainer || partners.length < 4) return;
-
-    let animationId: number;
-    let scrollPos = direction === "left" ? 0 : scrollContainer.scrollWidth / 2;
-    const speed = 0.5;
-
-    const animate = () => {
-      if (!scrollContainer) return;
-
-      if (direction === "left") {
-        scrollPos += speed;
-        if (scrollPos >= scrollContainer.scrollWidth / 2) {
-          scrollPos = 0;
-        }
-      } else {
-        scrollPos -= speed;
-        if (scrollPos <= 0) {
-          scrollPos = scrollContainer.scrollWidth / 2;
-        }
-      }
-
-      scrollContainer.scrollLeft = scrollPos;
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animationId = requestAnimationFrame(animate);
-
-    const handleMouseEnter = () => cancelAnimationFrame(animationId);
-    const handleMouseLeave = () => {
-      animationId = requestAnimationFrame(animate);
-    };
-
-    scrollContainer.addEventListener("mouseenter", handleMouseEnter);
-    scrollContainer.addEventListener("mouseleave", handleMouseLeave);
-
-    return () => {
-      cancelAnimationFrame(animationId);
-      scrollContainer.removeEventListener("mouseenter", handleMouseEnter);
-      scrollContainer.removeEventListener("mouseleave", handleMouseLeave);
-    };
-  }, [partners.length, direction]);
-
-  // Duplicate partners for seamless loop
-  const displayPartners = partners.length >= 4 ? [...partners, ...partners] : partners;
-
-  return (
-    <div
-      ref={scrollRef}
-      className="flex gap-6 overflow-x-hidden py-4 scrollbar-hide"
-      style={{ scrollBehavior: "auto" }}
-    >
-      {displayPartners.map((partner, index) => (
-        <PartnerCard key={`${partner.id}-${index}`} partner={partner} />
-      ))}
-    </div>
-  );
-}
-
-function PartnerGrid({ partners }: { partners: Partner[] }) {
-  return (
-    <div className="flex flex-wrap justify-center gap-6 py-4">
-      {partners.map((partner) => (
-        <PartnerCard key={partner.id} partner={partner} />
-      ))}
-    </div>
-  );
-}
-
 export default function PartnersSection() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [itemsPerView, setItemsPerView] = useState(5);
+
+  useEffect(() => {
+    const updateItemsPerView = () => {
+      if (window.innerWidth < 640) {
+        setItemsPerView(2);
+      } else if (window.innerWidth < 768) {
+        setItemsPerView(3);
+      } else if (window.innerWidth < 1024) {
+        setItemsPerView(4);
+      } else {
+        setItemsPerView(5);
+      }
+    };
+
+    updateItemsPerView();
+    window.addEventListener("resize", updateItemsPerView);
+    return () => window.removeEventListener("resize", updateItemsPerView);
+  }, []);
 
   useEffect(() => {
     const fetchPartners = async () => {
@@ -154,20 +53,40 @@ export default function PartnersSection() {
     fetchPartners();
   }, []);
 
+  const maxIndex = Math.max(0, partners.length - itemsPerView);
+
+  const goToPrevious = useCallback(() => {
+    setCurrentIndex((prev) => Math.max(0, prev - 1));
+  }, []);
+
+  const goToNext = useCallback(() => {
+    setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
+  }, [maxIndex]);
+
+  const goToSlide = useCallback((index: number) => {
+    setCurrentIndex(Math.min(index, maxIndex));
+  }, [maxIndex]);
+
+  useEffect(() => {
+    if (partners.length <= itemsPerView) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => {
+        if (prev >= maxIndex) return 0;
+        return prev + 1;
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [partners.length, itemsPerView, maxIndex]);
+
   if (loading) {
     return (
-      <section className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="text-center mb-12">
-            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-4 animate-pulse" />
-            <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 rounded mx-auto animate-pulse" />
-          </div>
-          <div className="flex flex-wrap justify-center gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="w-40 h-24 md:w-48 md:h-28 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse"
-              />
+      <section className="py-16 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 md:px-10">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-32 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
             ))}
           </div>
         </div>
@@ -179,112 +98,180 @@ export default function PartnersSection() {
     return null;
   }
 
-  const nationalPartners = partners.filter((p) => p.type === "national");
-  const internationalPartners = partners.filter((p) => p.type === "international");
-  const hasMultipleTypes = nationalPartners.length > 0 && internationalPartners.length > 0;
+  const totalPages = Math.ceil(partners.length / itemsPerView);
+  const currentPage = Math.floor(currentIndex / itemsPerView);
+  const translateX = currentIndex * (100 / itemsPerView);
+  const itemWidth = 100 / itemsPerView;
 
   return (
-    <section className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 md:px-8">
+    <section id="partenaires" className="py-16 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+      <div className="max-w-7xl mx-auto px-4 md:px-10">
         {/* Header */}
-        <div className="text-center mb-12 md:mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 rounded-full mb-4">
-            <Handshake className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-              Nos Partenaires
-            </span>
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Handshake className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                Nos Relations
+              </span>
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">
+              Ils nous font confiance
+            </h2>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Ils nous font confiance
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Nous collaborons avec des institutions de renommée nationale et internationale
-            pour offrir une formation d&apos;excellence.
-          </p>
+
+          {partners.length > itemsPerView && (
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={goToPrevious}
+                disabled={currentIndex === 0}
+                className="p-2 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                aria-label="Précédent"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={goToNext}
+                disabled={currentIndex >= maxIndex}
+                className="p-2 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                aria-label="Suivant"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Partners Display */}
-        {hasMultipleTypes ? (
-          <div className="space-y-12">
-            {/* International Partners */}
-            {internationalPartners.length > 0 && (
-              <div>
-                <div className="flex items-center justify-center gap-3 mb-6">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" />
-                  <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4">
-                    Partenaires Internationaux
-                  </span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" />
-                </div>
-                {internationalPartners.length >= 4 ? (
-                  <InfiniteCarousel partners={internationalPartners} direction="left" />
-                ) : (
-                  <PartnerGrid partners={internationalPartners} />
-                )}
-              </div>
-            )}
+        {/* Carousel */}
+        <div className="relative">
+          {partners.length > itemsPerView && (
+            <>
+              <button
+                type="button"
+                onClick={goToPrevious}
+                disabled={currentIndex === 0}
+                className="sm:hidden absolute -left-2 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                aria-label="Précédent"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={goToNext}
+                disabled={currentIndex >= maxIndex}
+                className="sm:hidden absolute -right-2 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                aria-label="Suivant"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </>
+          )}
 
-            {/* National Partners */}
-            {nationalPartners.length > 0 && (
-              <div>
-                <div className="flex items-center justify-center gap-3 mb-6">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" />
-                  <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4">
-                    Partenaires Nationaux
-                  </span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" />
+          <div className="overflow-hidden">
+            <div
+              className="flex transition-transform duration-500 ease-out"
+              style={{ transform: `translateX(-${translateX}%)` }}
+            >
+              {partners.map((partner) => (
+                <div
+                  key={partner.id}
+                  className="flex-shrink-0 px-2"
+                  style={{ width: `${itemWidth}%` }}
+                >
+                  <PartnerCard partner={partner} />
                 </div>
-                {nationalPartners.length >= 4 ? (
-                  <InfiniteCarousel partners={nationalPartners} direction="right" />
-                ) : (
-                  <PartnerGrid partners={nationalPartners} />
-                )}
-              </div>
-            )}
+              ))}
+            </div>
           </div>
-        ) : (
-          /* All Partners Together */
-          partners.length >= 4 ? (
-            <InfiniteCarousel partners={partners} direction="left" />
-          ) : (
-            <PartnerGrid partners={partners} />
-          )
+        </div>
+
+        {/* Indicators */}
+        {partners.length > itemsPerView && (
+          <div className="flex items-center justify-center gap-2 mt-8">
+            {Array.from({ length: Math.min(totalPages, 8) }).map((_, index) => (
+              <button
+                type="button"
+                key={index}
+                onClick={() => goToSlide(index * itemsPerView)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  currentPage === index
+                    ? "w-6 bg-blue-600 dark:bg-blue-500"
+                    : "w-2 bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500"
+                }`}
+                aria-label={`Page ${index + 1}`}
+              />
+            ))}
+          </div>
         )}
 
-        {/* Stats or CTA */}
-        <div className="mt-12 md:mt-16 pt-8 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16">
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400">
-                {partners.length}+
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Partenaires actifs
-              </div>
-            </div>
-            {internationalPartners.length > 0 && (
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-green-600 dark:text-green-400">
-                  {internationalPartners.length}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Internationaux
-                </div>
-              </div>
-            )}
-            {nationalPartners.length > 0 && (
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-amber-600 dark:text-amber-400">
-                  {nationalPartners.length}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Nationaux
-                </div>
-              </div>
-            )}
-          </div>
+        {/* View All */}
+        <div className="text-center mt-8">
+          <Link
+            href="/partenaires"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+          >
+            Voir tous nos partenaires
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>
   );
+}
+
+function PartnerCard({ partner }: { partner: Partner }) {
+  const content = (
+    <div className="group flex flex-col items-center text-center p-4 rounded-xl from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
+      {/* Logo Container */}
+      <div className="relative w-full h-16 mb-3 flex items-center justify-center">
+        {partner.logo_url ? (
+          <Image
+            src={partner.logo_url}
+            alt={partner.name}
+            fill
+            className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+            unoptimized
+          />
+        ) : (
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/20 flex items-center justify-center">
+            <Handshake className="w-6 h-6 text-blue-500 dark:text-blue-400" />
+          </div>
+        )}
+      </div>
+
+      {/* Partner Name */}
+      <h3 className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-tight">
+        {partner.name}
+      </h3>
+
+      {/* Type Badge */}
+      {partner.type && (
+        <span className={`mt-2 text-[10px] font-medium px-2 py-0.5 rounded-full ${
+          partner.type === 'international'
+            ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+            : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+        }`}>
+          {partner.type === 'international' ? 'International' : 'National'}
+        </span>
+      )}
+    </div>
+  );
+
+  if (partner.website_url) {
+    return (
+      <Link
+        href={partner.website_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={`Visiter ${partner.name}`}
+        className="block h-full"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div title={partner.name} className="h-full">{content}</div>;
 }

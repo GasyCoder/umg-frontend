@@ -32,7 +32,9 @@ export default function EditPartnerPage() {
           credentials: "include",
         });
         if (res.ok) {
-          const data = await res.json();
+          const json = await res.json();
+          // Handle both { data: partner } and direct partner response
+          const data = json.data || json;
           setPartner(data);
           setFormData({
             name: data.name || "",
@@ -41,8 +43,10 @@ export default function EditPartnerPage() {
             type: data.type || "national",
             is_active: data.is_active ?? true,
           });
-          if (data.logo_url) {
-            setLogoPreview(data.logo_url);
+          // Handle logo_url from logo relation or direct field
+          const logoUrl = data.logo_url || data.logo?.url;
+          if (logoUrl) {
+            setLogoPreview(logoUrl);
           }
         }
       } catch (error) {

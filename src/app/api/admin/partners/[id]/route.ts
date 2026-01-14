@@ -55,12 +55,23 @@ export async function PUT(
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
       body: formData,
     });
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
+    const text = await res.text();
+
+    try {
+      const data = JSON.parse(text);
+      return NextResponse.json(data, { status: res.status });
+    } catch {
+      console.error("Backend returned non-JSON:", text.substring(0, 500));
+      return NextResponse.json(
+        { error: "Backend error", details: text.substring(0, 200) },
+        { status: res.status }
+      );
+    }
   } catch (error) {
     console.error("Error updating partner:", error);
     return NextResponse.json(
