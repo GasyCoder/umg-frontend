@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Search, Upload, Check, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Search, Upload, Check, Image as ImageIcon, Loader2, Video, FileText } from "lucide-react";
 import { clsx } from "clsx";
 
 export interface Media {
@@ -22,6 +22,9 @@ interface MediaPickerModalProps {
   onClose: () => void;
   onSelect: (media: Media[]) => void;
   multiple?: boolean;
+  filterType?: "image" | "video" | "application";
+  accept?: string;
+  uploadHint?: string;
 }
 
 export function MediaPickerModal({
@@ -29,6 +32,9 @@ export function MediaPickerModal({
   onClose,
   onSelect,
   multiple = false,
+  filterType,
+  accept,
+  uploadHint,
 }: MediaPickerModalProps) {
   const [activeTab, setActiveTab] = useState<"library" | "upload">("library");
   const [loading, setLoading] = useState(false);
@@ -47,7 +53,8 @@ export function MediaPickerModal({
   const fetchMedias = useCallback(async (p = 1, q = "") => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/media?page=${p}&q=${q}&per_page=18`);
+      const typeParam = filterType ? `&type=${filterType}` : "";
+      const res = await fetch(`/api/admin/media?page=${p}&q=${q}&per_page=18${typeParam}`);
       const data = await res.json();
       setMedias(data.data || []);
       setTotalPages(data.meta?.last_page || 1);
@@ -88,6 +95,14 @@ export function MediaPickerModal({
     e.preventDefault();
     if (!uploadFiles || uploadFiles.length === 0) return;
 
+    if (accept === "video/mp4") {
+      const invalidFile = Array.from(uploadFiles).find((file) => file.type !== "video/mp4");
+      if (invalidFile) {
+        alert("Veuillez sélectionner uniquement des vidéos MP4.");
+        return;
+      }
+    }
+
     setUploading(true);
     
     try {
@@ -99,7 +114,10 @@ export function MediaPickerModal({
               method: "POST",
               body: formData,
           });
-          if (!res.ok) throw new Error(`Failed to upload ${file.name}`);
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(errorText || `Failed to upload ${file.name}`);
+          }
           return res.json();
       });
 
@@ -110,7 +128,7 @@ export function MediaPickerModal({
       fetchMedias(1, ""); // Refresh library
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de l'upload. Vérifiez les fichiers.");
+      alert("Erreur lors de l'upload. Vérifiez la taille/format du fichier.");
     } finally {
       setUploading(false);
     }
@@ -191,7 +209,11 @@ export function MediaPickerModal({
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {medias.map((media) => (
+                  {medias.map((media) => {
+                    const isImage = media.mime?.startsWith("image/");
+                    const isVideo = media.mime?.startsWith("video/");
+                    const isPdf = media.mime === "application/pdf";
+                    return (
                     <div
                       key={media.id}
                       onClick={() => handleSelect(media)}
@@ -202,13 +224,21 @@ export function MediaPickerModal({
                           : "border-slate-200 dark:border-slate-700 hover:border-indigo-300"
                       )}
                     >
-                      {/* Using img tag for simplicity within backend provided URLs, optionally use Next Image if domains configured */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={media.url}
-                        alt={media.alt || "Media"}
-                        className="w-full h-full object-cover"
-                      />
+                      {isImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={media.url}
+                          alt={media.alt || "Media"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center gap-2 text-slate-500 dark:text-slate-300">
+                          {isVideo ? <Video className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
+                          <span className="text-[10px] font-semibold uppercase tracking-wider">
+                            {isVideo ? "Video" : isPdf ? "PDF" : "Fichier"}
+                          </span>
+                        </div>
+                      )}
                       
                       {selectedIds.includes(media.id) && (
                         <div className="absolute inset-0 bg-indigo-900/40 flex items-center justify-center">
@@ -216,7 +246,8 @@ export function MediaPickerModal({
                         </div>
                       )}
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               )}
             </div>
@@ -261,7 +292,7 @@ export function MediaPickerModal({
                 Sélectionnez un fichier
               </h3>
               <p className="text-sm text-slate-500 mb-6">
-                JPG, PNG, GIF, PDF jusqu'à 10MB
+                {uploadHint || "JPG, PNG, GIF, MP4, PDF jusqu'à 10MB"}
               </p>
               
               <input
@@ -270,7 +301,7 @@ export function MediaPickerModal({
                 className="hidden"
                 multiple
                 onChange={(e) => setUploadFiles(e.target.files)}
-                accept="image/*,application/pdf"
+                accept={accept || "image/*,application/pdf,video/*"}
               />
               
               {!uploadFiles ? (

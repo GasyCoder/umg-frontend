@@ -1,9 +1,16 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { Lightbulb, Users, Globe, Award, Play } from "lucide-react";
-import Image from "next/image";
 
-export default function AboutSection() {
+type AboutSectionProps = {
+  videoUrl?: string | null;
+  videoPosterUrl?: string | null;
+};
+
+export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   return (
     <section className="py-16 dark:bg-slate-900 transition-colors">
       <div className="max-w-7xl mx-auto px-4 md:px-10">
@@ -78,26 +85,30 @@ export default function AboutSection() {
           {/* Video / Image */}
           <div className="w-full lg:w-1/2 relative">
             <div className="absolute -right-4 -bottom-4 w-2/3 h-2/3 bg-slate-100 dark:bg-slate-800 rounded-2xl -z-10"></div>
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-slate-900 aspect-video group cursor-pointer">
-              <div 
-                className="absolute inset-0 bg-cover bg-center opacity-80 transition-opacity group-hover:opacity-60" 
-                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDcpjwCYNIEJfBuhZ1IHDeBOHrR4PVVxEDu_xqJVpLCisZNz5JjtFVICSnSujXPhiUJ6EVumFAE4I6jfhzazjnR_Y-9PzjLWcjF7e9_f1ysmQAhRjSqVM__i9m03z70PIfh5xJIQ33pbumIqE17sm3vvjaPw1MdxHC9RwwmI4kLvditZqu5mzrpUfvVcGIeQyTyEe830Ao7OuMZNARkWqb1B6mupfZnwtC5oTZm9gqGYvA_Ehq64Yka-Pqvguf1SK3cRwqaamk4xPo")' }}
-              ></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="size-16 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center transition-transform group-hover:scale-110">
-                  <div className="size-12 rounded-full bg-white text-primary flex items-center justify-center shadow-lg pl-1">
-                    <Play className="w-6 h-6 fill-current" />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-white/50 dark:border-white/10">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-xs font-bold text-primary dark:text-blue-400 uppercase mb-1">Présentation UMG</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">Découvrir le campus en vidéo</p>
-                  </div>
-                  <span className="text-xs text-slate-500 dark:text-slate-300 font-mono">02:45</span>
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-slate-900 aspect-video">
+              <video
+                ref={videoRef}
+                className="h-full w-full object-cover"
+                controls
+                preload="metadata"
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onEnded={() => setIsPlaying(false)}
+                poster={
+                  videoPosterUrl ||
+                  "https://lh3.googleusercontent.com/aida-public/AB6AXuDcpjwCYNIEJfBuhZ1IHDeBOHrR4PVVxEDu_xqJVpLCisZNz5JjtFVICSnSujXPhiUJ6EVumFAE4I6jfhzazjnR_Y-9PzjLWcjF7e9_f1ysmQAhRjSqVM__i9m03z70PIfh5xJIQ33pbumIqE17sm3vvjaPw1MdxHC9RwwmI4kLvditZqu5mzrpUfvVcGIeQyTyEe830Ao7OuMZNARkWqb1B6mupfZnwtC5oTZm9gqGYvA_Ehq64Yka-Pqvguf1SK3cRwqaamk4xPo"
+                }
+              >
+                <source src={videoUrl || "/videos/umg-about.mp4"} type="video/mp4" />
+                Votre navigateur ne supporte pas la lecture vidéo.
+              </video>
+              <div
+                className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+                  isPlaying ? "opacity-0" : "opacity-100"
+                }`}
+              >
+                <div className="size-14 rounded-full bg-white/85 text-primary shadow-lg flex items-center justify-center transition-transform duration-300">
+                  <Play className="w-6 h-6 fill-current" />
                 </div>
               </div>
             </div>

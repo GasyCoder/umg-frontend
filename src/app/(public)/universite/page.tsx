@@ -2,6 +2,7 @@ import Container from "@/components/Container";
 import Link from "next/link";
 import { Building2, FileText, Landmark, ArrowRight } from "lucide-react";
 import { AnimatedCounter } from "@/components/public";
+import { publicGet } from "@/lib/public-api";
 
 export const metadata = {
   title: "Université - Université de Mahajanga",
@@ -32,42 +33,54 @@ const sections = [
   },
 ];
 
-export default function UniversitePage() {
+export default async function UniversitePage() {
+  const stats = await publicGet<{
+    students: number;
+    teachers: number;
+    staff: number;
+    establishments: number;
+  }>("/stats", 300).catch(() => null);
+
+  const mappedStats = {
+    students: stats?.students ?? 10000,
+    teachers: stats?.teachers ?? 500,
+    staff: stats?.staff ?? 200,
+    establishments: stats?.establishments ?? 5,
+  };
+
   return (
     <main className="bg-white dark:bg-slate-950">
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-700 text-white">
-        <Container>
-          <div className="py-20 md:py-28">
-            <div className="max-w-3xl">
-              <p className="text-sm uppercase tracking-[0.3em] text-indigo-200">Université</p>
-              <h1 className="mt-4 text-4xl md:text-6xl font-bold tracking-tight">
-                Une institution académique de référence à Madagascar
-              </h1>
-              <p className="mt-6 text-lg text-indigo-100">
-                L'Université de Mahajanga conjugue excellence académique, recherche et impact sociétal
-                pour former les leaders de demain.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Link
-                  href="/universite/historique"
-                  className="rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg hover:bg-amber-300"
-                >
-                  Découvrir notre histoire
-                </Link>
-                <Link
-                  href="/etablissements"
-                  className="rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10"
-                >
-                  Voir les établissements
-                </Link>
-              </div>
+      <section className="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-white">
+        <Container className="max-w-[1280px] px-5 md:px-10">
+          <div className="py-10 md:py-12">
+            <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">Université</p>
+            <h1 className="mt-4 text-xl md:text-3xl font-bold tracking-tight">
+              Une institution académique de référence à Madagascar
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+              L&apos;Université de Mahajanga conjugue excellence académique, recherche et impact sociétal
+              pour former les leaders de demain.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/universite/historique"
+                className="rounded-full bg-amber-400 px-6 py-2.5 text-sm font-semibold text-slate-900 shadow-lg hover:bg-amber-300"
+              >
+                Découvrir notre histoire
+              </Link>
+              <Link
+                href="/etablissements"
+                className="rounded-full border border-slate-300 px-6 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                Voir les établissements
+              </Link>
             </div>
           </div>
         </Container>
       </section>
 
       <section className="py-16">
-        <Container>
+        <Container className="max-w-[1280px] px-5 md:px-10">
           <div className="grid gap-6 md:grid-cols-3">
             {sections.map((section) => (
               <Link
@@ -110,7 +123,7 @@ export default function UniversitePage() {
       </section>
 
       <section className="bg-slate-50 py-16 dark:bg-slate-900">
-        <Container>
+        <Container className="max-w-[1280px] px-5 md:px-10">
           <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Impact</p>
@@ -123,10 +136,10 @@ export default function UniversitePage() {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-6">
-              <AnimatedCounter value={5} suffix="+" label="Établissements" />
-              <AnimatedCounter value={10000} suffix="+" label="Étudiants" />
-              <AnimatedCounter value={500} suffix="+" label="Enseignants" />
-              <AnimatedCounter value={50} suffix="+" label="Filières" />
+              <AnimatedCounter value={mappedStats.establishments} suffix="+" label="Établissements" />
+              <AnimatedCounter value={mappedStats.students} suffix="+" label="Étudiants" />
+              <AnimatedCounter value={mappedStats.teachers} suffix="+" label="Enseignants" />
+              <AnimatedCounter value={mappedStats.staff} suffix="+" label="Personnels" />
             </div>
           </div>
         </Container>

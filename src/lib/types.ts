@@ -163,6 +163,8 @@ export interface SiteSettings {
   site_address: string;
   logo_url?: string | null;
   favicon_url?: string | null;
+  about_video_url?: string | null;
+  about_video_poster_url?: string | null;
   social: {
     facebook?: string;
     twitter?: string;

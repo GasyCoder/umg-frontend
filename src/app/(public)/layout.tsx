@@ -1,6 +1,7 @@
 import { Nunito } from "next/font/google";
 import { getSiteSettings } from "@/lib/public-api";
 import PublicHeader from "@/components/public/PublicHeader";
+import ScrollToTop from "@/components/public/ScrollToTop";
 import SiteFooter from "@/components/SiteFooter";
 import type { Metadata } from "next";
 
@@ -50,6 +51,7 @@ export default async function PublicLayout({ children }: { children: React.React
        <main className="flex-1 w-full flex flex-col">
          {children}
        </main>
+       <ScrollToTop />
        <SiteFooter settings={settings} />
     </div>
   );

@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/Card";
 import { SkeletonFormPage } from "@/components/ui/Skeleton";
+import { MediaPickerModal } from "@/components/admin/media/MediaPickerModal";
 
 type SettingItem = {
   key: string;
@@ -47,6 +48,10 @@ export default function AdminSettingsPage() {
   const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [aboutVideoUrl, setAboutVideoUrl] = useState<string | null>(null);
+  const [aboutVideoPosterUrl, setAboutVideoPosterUrl] = useState<string | null>(null);
+  const [videoPickerOpen, setVideoPickerOpen] = useState(false);
+  const [posterPickerOpen, setPosterPickerOpen] = useState(false);
 
   const showToast = useCallback((type: "success" | "error", message: string) => {
     const id = Date.now();
@@ -80,6 +85,20 @@ export default function AdminSettingsPage() {
           if (faviconRes.ok) {
             const faviconData = await faviconRes.json();
             setFaviconUrl(faviconData.data?.url || null);
+          }
+        }
+        if (map.about_video_id) {
+          const videoRes = await fetch(`/api/admin/media/${map.about_video_id}`);
+          if (videoRes.ok) {
+            const videoData = await videoRes.json();
+            setAboutVideoUrl(videoData.data?.url || null);
+          }
+        }
+        if (map.about_video_poster_id) {
+          const posterRes = await fetch(`/api/admin/media/${map.about_video_poster_id}`);
+          if (posterRes.ok) {
+            const posterData = await posterRes.json();
+            setAboutVideoPosterUrl(posterData.data?.url || null);
           }
         }
       } catch (error) {
@@ -158,6 +177,30 @@ export default function AdminSettingsPage() {
     if (type === "logo") setLogoUrl(null);
     else setFaviconUrl(null);
     showToast("success", `${type === "logo" ? "Logo" : "Favicon"} supprimé`);
+  };
+
+  const handleVideoSelect = (mediaId: number, mediaUrl: string) => {
+    updateSetting("about_video_id", String(mediaId));
+    setAboutVideoUrl(mediaUrl);
+    showToast("success", "Vidéo mise à jour");
+  };
+
+  const handlePosterSelect = (mediaId: number, mediaUrl: string) => {
+    updateSetting("about_video_poster_id", String(mediaId));
+    setAboutVideoPosterUrl(mediaUrl);
+    showToast("success", "Image de couverture mise à jour");
+  };
+
+  const removeVideo = () => {
+    updateSetting("about_video_id", "");
+    setAboutVideoUrl(null);
+    showToast("success", "Vidéo supprimée");
+  };
+
+  const removePoster = () => {
+    updateSetting("about_video_poster_id", "");
+    setAboutVideoPosterUrl(null);
+    showToast("success", "Image de couverture supprimée");
   };
 
   const tabs = [
@@ -376,6 +419,66 @@ export default function AdminSettingsPage() {
                         className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         rows={2}
                       />
+                    </div>
+                    <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">Vidéo “À propos”</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Sélectionnez une vidéo pour la section d&apos;accueil.
+                          </p>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => setVideoPickerOpen(true)}>
+                          Parcourir
+                        </Button>
+                      </div>
+                      {aboutVideoUrl ? (
+                        <div className="flex flex-col gap-3">
+                          <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                            <video className="w-full" controls preload="metadata">
+                              <source src={aboutVideoUrl} />
+                            </video>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button size="sm" variant="ghost" onClick={removeVideo}>
+                              Retirer la vidéo
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Aucune vidéo sélectionnée.</p>
+                      )}
+                    </div>
+                    <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">Image de couverture vidéo</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Image affichée avant la lecture de la vidéo.
+                          </p>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => setPosterPickerOpen(true)}>
+                          Parcourir
+                        </Button>
+                      </div>
+                      {aboutVideoPosterUrl ? (
+                        <div className="flex flex-col gap-3">
+                          <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                            <img
+                              src={aboutVideoPosterUrl}
+                              alt="Couverture vidéo"
+                              className="w-full object-cover"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button size="sm" variant="ghost" onClick={removePoster}>
+                              Retirer l&apos;image
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Aucune image sélectionnée.</p>
+                      )}
                     </div>
                   </div>
                 </CardBody>
@@ -689,6 +792,33 @@ export default function AdminSettingsPage() {
           )}
         </div>
       </div>
+
+      <MediaPickerModal
+        isOpen={videoPickerOpen}
+        onClose={() => setVideoPickerOpen(false)}
+        onSelect={(medias) => {
+          const media = medias[0];
+          if (media) {
+            handleVideoSelect(media.id, media.url);
+          }
+        }}
+        filterType="video"
+        accept="video/mp4"
+        uploadHint="MP4 uniquement - max 50MB"
+      />
+      <MediaPickerModal
+        isOpen={posterPickerOpen}
+        onClose={() => setPosterPickerOpen(false)}
+        onSelect={(medias) => {
+          const media = medias[0];
+          if (media) {
+            handlePosterSelect(media.id, media.url);
+          }
+        }}
+        filterType="image"
+        accept="image/*"
+        uploadHint="JPG, PNG jusqu'à 10MB"
+      />
     </div>
   );
 }

@@ -33,12 +33,13 @@ async function fetchData<T>(path: string): Promise<T | null> {
 
 export default async function HomePage() {
   // Parallel data fetching
-  const [postsData, slidesData, presidentData, statsData, documentsData] = await Promise.all([
+  const [postsData, slidesData, presidentData, statsData, documentsData, settings] = await Promise.all([
     fetchData<{ data: Post[] }>("/posts?per_page=7"),
     fetchData<{ data: Slide[] }>("/slides"),
     fetchData<{ data: PresidentMessageType }>("/president-message"),
     fetchData<any>("/stats"),
     fetchData<{ data: Document[] }>("/documents?per_page=6"),
+    getSiteSettings().catch(() => null),
   ]);
 
   const posts = postsData?.data || [];
@@ -65,7 +66,10 @@ export default async function HomePage() {
       <StatsSection stats={mappedStats} />
 
       {/* About Section (Innovation, etc.) */}
-      <AboutSection />
+      <AboutSection
+        videoUrl={settings?.about_video_url}
+        videoPosterUrl={settings?.about_video_poster_url}
+      />
 
       {/* President's Word */}
       <PresidentMessage data={president} />
