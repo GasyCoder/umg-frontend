@@ -28,6 +28,10 @@ interface TopbarLinks {
   digital: { label: string; url: string };
 }
 
+interface HeaderSettings {
+  cta: { text: string; url: string };
+}
+
 interface PublicHeaderProps {
   settings?: SiteSettings | null;
 }
@@ -51,8 +55,11 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
     webmail: { label: "Webmail", url: "#" },
     digital: { label: "Espace Numérique", url: "#" },
   });
+  const [headerSettings, setHeaderSettings] = useState<HeaderSettings>({
+    cta: { text: "Candidater/Résultats/Inscription", url: "#" },
+  });
 
-  // Fetch topbar links
+  // Fetch topbar links and header settings
   useEffect(() => {
     const fetchTopbar = async () => {
       try {
@@ -68,7 +75,24 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
         console.error("Error fetching topbar:", error);
       }
     };
+
+    const fetchHeader = async () => {
+      try {
+        const res = await fetch(`${API_URL}/header`, {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setHeaderSettings(data);
+        }
+      } catch (error) {
+        console.error("Error fetching header:", error);
+      }
+    };
+
     fetchTopbar();
+    fetchHeader();
   }, []);
 
   // Écouter les changements de hash dans l'URL
@@ -216,7 +240,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
         <div className="max-w-7xl mx-auto px-4 md:px-10 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="size-10 bg-primary rounded-lg text-white flex items-center justify-center shadow-lg shadow-blue-900/20 group-hover:bg-primary-light transition-colors">
+              <div className="size-10 flex items-center justify-center">
                 {settings?.logo_url ? (
                   <img src={settings.logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
                 ) : (
@@ -298,8 +322,8 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
             <button type="button" className="size-9 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors">
               <Search className="w-5 h-5" />
             </button>
-            <Link href="/candidater" className="hidden md:flex bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-amber-500/20 items-center gap-2 hover:-translate-y-0.5">
-              Candidater
+            <Link href={headerSettings.cta.url} className="hidden md:flex bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-amber-500/20 items-center gap-2 hover:-translate-y-0.5">
+              {headerSettings.cta.text}
             </Link>
             <button
               type="button"
@@ -376,11 +400,11 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
               })}
               <div className="h-px bg-slate-100 dark:bg-slate-800 my-2" />
               <Link
-                href="/candidater"
+                href={headerSettings.cta.url}
                 className="text-center bg-accent hover:bg-amber-600 text-white px-5 py-3 rounded-lg text-sm font-bold transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Candidater
+                {headerSettings.cta.text}
               </Link>
             </nav>
           </div>
