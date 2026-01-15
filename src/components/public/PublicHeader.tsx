@@ -322,9 +322,11 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
             <button type="button" className="size-9 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors">
               <Search className="w-5 h-5" />
             </button>
-            <Link href={headerSettings.cta.url} className="hidden md:flex bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-amber-500/20 items-center gap-2 hover:-translate-y-0.5">
-              {headerSettings.cta.text}
-            </Link>
+            {headerSettings.cta.text && (
+              <Link href={headerSettings.cta.url} className="hidden md:flex bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-amber-500/20 items-center gap-2 hover:-translate-y-0.5">
+                {headerSettings.cta.text}
+              </Link>
+            )}
             <button
               type="button"
               className="lg:hidden text-slate-800 dark:text-white p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
@@ -398,14 +400,18 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                   </div>
                 );
               })}
-              <div className="h-px bg-slate-100 dark:bg-slate-800 my-2" />
-              <Link
-                href={headerSettings.cta.url}
-                className="text-center bg-accent hover:bg-amber-600 text-white px-5 py-3 rounded-lg text-sm font-bold transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {headerSettings.cta.text}
-              </Link>
+              {headerSettings.cta.text && (
+                <>
+                  <div className="h-px bg-slate-100 dark:bg-slate-800 my-2" />
+                  <Link
+                    href={headerSettings.cta.url}
+                    className="text-center bg-accent hover:bg-amber-600 text-white px-5 py-3 rounded-lg text-sm font-bold transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {headerSettings.cta.text}
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         )}
