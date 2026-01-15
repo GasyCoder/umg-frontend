@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Link2,
   BarChart3,
+  MousePointerClick,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -35,7 +36,7 @@ type Toast = {
 };
 
 export default function AdminSettingsPage() {
-  const [activeTab, setActiveTab] = useState<"general" | "topbar" | "seo" | "social" | "maintenance" | "stats">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "topbar" | "header" | "seo" | "social" | "maintenance" | "stats">("general");
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -162,6 +163,7 @@ export default function AdminSettingsPage() {
   const tabs = [
     { id: "general", label: "Général", icon: <Globe className="w-4 h-4" /> },
     { id: "topbar", label: "Barre supérieure", icon: <Link2 className="w-4 h-4" /> },
+    { id: "header", label: "Bouton CTA", icon: <MousePointerClick className="w-4 h-4" /> },
     { id: "stats", label: "Chiffres Clés", icon: <BarChart3 className="w-4 h-4" /> },
     { id: "seo", label: "SEO", icon: <Search className="w-4 h-4" /> },
     { id: "social", label: "Réseaux sociaux", icon: <Share2 className="w-4 h-4" /> },
@@ -448,6 +450,55 @@ export default function AdminSettingsPage() {
                         onChange={(e) => updateSetting("topbar_digital_url", e.target.value)}
                         placeholder="https://espace.univ-mahajanga.mg"
                       />
+                    </div>
+                  </div>
+                </div>
+              </CardBody>
+              <CardFooter>
+                <Button onClick={handleSave} loading={saving} icon={<Save className="w-4 h-4" />}>
+                  Enregistrer
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+
+          {activeTab === "header" && (
+            <Card>
+              <CardHeader>Bouton d'action du header</CardHeader>
+              <CardBody>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                  Configurez le bouton d'appel à l'action (CTA) affiché dans le header du site public.
+                </p>
+                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl space-y-4">
+                  <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
+                    <MousePointerClick className="w-5 h-5" />
+                    <h4 className="text-sm font-semibold">Bouton CTA Principal</h4>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Input
+                      label="Texte du bouton"
+                      value={settings.header_cta_text || ""}
+                      onChange={(e) => updateSetting("header_cta_text", e.target.value)}
+                      placeholder="Candidater/Résultats/Inscription"
+                      helperText="Le texte affiché sur le bouton"
+                    />
+                    <Input
+                      label="URL de destination"
+                      value={settings.header_cta_url || ""}
+                      onChange={(e) => updateSetting("header_cta_url", e.target.value)}
+                      placeholder="/inscription ou https://..."
+                      helperText="Lien vers lequel le bouton redirige"
+                    />
+                  </div>
+                  <div className="mt-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-indigo-200 dark:border-indigo-700">
+                    <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Aperçu du bouton :</p>
+                    <div className="flex justify-center">
+                      <button
+                        type="button"
+                        className="bg-accent hover:bg-amber-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-lg"
+                      >
+                        {settings.header_cta_text || "Candidater/Résultats/Inscription"}
+                      </button>
                     </div>
                   </div>
                 </div>
