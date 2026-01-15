@@ -39,6 +39,13 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  // Limit string length
+  const limitString = (str: string, maxLength: number = 20) => {
+    if (!str) return "";
+    if (str.length <= maxLength) return str;
+    return `${str.substring(0, maxLength)}...`;
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Section Header */}
@@ -77,8 +84,8 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
 
                 {/* Content */}
                 <div className="flex flex-col flex-grow min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1 leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-2">
-                    {doc.title}
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1 leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" title={doc.title}>
+                    {limitString(doc.title, 20)}
                   </h3>
 
                   <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">

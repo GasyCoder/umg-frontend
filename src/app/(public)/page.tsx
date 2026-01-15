@@ -73,12 +73,16 @@ export default async function HomePage() {
       {/* News & Documents - Side by Side */}
       <section className="py-12 md:py-16 bg-white dark:bg-[#101622] transition-colors">
         <div className="max-w-7xl mx-auto px-4 md:px-10">
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* News - Left */}
-            <NewsSection posts={posts} />
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* News - Left (2/3 width) */}
+            <div className="lg:col-span-2">
+              <NewsSection posts={posts} />
+            </div>
 
-            {/* Documents - Right */}
-            <DocumentsSection documents={documents} />
+            {/* Documents - Right (1/3 width) */}
+            <div className="lg:col-span-1">
+              <DocumentsSection documents={documents} />
+            </div>
           </div>
         </div>
       </section>
