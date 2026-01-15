@@ -8,6 +8,7 @@ import StatsSection from "@/components/public/StatsSection";
 import AboutSection from "@/components/public/AboutSection";
 import PresidentMessage from "@/components/public/PresidentMessage";
 import NewsSection from "@/components/public/NewsSection";
+import DocumentsSection from "@/components/public/DocumentsSection";
 import PartnersSection from "@/components/public/PartnersSection";
 import NewsletterSection from "@/components/public/NewsletterSection";
 
@@ -33,11 +34,11 @@ async function fetchData<T>(path: string): Promise<T | null> {
 export default async function HomePage() {
   // Parallel data fetching
   const [postsData, slidesData, presidentData, statsData, documentsData] = await Promise.all([
-    fetchData<{ data: Post[] }>("/posts?per_page=4"),
+    fetchData<{ data: Post[] }>("/posts?per_page=7"),
     fetchData<{ data: Slide[] }>("/slides"),
     fetchData<{ data: PresidentMessageType }>("/president-message"),
     fetchData<any>("/stats"),
-    fetchData<{ data: Document[] }>("/documents?per_page=5"),
+    fetchData<{ data: Document[] }>("/documents?per_page=6"),
   ]);
 
   const posts = postsData?.data || [];
@@ -69,8 +70,11 @@ export default async function HomePage() {
       {/* President's Word */}
       <PresidentMessage data={president} />
 
-      {/* News & Documents */}
-      <NewsSection posts={posts} documents={documents} />
+      {/* News */}
+      <NewsSection posts={posts} />
+
+      {/* Documents */}
+      <DocumentsSection documents={documents} />
 
       {/* Partners */}
       <PartnersSection />
