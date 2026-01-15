@@ -7,6 +7,14 @@ import { Handshake, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Partner } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+const FALLBACK_LOGO = "/images/placeholder.jpg";
+const FALLBACK_PARTNERS: Partner[] = [
+  { id: -1, name: "Partenaire institutionnel", logo_url: FALLBACK_LOGO, is_active: true, type: "national" },
+  { id: -2, name: "Partenaire academique", logo_url: FALLBACK_LOGO, is_active: true, type: "international" },
+  { id: -3, name: "Partenaire technique", logo_url: FALLBACK_LOGO, is_active: true, type: "national" },
+  { id: -4, name: "Partenaire recherche", logo_url: FALLBACK_LOGO, is_active: true, type: "international" },
+  { id: -5, name: "Partenaire developpement", logo_url: FALLBACK_LOGO, is_active: true, type: "national" },
+];
 
 export default function PartnersSection() {
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -45,6 +53,7 @@ export default function PartnersSection() {
         }
       } catch (error) {
         console.error("Error fetching partners:", error);
+        setPartners(FALLBACK_PARTNERS);
       } finally {
         setLoading(false);
       }
@@ -226,19 +235,13 @@ function PartnerCard({ partner }: { partner: Partner }) {
     <div className="group flex flex-col items-center text-center p-4 rounded-xl from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
       {/* Logo Container */}
       <div className="relative w-full h-16 mb-3 flex items-center justify-center">
-        {partner.logo_url ? (
-          <Image
-            src={partner.logo_url}
-            alt={partner.name}
-            fill
-            className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
-            unoptimized
-          />
-        ) : (
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/20 flex items-center justify-center">
-            <Handshake className="w-6 h-6 text-blue-500 dark:text-blue-400" />
-          </div>
-        )}
+        <Image
+          src={partner.logo_url || FALLBACK_LOGO}
+          alt={partner.name}
+          fill
+          className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+          unoptimized
+        />
       </div>
 
       {/* Partner Name */}

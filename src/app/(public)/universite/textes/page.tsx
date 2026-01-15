@@ -25,11 +25,16 @@ export default async function TextesPage() {
   return (
     <main>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+      <section className="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-white">
         <Container>
-          <div className="py-12 md:py-16">
-            <h1 className="text-3xl md:text-4xl font-bold">Textes & Arrêtés</h1>
-            <p className="mt-2 text-amber-100">Textes réglementaires et documents officiels</p>
+          <div className="py-10 md:py-12">
+            <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">
+              Université
+            </p>
+            <h1 className="mt-4 text-3xl md:text-4xl font-bold">Textes & Arrêtés</h1>
+            <p className="mt-4 text-slate-600 dark:text-slate-300">
+              Textes réglementaires et documents officiels
+            </p>
           </div>
         </Container>
       </section>

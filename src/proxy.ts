@@ -63,7 +63,7 @@ export async function proxy(request: NextRequest) {
       }
     }
   } catch (error) {
-    console.error("[Middleware] Maintenance check failed:", error);
+    // Ignore maintenance check errors when API is unreachable in dev.
   }
 
   return NextResponse.next();

@@ -43,10 +43,17 @@ export default function AdminDocumentsPage() {
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/admin/documents?per_page=50");
-    const json = await res.json();
-    setItems(json?.data ?? []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/documents?per_page=50");
+      if (!res.ok) {
+        setItems([]);
+        return;
+      }
+      const json = await res.json().catch(() => null);
+      setItems(json?.data ?? []);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {

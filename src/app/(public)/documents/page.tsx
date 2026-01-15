@@ -61,7 +61,17 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
         title="Ressources officielles et téléchargeables"
         subtitle="Accédez aux documents administratifs, guides, rapports et formulaires utiles pour étudiants, enseignants et partenaires."
         variant="dark"
-      />
+      >
+        <div className="mt-8 max-w-xl">
+          <Suspense fallback={<div className="h-12 bg-white/10 rounded-xl animate-pulse" />}>
+            <SearchBox 
+              placeholder="Rechercher un document..."
+              paramName="q"
+              className="[&_input]:bg-white/10 [&_input]:border-white/20 [&_input]:text-white [&_input]:placeholder:text-indigo-100"
+            />
+          </Suspense>
+        </div>
+      </PageHeader>
 
       {/* Breadcrumb */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
@@ -75,14 +85,10 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
         variant="three-column"
         sidebarLeft={
           <SidebarLeft>
-            {/* Search Widget */}
-            <SidebarWidget title="Rechercher">
-              <Suspense fallback={<div className="h-12 animate-pulse bg-slate-100 rounded" />}>
-                <SearchBox 
-                  placeholder="Rechercher un document..."
-                  paramName="q"
-                />
-              </Suspense>
+            <SidebarWidget title="Documents">
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Consultez nos documents disponibles.
+              </p>
             </SidebarWidget>
 
             {/* Categories Widget */}

@@ -1,171 +1,336 @@
 import Container from "@/components/Container";
-import { publicGet } from "@/lib/public-api";
-import { Users, Crown, Briefcase, GraduationCap } from "lucide-react";
+import LightboxImage from "@/components/public/LightboxImage";
 
 export const metadata = {
   title: "Organisation - Université de Mahajanga",
   description: "Organisation, présidence, directions et services de l'Université de Mahajanga",
 };
 
-type Page = {
-  id: number;
-  title: string;
-  content: string | null;
-  slug: string;
-};
+const abbreviations = [
+  { abbr: "S.L.D.C.", label: "Service Législation, Documentation et Contentieux" },
+  { abbr: "A.I.S.E.", label: "Audit Interne et Suivi-Évaluation" },
+  { abbr: "P.R.M.P.", label: "Personne Responsable des Marchés Publiques" },
+  { abbr: "DIR CAB", label: "Directeur du Cabinet" },
+  { abbr: "D.R", label: "Direction de Recherches" },
+  { abbr: "D.M.J", label: "Direction des Musées et Jardin Botanique" },
+  { abbr: "D.P", label: "Direction du Patrimoine" },
+  { abbr: "DAAF", label: "Direction des Affaires Administratives et Financières" },
+  { abbr: "D.T.I.C", label: "Direction des Technologies de l’Information et de la Communication" },
+  { abbr: "DOB", label: "Direction de l’Office du Baccalauréat" },
+  { abbr: "DVU", label: "Direction de la Vie Universitaire" },
+  { abbr: "D.F", label: "Direction de la Formation" },
+  { abbr: "COUM", label: "Centre des Œuvres Universitaires de Mahajanga" },
+  { abbr: "PAT", label: "Personnel Administratif et Technique" },
+  { abbr: "PGI", label: "Progiciel de Gestion Intégrée" },
+  { abbr: "FOAD", label: "Formation Ouverte à Distance" },
+];
 
-const directions = [
+const establishments = [
+  { abbr: "I.O.S.T.M.", label: "Institut d’Odonto-Stomatologie Tropicale de Madagascar" },
+  { abbr: "F.S.T.E.", label: "Faculté de Sciences, de Technologies et de l’Environnement" },
+  { abbr: "E.D.S.P.", label: "École de Droit et de Science Politique" },
+  { abbr: "ILC-SS", label: "Institut des Lettres, Civilisations et Sciences Sociales" },
+  { abbr: "E.T.", label: "École de Tourisme" },
+  { abbr: "U.F.R.S.S", label: "Unité de Formation et de Recherche en Sciences Sociales" },
+  { abbr: "E.L.C.I.", label: "École de Langues Commerciales Internationales" },
+  { abbr: "I.S.S.T.M.", label: "Institut Supérieur de Sciences et Technologies de Mahajanga" },
+  { abbr: "I.U.T.A.M.", label: "Institut Universitaire de Technologies et d’Agronomie de Mahajanga" },
+  { abbr: "I.U.G.M.", label: "Institut Universitaire de Gestion et Management" },
+  { abbr: "E.A.T.P.", label: "École des Arts et Prothèse Dentaire" },
+];
+
+const attachedOrganizations = [
+  "Conseil d’Administration",
+  "Président",
+  "Conseil Scientifique",
+];
+
+const attachedCouncils = ["Conseil des sages", "Comité d’éthique"];
+
+const attachedDetails = [
   {
-    name: "Pr. Jean Andrianina",
-    role: "Président de l'Université",
-    department: "Présidence",
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80",
+    title: "Services rattachés à la présidence",
+    items: [
+      "Service de digitalisation et de bourse nationale et internationale",
+      "Service de Législation, Documentation et Contentieux",
+      "Service de l’Audit Interne et unité de Suivi-Évaluation",
+      "Service anti-corruption et violence universitaire",
+      "Personne Responsable des Marchés Publiques",
+    ],
   },
   {
-    name: "Dr. Marie Randri",
-    role: "Vice-présidente Recherche",
-    department: "Recherche & Innovation",
-    image:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80",
+    title: "Cabinet de la présidence",
+    items: ["Directeur du cabinet", "Conseillers", "Service sureté et prévention"],
   },
   {
-    name: "M. Hery Andria",
-    role: "Secrétaire général",
-    department: "Administration",
-    image:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
+    title: "Premier Vice-Président",
+    items: [
+      {
+        label: "Direction de la vie universitaire",
+        children: [
+          "Service des Sports, Arts et Culture",
+          "Service de la Médecine Préventive et de la Promotion de la Santé (SMPPS)",
+          "Service COUM",
+          "Service Espace Vert",
+          "Service sécurité",
+        ],
+      },
+      {
+        label: "Direction des Musées et Jardin Botanique",
+        children: [
+          "Service Jardin botanique et centre Mandravasarotra Antsanitia",
+          "Service Mozea Akiba",
+          "Service Musée de la Mer",
+          "Service Musée de l’Androna",
+        ],
+      },
+    ],
   },
   {
-    name: "Pr. Fara Raja",
-    role: "Directrice des Études",
-    department: "Pédagogie",
-    image:
-      "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=800&q=80",
+    title: "Deuxième Vice-Président",
+    items: [
+      {
+        label: "Direction de la Formation",
+        children: [
+          "Service de formation et perfectionnement",
+          "Service LMD",
+          "Service scolarité centrale",
+        ],
+      },
+      {
+        label: "Direction de la Recherche",
+        children: [
+          "Service d’Appui à la Recherche",
+          "Service de partenariat et des relations internationales",
+        ],
+      },
+    ],
+  },
+  {
+    title: "Directions rattachées au Président",
+    items: [
+      {
+        label: "Direction du Patrimoine",
+        children: ["Service Maintenance des Infrastructures et Logistique", "Service du Patrimoine"],
+      },
+      {
+        label: "Direction des Affaires Administratives et Financières",
+        children: [
+          "Service Financier",
+          "Service de la Gestion des Ressources Humaines",
+          "Service de Suivi et Contrôle Interne",
+          "Service Formation du PAT",
+          "Services des Relations et Actions Sociales",
+        ],
+      },
+      {
+        label: "Direction des Technologies de l’Information et de la Communication",
+        children: [
+          "Service de Maintenance Informatique",
+          "Service d’administration réseau et Informatisation",
+          "Communication Universitaire",
+          "Service Radio Université Mahajanga",
+          "Service de la Communication et Informatique en Ligne",
+        ],
+      },
+    ],
+  },
+  {
+    title: "Direction de l’Office du Baccalauréat",
+    items: [
+      "Chargé de Coordination et de Contrôle",
+      "Service Administratif et Logistique",
+      "Service Technique et Informatique",
+      "Service Financier",
+    ],
   },
 ];
 
-export default async function OrganisationPage() {
-  let pages: Page[] = [];
-  try {
-    const res = await publicGet<{ data: Page[] }>("/organization-pages/type/organisation", 60);
-    pages = res.data || [];
-  } catch {
-    // No pages yet
-  }
+const leadership = [
+  {
+    name: "Professeur Titulaire RANDRIANAMBININA Blanchard",
+    role: "Président",
+    image:
+      "http://127.0.0.1:8001/storage/president/sZSkn7mxKvaG83Yw2edsW14el2QDC3i7Vb9lbi8c.png",
+  },
+  {
+    name: "Dr. RAKOTOARIVELO Geoslin",
+    role: "Vice Président I",
+    image: "http://127.0.0.1:8001/assets/images/avatar/vice_president.jpg",
+    rank: "1ère",
+  },
+  {
+    name: "Pr Titulaire RAZAFIMAHEFA",
+    role: "Vice Président II",
+    image: "http://127.0.0.1:8001/assets/images/avatar/pr_mahefa.jpg",
+    rank: "2ème",
+  },
+];
 
-  let organigramme: Page[] = [];
-  try {
-    const res = await publicGet<{ data: Page[] }>("/organization-pages/type/organigramme", 60);
-    organigramme = res.data || [];
-  } catch {
-    // No organigramme yet
-  }
-
+export default function OrganisationPage() {
   return (
     <main className="bg-white dark:bg-slate-950">
-      <section className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
-        <Container>
-          <div className="py-16 md:py-20">
-            <p className="text-sm uppercase tracking-[0.3em] text-indigo-100">Organisation</p>
-            <h1 className="mt-4 text-3xl md:text-5xl font-bold tracking-tight">Une gouvernance structurée</h1>
-            <p className="mt-4 max-w-2xl text-lg text-indigo-100">
-              La gouvernance de l'université repose sur une équipe de direction engagée et des
-              structures administratives modernes.
+      <section className="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-white">
+        <Container className="max-w-[1280px] px-5 md:px-10">
+          <div className="py-10 md:py-12">
+            <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">Université</p>
+            <h1 className="mt-4 text-xl md:text-3xl font-bold tracking-tight">Organisation</h1>
+            <p className="mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+              Une université performante au service du développement !
             </p>
           </div>
         </Container>
       </section>
 
       <section className="py-16">
-        <Container>
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr]">
+        <Container className="max-w-[1280px] px-5 md:px-10">
+          <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
             <div className="space-y-6">
-              {pages.length > 0 ? (
-                pages.map((page) => (
-                  <article key={page.id} className="prose prose-slate dark:prose-invert max-w-none">
-                    <h2>{page.title}</h2>
-                    {page.content && <div dangerouslySetInnerHTML={{ __html: page.content }} />}
-                  </article>
-                ))
-              ) : (
-                <div className="rounded-3xl border border-slate-200/70 bg-slate-50/70 p-8 text-slate-600 shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                  Informations détaillées en cours de rédaction.
+              <section className="rounded-3xl border border-slate-200/70 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                <div className="border-b border-slate-200/70 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:border-slate-800 dark:text-slate-300">
+                  Université de Mahajanga
                 </div>
-              )}
-
-              <div className="rounded-3xl border border-slate-200/70 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-slate-900">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Organigramme</h2>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                  Schéma simplifié des principales entités.
-                </p>
-                <div className="mt-6 grid gap-4">
-                  <div className="rounded-2xl bg-indigo-600 px-4 py-3 text-white shadow">
-                    <span className="text-sm font-semibold">Présidence</span>
+                <div className="space-y-8 px-6 py-6 text-sm text-slate-600 dark:text-slate-300">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Abreviations</h2>
+                    <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                      {abbreviations.map((item) => (
+                        <li
+                          key={item.abbr}
+                          className="rounded-2xl border border-slate-200/70 bg-slate-50/70 p-3 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
+                        >
+                          <span className="font-semibold text-slate-800 dark:text-white">{item.abbr}</span>
+                          <span className="ml-2">: {item.label}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                      Vice-présidence Recherche
+
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                      Établissements et Formations rattachés
+                    </h2>
+                    <ul className="mt-4 grid gap-2">
+                      {establishments.map((item) => (
+                        <li
+                          key={item.abbr}
+                          className="rounded-2xl border border-slate-200/70 bg-slate-50/70 p-3 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
+                        >
+                          <span className="font-semibold text-slate-800 dark:text-white">{item.abbr}</span>
+                          <span className="ml-2">: {item.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Organisations</h2>
+                    <div className="flex flex-wrap gap-2">
+                      {attachedOrganizations.map((item) => (
+                        <span
+                          key={item}
+                          className="rounded-full border border-slate-200/70 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                        >
+                          {item}
+                        </span>
+                      ))}
                     </div>
-                    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                      Vice-présidence Pédagogie
-                    </div>
-                    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                      Secrétariat Général
-                    </div>
-                    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                      Directions Administratives
+                    <div className="h-px w-full bg-slate-200/70 dark:bg-slate-800" />
+                    <div className="flex flex-wrap gap-2">
+                      {attachedCouncils.map((item) => (
+                        <span
+                          key={item}
+                          className="rounded-full border border-slate-200/70 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                        >
+                          {item}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                </div>
 
-                {organigramme.length > 0 && (
-                  <div className="mt-8 border-t border-slate-200 pt-6 dark:border-slate-700">
-                    {organigramme.map((page) => (
-                      <article key={page.id} className="prose prose-slate dark:prose-invert max-w-none">
-                        {page.content && <div dangerouslySetInnerHTML={{ __html: page.content }} />}
-                      </article>
+                  <div className="space-y-4">
+                    {attachedDetails.map((detail) => (
+                      <details
+                        key={detail.title}
+                        className="rounded-2xl border border-slate-200/70 bg-slate-50/70 p-4 open:bg-white open:shadow-lg dark:border-slate-800 dark:bg-slate-950 dark:open:bg-slate-900"
+                      >
+                        <summary className="cursor-pointer text-sm font-semibold text-slate-800 dark:text-white">
+                          {detail.title}
+                        </summary>
+                        <div className="mt-3 space-y-3 text-sm text-slate-600 dark:text-slate-300">
+                          {detail.items.map((item) =>
+                            typeof item === "string" ? (
+                              <p
+                                key={item}
+                                className="rounded-xl border border-slate-200/70 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                              >
+                                {item}
+                              </p>
+                            ) : (
+                              <div
+                                key={item.label}
+                                className="rounded-xl border border-slate-200/70 bg-white p-3 dark:border-slate-800 dark:bg-slate-900"
+                              >
+                                <p className="font-semibold text-slate-800 dark:text-white">{item.label}</p>
+                                <ul className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                                  {item.children.map((child) => (
+                                    <li key={child}>{child}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </details>
                     ))}
                   </div>
-                )}
-              </div>
+                </div>
+              </section>
             </div>
 
-            <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                <Users className="h-4 w-4" />
-                Équipe de direction
-              </div>
-              <div className="mt-6 grid gap-6">
-                {directions.map((direction, index) => {
-                  const icons = [Crown, Briefcase, Users, GraduationCap];
-                  const Icon = icons[index % icons.length];
-                  return (
+            <div className="space-y-6">
+              <section className="rounded-3xl border border-slate-200/70 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                <div className="border-b border-slate-200/70 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:border-slate-800 dark:text-slate-300">
+                  Présidence de l’Université de Mahajanga
+                </div>
+                <div className="grid gap-4 px-6 py-6">
+                  {leadership.map((leader) => (
                     <div
-                      key={direction.name}
-                      className="rounded-3xl border border-slate-200/70 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900"
+                      key={leader.name}
+                      className="flex items-center gap-4 rounded-2xl border border-slate-200/70 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950"
                     >
-                      <div className="flex items-center gap-4 p-5">
+                      <div className="relative">
                         <img
-                          src={direction.image}
-                          alt={direction.name}
-                          className="h-16 w-16 rounded-2xl object-cover"
+                          src={leader.image}
+                          alt={leader.name}
+                          className="h-14 w-14 rounded-full border-2 border-white object-cover"
                         />
-                        <div>
-                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                            {direction.name}
-                          </h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-300">{direction.role}</p>
-                          <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-200">
-                            <Icon className="h-3.5 w-3.5" />
-                            {direction.department}
-                          </div>
-                        </div>
+                        {leader.rank && (
+                          <span className="absolute -right-2 -top-2 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-semibold text-slate-900">
+                            {leader.rank}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{leader.name}</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-300">{leader.role}</p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-3xl border border-slate-200/70 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                <div className="border-b border-slate-200/70 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:border-slate-800 dark:text-slate-300">
+                  Organigramme visuel
+                </div>
+                <div className="px-6 py-6">
+                  <LightboxImage
+                    src="http://127.0.0.1:8001/storage/orga/cuC6QctO4NrCIvQOgBj4GDfQ2ZcUM9U4QrPMqp0s.jpg"
+                    alt="Organigramme de l'Université de Mahajanga"
+                  />
+                </div>
+              </section>
             </div>
           </div>
         </Container>

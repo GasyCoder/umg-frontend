@@ -143,11 +143,7 @@ export function AnnouncementList({
   const items = announcements.slice(0, maxItems);
 
   if (items.length === 0) {
-    return (
-      <p className="text-sm text-slate-500 dark:text-slate-400 italic">
-        Aucune annonce pour le moment.
-      </p>
-    );
+    return null;
   }
 
   return (

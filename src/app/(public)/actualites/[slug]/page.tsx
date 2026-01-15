@@ -77,7 +77,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   return (
     <main className="bg-white dark:bg-slate-950">
       {/* Hero Section */}
-      <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
+      <section className="relative h-[36vh] min-h-[260px] overflow-hidden">
         <Image
           src={coverImageUrl}
           alt={post.title}
@@ -87,19 +87,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-slate-950/60 to-slate-950/90" />
         
-        <Container>
-          <div className="relative z-10 flex h-full flex-col justify-end pb-12 text-white">
-            <Link
-              href="/actualites"
-              className="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors w-fit"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Retour aux actualités
-            </Link>
-            
+        <Container className="h-full">
+          <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white">
             {/* Categories */}
             {post.categories && post.categories.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
                 {post.categories.map((cat) => (
                   <span
                     key={cat.id}
@@ -115,7 +107,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               {post.title}
             </h1>
             
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-white/80">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-sm text-white/80">
               <span className="inline-flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 {formattedDate}

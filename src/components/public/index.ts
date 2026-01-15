@@ -8,11 +8,6 @@ export { default as PresidentMessage } from "./PresidentMessage";
 export { default as PublicHeader } from "./PublicHeader";
 
 // Other existing components (named exports)
-export { ResourcesSection } from "./ResourcesSection";
-export { EtablissementsSection } from "./EtablissementsSection";
-export { HeroSlider } from "./HeroSlider"; 
-export { PresidentMessageSection } from "./PresidentMessageSection";
-export { QuickLinksSection } from "./QuickLinksSection";
 
 // These were default
 export { default as AnimatedCounter } from "./AnimatedCounter";

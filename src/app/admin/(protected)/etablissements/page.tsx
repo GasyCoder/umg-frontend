@@ -20,6 +20,7 @@ import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { StatCard } from "@/components/ui/StatCard";
 import { Input } from "@/components/ui/Input";
 import { SkeletonListPage } from "@/components/ui/Skeleton";
+import { MediaPickerModal } from "@/components/admin/media/MediaPickerModal";
 
 type Etablissement = {
   id: number;
@@ -56,6 +57,8 @@ const emptyForm = {
   facebook: "",
   twitter: "",
   linkedin: "",
+  logo_id: null as number | null,
+  cover_image_id: null as number | null,
   is_active: true,
 };
 
@@ -66,15 +69,26 @@ export default function AdminEtablissementsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selected, setSelected] = useState<Etablissement | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [pickingFor, setPickingFor] = useState<"logo" | "cover" | null>(null);
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/admin/etablissements?per_page=50");
-    const json = await res.json();
-    setData(json?.data ?? []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/etablissements?per_page=50");
+      if (!res.ok) {
+        setData([]);
+        return;
+      }
+      const json = await res.json().catch(() => null);
+      setData(json?.data ?? []);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -84,6 +98,8 @@ export default function AdminEtablissementsPage() {
   function openCreate() {
     setSelected(null);
     setForm(emptyForm);
+    setLogoPreviewUrl(null);
+    setCoverPreviewUrl(null);
     setModalOpen(true);
   }
 
@@ -102,8 +118,12 @@ export default function AdminEtablissementsPage() {
       facebook: item.facebook || "",
       twitter: item.twitter || "",
       linkedin: item.linkedin || "",
+      logo_id: item.logo?.id || null,
+      cover_image_id: item.cover_image?.id || null,
       is_active: item.is_active,
     });
+    setLogoPreviewUrl(item.logo?.url || null);
+    setCoverPreviewUrl(item.cover_image?.url || null);
     setModalOpen(true);
   }
 
@@ -150,32 +170,61 @@ export default function AdminEtablissementsPage() {
     }
   }
 
+  function handleMediaSelect(media: { id: number; url: string }[]) {
+    if (media.length > 0) {
+      if (pickingFor === "cover") {
+        setForm({ ...form, cover_image_id: media[0].id });
+        setCoverPreviewUrl(media[0].url);
+      } else {
+        setForm({ ...form, logo_id: media[0].id });
+        setLogoPreviewUrl(media[0].url);
+      }
+    }
+    setMediaPickerOpen(false);
+    setPickingFor(null);
+  }
+
   const columns = [
     {
       key: "name" as keyof Etablissement,
       header: "Établissement",
       sortable: true,
       render: (item: Etablissement) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
-            {item.logo ? (
-              <img src={item.logo.url} alt="" className="w-8 h-8 object-contain rounded" />
-            ) : (
-              <Building2 className="w-5 h-5" />
-            )}
-          </div>
-          <div className="min-w-0">
-            <p className="font-medium text-slate-900 dark:text-white truncate">
-              {item.name}
-              {item.acronym && <span className="text-slate-500 ml-1">({item.acronym})</span>}
-            </p>
-            {item.director_name && (
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {item.director_title}: {item.director_name}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+              {item.logo ? (
+                <img src={item.logo.url} alt="" className="w-8 h-8 object-contain rounded" />
+              ) : (
+                <Building2 className="w-5 h-5" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-slate-900 dark:text-white truncate">
+                {item.name}
+                {item.acronym && <span className="text-slate-500 ml-1">({item.acronym})</span>}
               </p>
-            )}
+              {item.director_name && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {item.director_title}: {item.director_name}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
+        ),
+      },
+    {
+      key: "cover_image" as keyof Etablissement,
+      header: "Couverture",
+      render: (item: Etablissement) => (
+        item.cover_image ? (
+          <img
+            src={item.cover_image.url}
+            alt={`Couverture ${item.name}`}
+            className="h-10 w-16 rounded-lg object-cover"
+          />
+        ) : (
+          <span className="text-xs text-slate-400">—</span>
+        )
       ),
     },
     {
@@ -383,6 +432,81 @@ export default function AdminEtablissementsPage() {
             />
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Logo (optionnel)
+              </label>
+              <div className="flex items-center gap-2">
+                {(logoPreviewUrl || (form.logo_id && (selected?.logo || data.find(e => e.logo?.id === form.logo_id)?.logo))) && (
+                  <img
+                    src={logoPreviewUrl || (selected?.logo || data.find(e => e.logo?.id === form.logo_id)?.logo)?.url}
+                    alt="Logo"
+                    className="h-12 w-12 rounded-lg object-cover"
+                  />
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setPickingFor("logo");
+                    setMediaPickerOpen(true);
+                  }}
+                >
+                  {form.logo_id ? "Changer" : "Sélectionner"}
+                </Button>
+                {form.logo_id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setForm({ ...form, logo_id: null });
+                      setLogoPreviewUrl(null);
+                    }}
+                  >
+                    Supprimer
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Image de couverture (optionnel)
+              </label>
+              <div className="flex items-center gap-2">
+                {(coverPreviewUrl || (form.cover_image_id && (selected?.cover_image || data.find(e => e.cover_image?.id === form.cover_image_id)?.cover_image))) && (
+                  <img
+                    src={coverPreviewUrl || (selected?.cover_image || data.find(e => e.cover_image?.id === form.cover_image_id)?.cover_image)?.url}
+                    alt="Couverture"
+                    className="h-12 w-20 rounded-lg object-cover"
+                  />
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setPickingFor("cover");
+                    setMediaPickerOpen(true);
+                  }}
+                >
+                  {form.cover_image_id ? "Changer" : "Sélectionner"}
+                </Button>
+                {form.cover_image_id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setForm({ ...form, cover_image_id: null });
+                      setCoverPreviewUrl(null);
+                    }}
+                  >
+                    Supprimer
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -406,6 +530,12 @@ export default function AdminEtablissementsPage() {
           </Button>
         </div>
       </Modal>
+
+      <MediaPickerModal
+        isOpen={mediaPickerOpen}
+        onClose={() => setMediaPickerOpen(false)}
+        onSelect={handleMediaSelect}
+      />
 
       {/* Delete Modal */}
       <ConfirmModal

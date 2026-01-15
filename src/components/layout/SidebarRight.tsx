@@ -1,4 +1,8 @@
-import { ReactNode } from 'react';
+"use client";
+
+import { ReactNode, useState } from 'react';
+import { Mail, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { publicPost } from '@/lib/public-api';
 
 interface SidebarRightProps {
   children: ReactNode;
@@ -48,9 +52,11 @@ export function AnnouncementWidget({
         ${className}
       `}
     >
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
-        {title}
-      </h3>
+      {title ? (
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
+          {title}
+        </h3>
+      ) : null}
       {children}
     </div>
   );
@@ -76,9 +82,11 @@ export function EventsWidget({
         ${className}
       `}
     >
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
-        {title}
-      </h3>
+      {title ? (
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
+          {title}
+        </h3>
+      ) : null}
       {children}
     </div>
   );
@@ -90,6 +98,32 @@ interface NewsletterWidgetProps {
 }
 
 export function NewsletterWidget({ className = '' }: NewsletterWidgetProps) {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!email) {
+      setStatus('error');
+      setMessage('Merci de renseigner votre adresse e-mail.');
+      return;
+    }
+
+    try {
+      setStatus('loading');
+      setMessage('');
+      const res = await publicPost<{ message: string }>('/newsletter/subscribe', { email });
+      setStatus('success');
+      setMessage(res.message || 'Merci ! Vérifiez votre boîte mail pour confirmer votre inscription.');
+      setEmail('');
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Impossible d\'envoyer votre inscription. Réessayez.';
+      setStatus('error');
+      setMessage(msg);
+    }
+  };
+
   return (
     <div
       className={`
@@ -97,26 +131,56 @@ export function NewsletterWidget({ className = '' }: NewsletterWidgetProps) {
         ${className}
       `}
     >
-      <h3 className="text-lg font-semibold">Recevoir nos actualités</h3>
+      <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+        <Mail className="h-3.5 w-3.5" />
+        Newsletter
+      </div>
+      <h3 className="mt-3 text-lg font-semibold">Recevoir nos actualités</h3>
       <p className="mt-2 text-sm text-indigo-100">
-        Inscrivez-vous pour suivre les annonces officielles et événements.
+        Recevez les annonces officielles et événements.
       </p>
-      <form className="mt-4 flex flex-col gap-3">
+      <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
         <label htmlFor="newsletter-email" className="sr-only">
           Votre email
         </label>
         <input
           id="newsletter-email"
           type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
           placeholder="votre@email.com"
           className="rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-indigo-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
         <button
           type="submit"
-          className="rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-amber-300 transition-colors"
+          disabled={status === 'loading'}
+          className="rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-amber-300 transition-colors disabled:opacity-70"
         >
-          S'inscrire
+          {status === 'loading' ? (
+            'Envoi...'
+          ) : (
+            <span className="inline-flex items-center gap-2">
+              <Send className="h-4 w-4" />
+              S'inscrire
+            </span>
+          )}
         </button>
+        {message ? (
+          <div
+            className={`flex items-start gap-2 rounded-lg px-3 py-2 text-xs ${
+              status === 'success'
+                ? 'bg-emerald-500/20 text-emerald-100'
+                : 'bg-red-500/20 text-red-100'
+            }`}
+          >
+            {status === 'success' ? (
+              <CheckCircle2 className="mt-0.5 h-4 w-4" />
+            ) : (
+              <AlertCircle className="mt-0.5 h-4 w-4" />
+            )}
+            <span>{message}</span>
+          </div>
+        ) : null}
       </form>
     </div>
   );

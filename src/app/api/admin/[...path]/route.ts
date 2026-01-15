@@ -32,15 +32,25 @@ async function forward(req: Request, parts: string[]) {
     body = await req.arrayBuffer();
   }
 
-  const r = await fetch(target, {
-    method,
-    headers,
-    body: body,
-    cache: "no-store",
-  });
+  let r: Response;
+  try {
+    r = await fetch(target, {
+      method,
+      headers,
+      body: body,
+      cache: "no-store",
+    });
+  } catch (error) {
+    return NextResponse.json({ message: "API unreachable" }, { status: 502 });
+  }
 
   const buffer = await r.arrayBuffer();
   const respContentType = r.headers.get("content-type") || "application/json";
+
+  if (buffer.byteLength === 0) {
+    const message = r.ok ? "Empty response" : `API error ${r.status}`;
+    return NextResponse.json({ message }, { status: r.status });
+  }
 
   return new NextResponse(buffer, { status: r.status, headers: { "content-type": respContentType } });
 }

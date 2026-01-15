@@ -62,10 +62,17 @@ export default function AdminServicesPage() {
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/admin/services?per_page=50");
-    const json = await res.json();
-    setData(json?.data ?? []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/services?per_page=50");
+      if (!res.ok) {
+        setData([]);
+        return;
+      }
+      const json = await res.json().catch(() => null);
+      setData(json?.data ?? []);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -76,7 +83,11 @@ export default function AdminServicesPage() {
     setLoadingDocuments(true);
     try {
       const res = await fetch("/api/admin/documents?per_page=100");
-      const json = await res.json();
+      if (!res.ok) {
+        setDocuments([]);
+        return;
+      }
+      const json = await res.json().catch(() => null);
       setDocuments(json?.data ?? []);
     } catch (e) {
       console.error("Failed to load documents", e);
@@ -215,10 +226,11 @@ export default function AdminServicesPage() {
 
       <Table
         data={data}
+        keyField="id"
         columns={[
           {
             key: "name",
-            label: "Nom",
+            header: "Nom",
             render: (item) => (
               <div className="flex items-center gap-3">
                 {item.logo && (
@@ -243,7 +255,7 @@ export default function AdminServicesPage() {
           },
           {
             key: "address",
-            label: "Adresse",
+            header: "Adresse",
             render: (item) => (
               <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                 {item.address ? (
@@ -259,7 +271,7 @@ export default function AdminServicesPage() {
           },
           {
             key: "contact",
-            label: "Contact",
+            header: "Contact",
             render: (item) => (
               <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                 {item.contact ? (
@@ -275,16 +287,16 @@ export default function AdminServicesPage() {
           },
           {
             key: "is_active",
-            label: "Statut",
+            header: "Statut",
             render: (item) => (
-              <Badge variant={item.is_active ? "success" : "gray"}>
+              <Badge variant={item.is_active ? "success" : "default"}>
                 {item.is_active ? "Actif" : "Inactif"}
               </Badge>
             ),
           },
           {
             key: "actions",
-            label: "Actions",
+            header: "Actions",
             render: (item) => (
               <div className="flex items-center gap-2">
                 <button
@@ -330,7 +342,7 @@ export default function AdminServicesPage() {
             value={form.chef_service}
             onChange={(e) => setForm({ ...form, chef_service: e.target.value })}
             placeholder="Nom du chef de service"
-            icon={User}
+            leftIcon={<User />}
           />
 
           <div>
@@ -351,7 +363,7 @@ export default function AdminServicesPage() {
             value={form.contact}
             onChange={(e) => setForm({ ...form, contact: e.target.value })}
             placeholder="Téléphone, email, etc."
-            icon={Phone}
+            leftIcon={<Phone />}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

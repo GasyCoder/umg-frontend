@@ -141,11 +141,7 @@ export function EventList({
   const items = events.slice(0, maxItems);
 
   if (items.length === 0) {
-    return (
-      <p className="text-sm text-slate-500 dark:text-slate-400 italic">
-        Aucun événement à venir.
-      </p>
-    );
+    return null;
   }
 
   return (

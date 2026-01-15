@@ -1,10 +1,9 @@
 import { Suspense } from 'react';
 import { publicGet } from '@/lib/public-api';
 import type { Post, Category, Tag, Event, Announcement, PaginatedResponse } from '@/lib/types';
-import { PageHeader } from '@/components/layout/PageLayout';
+import Container from '@/components/Container';
 import PageLayout from '@/components/layout/PageLayout';
-import { Breadcrumb } from '@/components/layout';
-import SidebarLeft, { SidebarWidget } from '@/components/layout/SidebarLeft';
+import { SidebarWidget } from '@/components/layout/SidebarLeft';
 import SidebarRight, { EventsWidget, AnnouncementWidget, NewsletterWidget } from '@/components/layout/SidebarRight';
 import { NewsCard, EventList, AnnouncementList } from '@/components/public';
 import Pagination from '@/components/ui/Pagination';
@@ -84,36 +83,40 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
   return (
     <main className="bg-slate-50/60 dark:bg-slate-950">
       {/* Page Header */}
-      <PageHeader
-        label="Actualités"
-        title="Informations, événements et annonces officielles"
-        subtitle="Restez informé des temps forts de l'Université de Mahajanga : vie académique, recherche, partenariats et initiatives étudiantes."
-        variant="gradient"
-      >
-        {/* Search in header */}
-        <div className="mt-8 max-w-xl">
-          <Suspense fallback={<div className="h-12 bg-white/10 rounded-xl animate-pulse" />}>
-            <SearchBox 
-              placeholder="Rechercher un article, une actualité, un événement..."
-              paramName="q"
-              className="[&_input]:bg-white/10 [&_input]:border-white/20 [&_input]:text-white [&_input]:placeholder:text-indigo-100"
-            />
-          </Suspense>
-        </div>
-      </PageHeader>
+      <section className="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-white">
+        <Container className="max-w-[1280px] px-5 md:px-10">
+          <div className="py-6 md:py-8">
+            <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">
+              Actualités
+            </p>
+            <h1 className="mt-3 text-xl md:text-3xl font-bold tracking-tight">
+              Nos actualités
+            </h1>
+            <p className="mt-3 max-w-xl text-base text-slate-600 dark:text-slate-300">
+              Informations et annonces de l'université.
+            </p>
+          </div>
+        </Container>
+      </section>
 
-      {/* Breadcrumb */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <Breadcrumb items={[{ label: 'Actualités' }]} />
-        </div>
-      </div>
+      {/* Breadcrumb removed */}
 
-      {/* Main Content with 3-Column Layout */}
+      {/* Main Content */}
       <PageLayout
-        variant="three-column"
-        sidebarLeft={
-          <SidebarLeft>
+        variant="with-right"
+        containerClassName="max-w-[1280px] px-5 md:px-10"
+        sidebarRight={
+          <SidebarRight sticky>
+            {/* Search */}
+            <SidebarWidget title="Rechercher">
+              <Suspense fallback={<div className="h-12 animate-pulse bg-slate-100 rounded" />}>
+                <SearchBox 
+                  placeholder="Rechercher une actualité..."
+                  paramName="q"
+                />
+              </Suspense>
+            </SidebarWidget>
+
             {/* Categories Widget */}
             <SidebarWidget title="Catégories">
               <Suspense fallback={<div className="h-20 animate-pulse bg-slate-100 rounded" />}>
@@ -135,19 +138,20 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
                 </Suspense>
               </SidebarWidget>
             )}
-          </SidebarLeft>
-        }
-        sidebarRight={
-          <SidebarRight sticky>
+
             {/* Announcements */}
-            <AnnouncementWidget variant="highlight">
-              <AnnouncementList announcements={announcements} maxItems={3} />
-            </AnnouncementWidget>
+            {announcements.length > 0 && (
+              <AnnouncementWidget title="" variant="highlight">
+                <AnnouncementList announcements={announcements} maxItems={3} />
+              </AnnouncementWidget>
+            )}
 
             {/* Upcoming Events */}
-            <EventsWidget>
-              <EventList events={events} maxItems={4} />
-            </EventsWidget>
+            {events.length > 0 && (
+              <EventsWidget title="">
+                <EventList events={events} maxItems={4} />
+              </EventsWidget>
+            )}
 
             {/* Newsletter Signup */}
             <NewsletterWidget />

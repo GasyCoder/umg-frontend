@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   GraduationCap,
   Laptop,
@@ -43,6 +43,13 @@ interface NavItem {
   children?: NavItem[];
 }
 
+type SearchItem = {
+  id: string | number;
+  title: string;
+  href: string;
+  subtitle?: string;
+};
+
 export default function PublicHeader({ settings }: PublicHeaderProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -50,6 +57,25 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
   const [hash, setHash] = useState("");
   const [langOpen, setLangOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState<"FR" | "EN">("FR");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<{
+    posts: SearchItem[];
+    documents: SearchItem[];
+    services: SearchItem[];
+    etablissements: SearchItem[];
+    partners: SearchItem[];
+  }>({
+    posts: [],
+    documents: [],
+    services: [],
+    etablissements: [],
+    partners: [],
+  });
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const searchRequestId = useRef(0);
   const [topbarLinks, setTopbarLinks] = useState<TopbarLinks>({
     library: { label: "Bibliothèque", url: "#" },
     webmail: { label: "Webmail", url: "#" },
@@ -62,32 +88,24 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
   // Fetch topbar links and header settings
   useEffect(() => {
     const fetchTopbar = async () => {
-      try {
-        const res = await fetch(`${API_URL}/topbar`, {
-          headers: { Accept: "application/json" },
-          cache: "no-store",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setTopbarLinks(data);
-        }
-      } catch (error) {
-        console.error("Error fetching topbar:", error);
+      const res = await fetch(`${API_URL}/topbar`, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      }).catch(() => null);
+      if (res && res.ok) {
+        const data = await res.json();
+        setTopbarLinks(data);
       }
     };
 
     const fetchHeader = async () => {
-      try {
-        const res = await fetch(`${API_URL}/header`, {
-          headers: { Accept: "application/json" },
-          cache: "no-store",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setHeaderSettings(data);
-        }
-      } catch (error) {
-        console.error("Error fetching header:", error);
+      const res = await fetch(`${API_URL}/header`, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      }).catch(() => null);
+      if (res && res.ok) {
+        const data = await res.json();
+        setHeaderSettings(data);
       }
     };
 
@@ -112,6 +130,107 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
     }
   }, [langOpen]);
 
+  useEffect(() => {
+    if (searchOpen) {
+      const id = window.setTimeout(() => searchInputRef.current?.focus(), 60);
+      return () => window.clearTimeout(id);
+    }
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const query = searchQuery.trim();
+    setSearchError(null);
+
+    if (!query) {
+      setSearchResults({
+        posts: [],
+        documents: [],
+        services: [],
+        etablissements: [],
+        partners: [],
+      });
+      return;
+    }
+
+    const currentId = ++searchRequestId.current;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const encoded = encodeURIComponent(query);
+        const [postsRes, documentsRes, servicesRes, etablissementsRes, partnersRes] = await Promise.all([
+          fetch(`${API_URL}/posts?q=${encoded}&per_page=5`, { signal: controller.signal }),
+          fetch(`${API_URL}/documents?q=${encoded}&per_page=5`, { signal: controller.signal }),
+          fetch(`${API_URL}/services?search=${encoded}&per_page=5`, { signal: controller.signal }),
+          fetch(`${API_URL}/etablissements?search=${encoded}&per_page=5`, { signal: controller.signal }),
+          fetch(`${API_URL}/partners?per_page=100`, { signal: controller.signal }),
+        ]);
+
+        if (searchRequestId.current !== currentId) return;
+
+        const [postsJson, documentsJson, servicesJson, etablissementsJson, partnersJson] = await Promise.all([
+          postsRes.ok ? postsRes.json() : { data: [] },
+          documentsRes.ok ? documentsRes.json() : { data: [] },
+          servicesRes.ok ? servicesRes.json() : { data: [] },
+          etablissementsRes.ok ? etablissementsRes.json() : { data: [] },
+          partnersRes.ok ? partnersRes.json() : { data: [] },
+        ]);
+
+        const partnersFiltered = (partnersJson?.data || [])
+          .filter((partner: any) => partner?.name?.toLowerCase().includes(query.toLowerCase()))
+          .slice(0, 5)
+          .map((partner: any) => ({
+            id: partner.id,
+            title: partner.name,
+            href: partner.website_url || "/partenaires",
+            subtitle: partner.type === "international" ? "Partenaire international" : "Partenaire national",
+          }));
+
+        setSearchResults({
+          posts: (postsJson?.data || []).map((post: any) => ({
+            id: post.id,
+            title: post.title,
+            href: `/actualites/${post.slug}`,
+            subtitle: post.published_at ? new Date(post.published_at).toLocaleDateString("fr-FR") : "Actualité",
+          })),
+          documents: (documentsJson?.data || []).map((doc: any) => ({
+            id: doc.id,
+            title: doc.title,
+            href: `/documents/${doc.slug}`,
+            subtitle: doc.category?.name || "Document",
+          })),
+          services: (servicesJson?.data || []).map((service: any) => ({
+            id: service.id,
+            title: service.name,
+            href: `/services/${service.slug}`,
+            subtitle: service.chef_service || "Service",
+          })),
+          etablissements: (etablissementsJson?.data || []).map((etab: any) => ({
+            id: etab.id,
+            title: etab.name,
+            href: `/etablissements/${etab.slug}`,
+            subtitle: etab.acronym || "Établissement",
+          })),
+          partners: partnersFiltered,
+        });
+      } catch (error: any) {
+        if (error?.name !== "AbortError") {
+          setSearchError("Impossible de charger la recherche.");
+        }
+      } finally {
+        if (searchRequestId.current === currentId) {
+          setSearchLoading(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeout);
+    };
+  }, [searchQuery, searchOpen]);
+
   const navItems: NavItem[] = [
     {
       label: 'Université',
@@ -124,7 +243,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
     { label: 'Établissements', href: '/etablissements' },
     { label: 'Services', href: '/services' },
     { label: 'Actualités', href: '/actualites' },
-    { label: 'Partenaires', href: '/#partenaires' },
+    { label: 'Partenaires', href: '/partenaires' },
     { label: 'Contact', href: '/contact' },
   ];
 
@@ -241,11 +360,11 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-3 group">
               <div className="size-10 flex items-center justify-center">
-                {settings?.logo_url ? (
-                  <img src={settings.logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
-                ) : (
-                  <GraduationCap className="w-6 h-6 fill-current" />
-                )}
+                <img
+                  src={settings?.logo_url || "/images/placeholder.jpg"}
+                  alt="Logo"
+                  className="w-full h-full object-contain p-1"
+                />
               </div>
               <div>
                 <h1 className="text-primary dark:text-white text-xl font-bold leading-none tracking-tight group-hover:text-primary-light dark:group-hover:text-blue-300 transition-colors">
@@ -319,7 +438,12 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <button type="button" className="size-9 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors">
+            <button
+              type="button"
+              className="size-9 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Ouvrir la recherche"
+            >
               <Search className="w-5 h-5" />
             </button>
             {headerSettings.cta.text && (
@@ -416,6 +540,105 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
           </div>
         )}
       </header>
+
+      {searchOpen && (
+        <div
+          className="fixed inset-0 z-[80] bg-slate-900/60 backdrop-blur-sm flex items-start justify-center px-4 py-10"
+          onClick={() => setSearchOpen(false)}
+        >
+          <div
+            className="w-full max-w-3xl rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 px-6 pt-6">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Rechercher dans tout le site..."
+                  className="w-full h-12 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    aria-label="Effacer la recherche"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setSearchOpen(false)}
+                className="size-10 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                aria-label="Fermer la recherche"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="px-6 pb-6 pt-4">
+              {searchLoading && (
+                <p className="text-sm text-slate-500 dark:text-slate-400">Recherche en cours...</p>
+              )}
+              {searchError && (
+                <p className="text-sm text-red-500">{searchError}</p>
+              )}
+              {!searchLoading && !searchError && searchQuery && (
+                <div className="space-y-5">
+                  {([
+                    { label: "Actualités", items: searchResults.posts },
+                    { label: "Documents", items: searchResults.documents },
+                    { label: "Services", items: searchResults.services },
+                    { label: "Établissements", items: searchResults.etablissements },
+                    { label: "Partenaires", items: searchResults.partners },
+                  ] as const).map((section) => (
+                    <div key={section.label}>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                          {section.label}
+                        </p>
+                        <span className="text-xs text-slate-400">{section.items.length}</span>
+                      </div>
+                      {section.items.length ? (
+                        <div className="mt-3 grid gap-2">
+                          {section.items.map((item) => (
+                            <Link
+                              key={`${section.label}-${item.id}`}
+                              href={item.href}
+                              target={section.label === "Partenaires" && item.href.startsWith("http") ? "_blank" : undefined}
+                              rel={section.label === "Partenaires" && item.href.startsWith("http") ? "noreferrer" : undefined}
+                              onClick={() => setSearchOpen(false)}
+                              className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 px-4 py-3 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                            >
+                              <p className="text-sm font-semibold text-slate-900 dark:text-white">{item.title}</p>
+                              {item.subtitle && (
+                                <p className="text-xs text-slate-500 dark:text-slate-400">{item.subtitle}</p>
+                              )}
+                            </Link>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Aucun résultat.</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {!searchLoading && !searchError && !searchQuery && (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Saisissez un mot-clé pour lancer la recherche sur tout le site.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
