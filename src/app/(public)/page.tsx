@@ -70,11 +70,18 @@ export default async function HomePage() {
       {/* President's Word */}
       <PresidentMessage data={president} />
 
-      {/* News */}
-      <NewsSection posts={posts} />
+      {/* News & Documents - Side by Side */}
+      <section className="py-12 md:py-16 bg-white dark:bg-[#101622] transition-colors">
+        <div className="max-w-7xl mx-auto px-4 md:px-10">
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* News - Left */}
+            <NewsSection posts={posts} />
 
-      {/* Documents */}
-      <DocumentsSection documents={documents} />
+            {/* Documents - Right */}
+            <DocumentsSection documents={documents} />
+          </div>
+        </div>
+      </section>
 
       {/* Partners */}
       <PartnersSection />
