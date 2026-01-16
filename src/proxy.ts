@@ -23,11 +23,27 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. Admin host guard
+  // 2. Public hosts: block /admin and redirect to admin domain
+  const publicHosts = parseHosts(process.env.PUBLIC_HOSTS);
+  const currentHost = request.headers.get("host") || request.nextUrl.host;
+
+  if (pathname.startsWith("/admin") && publicHosts.length > 0) {
+    if (publicHosts.some((h) => currentHost.includes(h))) {
+      // Redirect to admin domain
+      const adminHosts = parseHosts(process.env.ADMIN_HOSTS);
+      if (adminHosts.length > 0) {
+        const adminHost = adminHosts.find((h) => h !== "localhost:3000") || adminHosts[0];
+        const url = request.nextUrl.clone();
+        url.host = adminHost;
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
+  // 3. Admin host guard: only allow /admin on admin hosts
   if (pathname.startsWith("/admin")) {
     const adminHosts = parseHosts(process.env.ADMIN_HOSTS);
     if (adminHosts.length > 0) {
-      const currentHost = request.headers.get("host") || request.nextUrl.host;
       if (currentHost && !adminHosts.includes(currentHost)) {
         const url = request.nextUrl.clone();
         url.host = adminHosts[0];
@@ -37,7 +53,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // 3. Admin authentication check
+  // 4. Admin authentication check
   if (pathname.startsWith("/admin")) {
     const token = request.cookies.get("umg_admin_token")?.value;
     const isLoginPage = pathname === "/admin/login";
@@ -55,12 +71,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 4. Maintenance page is always accessible
+  // 5. Maintenance page is always accessible
   if (pathname === "/maintenance") {
     return NextResponse.next();
   }
 
-  // 5. Check maintenance status for public routes
+  // 6. Check maintenance status for public routes
   try {
     const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
     
