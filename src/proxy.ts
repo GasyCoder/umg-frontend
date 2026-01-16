@@ -27,8 +27,8 @@ export async function proxy(request: NextRequest) {
   const adminHosts = parseHosts(process.env.ADMIN_HOSTS);
   const currentHost = request.headers.get("host") || request.nextUrl.host;
 
-  const isPublicHost = publicHosts.some((h) => currentHost.includes(h));
-  const isAdminHost = adminHosts.some((h) => currentHost.includes(h));
+  const isPublicHost = publicHosts.some((h) => currentHost === h);
+  const isAdminHost = adminHosts.some((h) => currentHost === h);
   const isLocalhost = currentHost.includes("localhost");
 
   // 2. Public hosts: block /admin and redirect to home
