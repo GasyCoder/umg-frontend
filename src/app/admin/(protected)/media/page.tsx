@@ -81,12 +81,12 @@ export default function AdminMediaPage() {
     }
   };
 
-  /* New states for upload workflow */
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleFilesSelection = (files: FileList) => {
     const fileArray = Array.from(files);
+    setUploadError(null);
     setSelectedFiles(fileArray);
     setUploadModalOpen(true);
   };
@@ -94,25 +94,33 @@ export default function AdminMediaPage() {
   const handleUploadConfirm = async () => {
     if (selectedFiles.length === 0) return;
     setUploading(true);
+    setUploadError(null);
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 
     try {
-      // Upload each file individually
       for (const file of selectedFiles) {
         const formData = new FormData();
         formData.append("file", file);
-        
-        await fetch("/api/admin/media", {
+
+        const res = await fetch(`${apiUrl}/admin/media`, {
           method: "POST",
           body: formData,
+          credentials: 'include', // Important for sending cookies cross-domain
         });
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => null);
+          throw new Error(errorData?.message || `L'upload de ${file.name} a échoué.`);
+        }
       }
       
       setUploadModalOpen(false);
       setSelectedFiles([]);
-      load(); // Refresh list
-    } catch (e) {
+      await load(); // Refresh list
+    } catch (e: any) {
       console.error("Upload failed", e);
-      alert("Erreur lors de l'upload des fichiers");
+      setUploadError(e.message || "Erreur lors de l'upload. Vérifiez la taille/format du fichier.");
     } finally {
       setUploading(false);
     }
@@ -296,6 +304,12 @@ export default function AdminMediaPage() {
                     </div>
                 ))}
             </div>
+
+            {uploadError && (
+              <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                {uploadError}
+              </div>
+            )}
 
             <div className="flex items-center justify-end gap-3 mt-6 border-t border-slate-100 dark:border-slate-700 pt-4">
                 <Button variant="ghost" onClick={() => setUploadModalOpen(false)} disabled={uploading}>
