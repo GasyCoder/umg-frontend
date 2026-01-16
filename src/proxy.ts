@@ -23,33 +23,33 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. Public hosts: block /admin and redirect to admin domain
   const publicHosts = parseHosts(process.env.PUBLIC_HOSTS);
+  const adminHosts = parseHosts(process.env.ADMIN_HOSTS);
   const currentHost = request.headers.get("host") || request.nextUrl.host;
 
-  if (pathname.startsWith("/admin") && publicHosts.length > 0) {
-    if (publicHosts.some((h) => currentHost.includes(h))) {
-      // Redirect to admin domain
-      const adminHosts = parseHosts(process.env.ADMIN_HOSTS);
-      if (adminHosts.length > 0) {
-        const adminHost = adminHosts.find((h) => h !== "localhost:3000") || adminHosts[0];
-        const url = request.nextUrl.clone();
-        url.host = adminHost;
-        return NextResponse.redirect(url);
-      }
-    }
+  const isPublicHost = publicHosts.some((h) => currentHost.includes(h));
+  const isAdminHost = adminHosts.some((h) => currentHost.includes(h));
+  const isLocalhost = currentHost.includes("localhost");
+
+  // 2. Public hosts: block /admin and redirect to home
+  if (isPublicHost && pathname.startsWith("/admin")) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // 3. Admin host guard: only allow /admin on admin hosts
-  if (pathname.startsWith("/admin")) {
-    const adminHosts = parseHosts(process.env.ADMIN_HOSTS);
-    if (adminHosts.length > 0) {
-      if (currentHost && !adminHosts.includes(currentHost)) {
-        const url = request.nextUrl.clone();
-        url.host = adminHosts[0];
-        url.protocol = request.nextUrl.protocol;
-        return NextResponse.redirect(url);
+  // 3. Admin host: redirect root and non-admin pages to /admin
+  if (isAdminHost && !isLocalhost) {
+    // Root path → redirect to admin login or dashboard
+    if (pathname === "/") {
+      const token = request.cookies.get("umg_admin_token")?.value;
+      if (token) {
+        return NextResponse.redirect(new URL("/admin", request.url));
       }
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+
+    // Non-admin paths (except api, maintenance) → redirect to admin
+    if (!pathname.startsWith("/admin") && pathname !== "/maintenance") {
+      return NextResponse.redirect(new URL("/admin", request.url));
     }
   }
 
@@ -57,17 +57,17 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith("/admin")) {
     const token = request.cookies.get("umg_admin_token")?.value;
     const isLoginPage = pathname === "/admin/login";
-    
+
     // If no token and not on login page, redirect to login
     if (!token && !isLoginPage) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
-    
+
     // If has token and on login page, redirect to dashboard
     if (token && isLoginPage) {
       return NextResponse.redirect(new URL("/admin", request.url));
     }
-    
+
     return NextResponse.next();
   }
 
