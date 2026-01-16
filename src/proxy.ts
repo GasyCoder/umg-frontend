@@ -1,12 +1,12 @@
 // middleware.ts
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 function parseHosts(value?: string | null) {
   if (!value) return [];
   return value
     .split(",")
-    .map((host) => host.trim().toLowerCase())
+    .map((h) => h.trim().toLowerCase())
     .filter(Boolean);
 }
 
@@ -23,7 +23,6 @@ function isAsset(pathname: string) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1) Always allow assets & next internals
   if (isAsset(pathname)) return NextResponse.next();
 
   const publicHosts = parseHosts(process.env.PUBLIC_HOSTS);
@@ -39,31 +38,26 @@ export async function middleware(request: NextRequest) {
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
   const isLoginPage = pathname === "/admin/login" || pathname === "/admin/login/";
 
-  // 2) Public hosts: block /admin
+  // Public hosts: block admin
   if (isPublicHost && isAdminPath) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // 3) Admin host: redirect root → login (ou admin si token)
+  // Admin host: root -> login/admin
   if (isAdminHost && !isLocalhost && pathname === "/") {
     return NextResponse.redirect(new URL(token ? "/admin" : "/admin/login", request.url));
   }
 
-  // 4) Admin host: redirect non-admin routes → /admin
-  // (except maintenance)
+  // Admin host: redirect non-admin routes -> /admin (except maintenance)
   if (isAdminHost && !isLocalhost && !isAdminPath && pathname !== "/maintenance") {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
-  // 5) ADMIN AUTH CHECK
+  // Admin auth rules
   if (isAdminPath) {
-    // ✅ IMPORTANT: Toujours laisser /admin/login accessible
-    // sinon boucle si token invalide/expiré
-    if (isLoginPage) {
-      return NextResponse.next();
-    }
+    // IMPORTANT: Always allow login page (avoid infinite redirect)
+    if (isLoginPage) return NextResponse.next();
 
-    // Accès aux autres pages admin: token requis
     if (!token) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
@@ -71,12 +65,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 6) Maintenance page always accessible
+  // Maintenance route
   if (pathname === "/maintenance") {
     return NextResponse.next();
   }
 
-  // 7) Maintenance check for public routes
+  // Maintenance check for public routes
   try {
     const apiUrl =
       process.env.API_URL ||
