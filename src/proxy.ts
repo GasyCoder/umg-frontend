@@ -59,17 +59,15 @@ export async function proxy(request: NextRequest) {
     // Handle both /admin/login and /admin/login/
     const isLoginPage = pathname === "/admin/login" || pathname === "/admin/login/";
 
-    // Always allow access to login page
+    // IMPORTANT: Always allow access to /admin/login without any redirect.
+    // The token may be expired/invalid - validation must happen on the backend.
+    // This prevents redirect loops between /admin/login and /admin.
     if (isLoginPage) {
-      // If already logged in, redirect to dashboard
-      if (token) {
-        return NextResponse.redirect(new URL("/admin", request.url));
-      }
-      // Not logged in, allow access to login page
       return NextResponse.next();
     }
 
-    // For other admin pages, require authentication
+    // For other admin pages, require a token to exist (not validated here)
+    // If no token, redirect to login page
     if (!token) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
