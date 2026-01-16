@@ -10,6 +10,8 @@ import Pagination from '@/components/ui/Pagination';
 import SearchBox from '@/components/ui/SearchBox';
 import { CategoryFilter, TagFilter } from '@/components/public/CategoryFilter';
 
+export const dynamic = "force-dynamic";
+
 interface NewsPageSearchParams {
   page?: string;
   category?: string;
@@ -36,7 +38,7 @@ async function fetchPosts(params: NewsPageSearchParams) {
     queryParts.push(`q=${encodeURIComponent(params.q)}`);
   }
   
-  return publicGet<PaginatedResponse<Post>>(`/posts?${queryParts.join('&')}`, 60);
+  return publicGet<PaginatedResponse<Post>>(`/posts?${queryParts.join('&')}`, 300);
 }
 
 // Fetch categories for sidebar
@@ -64,7 +66,10 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
   
   // Parallel data fetching
   const [postsRes, categoriesRes, tagsRes, eventsRes, announcementsRes] = await Promise.all([
-    fetchPosts(params),
+    fetchPosts(params).catch(() => ({
+      data: [],
+      meta: { current_page: 1, last_page: 1, per_page: 9, total: 0 },
+    })),
     fetchCategories(),
     fetchTags(),
     fetchEvents(),

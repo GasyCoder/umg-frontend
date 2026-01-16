@@ -11,6 +11,8 @@ import Pagination from '@/components/ui/Pagination';
 import SearchBox from '@/components/ui/SearchBox';
 import { DocumentCategoryFilter } from '@/components/public/DocumentCategoryFilter';
 
+export const dynamic = "force-dynamic";
+
 interface DocumentsPageSearchParams {
   page?: string;
   category?: string;
@@ -33,7 +35,7 @@ async function fetchDocuments(params: DocumentsPageSearchParams) {
     queryParts.push(`q=${encodeURIComponent(params.q)}`);
   }
   
-  return publicGet<PaginatedResponse<Document>>(`/documents?${queryParts.join('&')}`, 60);
+  return publicGet<PaginatedResponse<Document>>(`/documents?${queryParts.join('&')}`, 300);
 }
 
 // Fetch categories for sidebar
@@ -45,7 +47,10 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
   const params = await searchParams;
   
   const [documentsRes, categoriesRes] = await Promise.all([
-    fetchDocuments(params),
+    fetchDocuments(params).catch(() => ({
+      data: [],
+      meta: { current_page: 1, last_page: 1, per_page: 12, total: 0 },
+    })),
     fetchDocumentCategories(),
   ]);
 

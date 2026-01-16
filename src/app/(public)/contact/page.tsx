@@ -3,6 +3,8 @@ import { getSiteSettings } from "@/lib/public-api";
 import { Mail, MapPin, Phone, Clock } from "lucide-react";
 import ContactForm from "./ContactForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function ContactPage() {
   const settings = await getSiteSettings().catch(() => null);
   const address = settings?.site_address || "Campus Universitaire, Mahajanga 401, Madagascar";

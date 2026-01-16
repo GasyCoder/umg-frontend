@@ -1,5 +1,23 @@
-export const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL!;
+export const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL;
 import type { SiteSettings } from "./types";
+
+const DEFAULT_TIMEOUT_MS = 8000;
+
+async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const signal = init.signal ?? controller.signal;
+
+  try {
+    return await fetch(input, { ...init, signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function getBaseUrl() {
+  return PUBLIC_API;
+}
 
 async function safeJson(res: Response) {
   const txt = await res.text();
@@ -10,11 +28,16 @@ async function safeJson(res: Response) {
   }
 }
 
-export async function publicGet<T>(path: string, revalidate = 60): Promise<T> {
-  const res = await fetch(`${PUBLIC_API}${path}`, {
+export async function publicGet<T>(path: string, revalidate = 60, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<T> {
+  const baseUrl = getBaseUrl();
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_API_URL missing");
+  }
+
+  const res = await fetchWithTimeout(`${baseUrl}${path}`, {
     headers: { Accept: "application/json" },
     next: { revalidate },
-  });
+  }, timeoutMs);
 
   if (!res.ok) {
     const body = await safeJson(res);
@@ -24,18 +47,23 @@ export async function publicGet<T>(path: string, revalidate = 60): Promise<T> {
 }
 
 export async function getSiteSettings() {
-  return publicGet<SiteSettings>("/settings");
+  return publicGet<SiteSettings>("/settings", 300);
 }
 
-export async function publicPost<T>(path: string, body: any): Promise<T> {
-  const res = await fetch(`${PUBLIC_API}${path}`, {
+export async function publicPost<T>(path: string, body: any, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<T> {
+  const baseUrl = getBaseUrl();
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_API_URL missing");
+  }
+
+  const res = await fetchWithTimeout(`${baseUrl}${path}`, {
     method: "POST",
     headers: { 
       "Content-Type": "application/json",
       Accept: "application/json" 
     },
     body: JSON.stringify(body),
-  });
+  }, timeoutMs);
 
   if (!res.ok) {
     const json = await safeJson(res);

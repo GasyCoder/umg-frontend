@@ -2,6 +2,8 @@ import Container from "@/components/Container";
 import { publicGet } from "@/lib/public-api";
 import { ArrowUpRight } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 type Partner = {
   id: number;
   name: string;
@@ -14,7 +16,7 @@ type Partner = {
 };
 
 export default async function PartnershipsPage() {
-  const res = await publicGet<{ data: Partner[] }>("/partners?per_page=100", 300);
+  const res = await publicGet<{ data: Partner[] }>("/partners?per_page=100", 300).catch(() => ({ data: [] }));
   const partners = res.data ?? [];
 
   const list = partners;

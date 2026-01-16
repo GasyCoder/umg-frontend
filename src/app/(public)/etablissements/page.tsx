@@ -1,6 +1,8 @@
 import { publicGet } from "@/lib/public-api";
 import EtablissementsPageClient from "./EtablissementsPageClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Établissements - Université de Mahajanga",
   description: "Les facultés, écoles et instituts de l'Université de Mahajanga",
@@ -25,7 +27,7 @@ type Etablissement = {
 export default async function EtablissementsPage() {
   let etablissements: Etablissement[] = [];
   try {
-    const res = await publicGet<{ data: Etablissement[] }>("/etablissements?per_page=50", 60);
+    const res = await publicGet<{ data: Etablissement[] }>("/etablissements?per_page=50", 300);
     etablissements = res.data || [];
   } catch {
     // No etablissements yet
