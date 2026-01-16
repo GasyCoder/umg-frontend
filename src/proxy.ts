@@ -1,63 +1,75 @@
-// middleware.ts
-import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 function parseHosts(value?: string | null) {
   if (!value) return [];
   return value
     .split(",")
-    .map((h) => h.trim().toLowerCase())
+    .map((host) => host.trim())
     .filter(Boolean);
 }
 
-function isAsset(pathname: string) {
-  return (
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // 1. Always allow static assets and API routes
+  if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.includes("/static") ||
     pathname.match(/\.(png|jpg|jpeg|svg|ico|css|js|woff|woff2|webp|gif)$/) ||
     pathname === "/favicon.ico"
-  );
-}
-
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (isAsset(pathname)) return NextResponse.next();
+  ) {
+    return NextResponse.next();
+  }
 
   const publicHosts = parseHosts(process.env.PUBLIC_HOSTS);
   const adminHosts = parseHosts(process.env.ADMIN_HOSTS);
+  const currentHost = request.headers.get("host") || request.nextUrl.host;
 
-  const host = (request.headers.get("host") || request.nextUrl.host || "").toLowerCase();
-  const isLocalhost = host.includes("localhost") || host.includes("127.0.0.1");
+  const isPublicHost = publicHosts.some((h) => currentHost.includes(h));
+  const isAdminHost = adminHosts.some((h) => currentHost.includes(h));
+  const isLocalhost = currentHost.includes("localhost");
 
-  const isPublicHost = publicHosts.some((h) => host === h || host.endsWith(`.${h}`) || host.includes(h));
-  const isAdminHost = adminHosts.some((h) => host === h || host.endsWith(`.${h}`) || host.includes(h));
-
-  const token = request.cookies.get("umg_admin_token")?.value;
-  const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
-  const isLoginPage = pathname === "/admin/login" || pathname === "/admin/login/";
-
-  // Public hosts: block admin
-  if (isPublicHost && isAdminPath) {
+  // 2. Public hosts: block /admin and redirect to home
+  if (isPublicHost && pathname.startsWith("/admin")) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Admin host: root -> login/admin
-  if (isAdminHost && !isLocalhost && pathname === "/") {
-    return NextResponse.redirect(new URL(token ? "/admin" : "/admin/login", request.url));
+  // 3. Admin host: redirect root and non-admin pages to /admin
+  if (isAdminHost && !isLocalhost) {
+    // Root path → redirect to admin login or dashboard
+    if (pathname === "/") {
+      const token = request.cookies.get("umg_admin_token")?.value;
+      if (token) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+
+    // Non-admin paths (except api, maintenance) → redirect to admin
+    if (!pathname.startsWith("/admin") && pathname !== "/maintenance") {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
   }
 
-  // Admin host: redirect non-admin routes -> /admin (except maintenance)
-  if (isAdminHost && !isLocalhost && !isAdminPath && pathname !== "/maintenance") {
-    return NextResponse.redirect(new URL("/admin", request.url));
-  }
+  // 4. Admin authentication check
+  if (pathname.startsWith("/admin")) {
+    const token = request.cookies.get("umg_admin_token")?.value;
+    // Handle both /admin/login and /admin/login/
+    const isLoginPage = pathname === "/admin/login" || pathname === "/admin/login/";
 
-  // Admin auth rules
-  if (isAdminPath) {
-    // IMPORTANT: Always allow login page (avoid infinite redirect)
-    if (isLoginPage) return NextResponse.next();
+    // Always allow access to login page
+    if (isLoginPage) {
+      // If already logged in, redirect to dashboard
+      if (token) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
+      // Not logged in, allow access to login page
+      return NextResponse.next();
+    }
 
+    // For other admin pages, require authentication
     if (!token) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
@@ -65,18 +77,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Maintenance route
+  // 5. Maintenance page is always accessible
   if (pathname === "/maintenance") {
     return NextResponse.next();
   }
 
-  // Maintenance check for public routes
+  // 6. Check maintenance status for public routes
   try {
-    const apiUrl =
-      process.env.API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      "http://127.0.0.1:8000/api/v1";
-
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+    
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2000);
 
@@ -91,17 +100,21 @@ export async function middleware(request: NextRequest) {
 
     if (res.ok) {
       const data = await res.json();
-      if (data?.maintenance_mode === true) {
+      console.log("[Middleware] Maintenance check:", { pathname, maintenance_mode: data.maintenance_mode });
+
+      if (data.maintenance_mode === true) {
         return NextResponse.rewrite(new URL("/maintenance", request.url));
       }
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    // Ignore maintenance check errors when API is unreachable in dev.
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };
