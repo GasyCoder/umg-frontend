@@ -43,6 +43,7 @@ export default function AdminMediaPage() {
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<globalThis.File[]>([]);
 
   async function load() {
     setLoading(true);
