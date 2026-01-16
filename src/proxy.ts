@@ -56,16 +56,22 @@ export async function proxy(request: NextRequest) {
   // 4. Admin authentication check
   if (pathname.startsWith("/admin")) {
     const token = request.cookies.get("umg_admin_token")?.value;
-    const isLoginPage = pathname === "/admin/login";
+    // Handle both /admin/login and /admin/login/
+    const isLoginPage = pathname === "/admin/login" || pathname === "/admin/login/";
 
-    // If no token and not on login page, redirect to login
-    if (!token && !isLoginPage) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+    // Always allow access to login page
+    if (isLoginPage) {
+      // If already logged in, redirect to dashboard
+      if (token) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
+      // Not logged in, allow access to login page
+      return NextResponse.next();
     }
 
-    // If has token and on login page, redirect to dashboard
-    if (token && isLoginPage) {
-      return NextResponse.redirect(new URL("/admin", request.url));
+    // For other admin pages, require authentication
+    if (!token) {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
     return NextResponse.next();
