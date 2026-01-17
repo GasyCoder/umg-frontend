@@ -31,6 +31,8 @@ type PresidentMessage = {
   created_at: string;
 };
 
+type PresidentPhoto = { id: number; url: string };
+
 const emptyForm = {
   title: "",
   intro: "",
@@ -39,7 +41,7 @@ const emptyForm = {
   president_title: "Président",
   mandate_period: "",
   photo_id: null as number | null,
-  photo: null as Media | null,
+  photo: null as PresidentPhoto | null,
   is_active: false,
 };
 
@@ -144,7 +146,7 @@ export default function AdminPresidentMessagePage() {
     setForm((prev) => ({
       ...prev,
       photo_id: medias[0].id,
-      photo: medias[0],
+      photo: { id: medias[0].id, url: medias[0].url },
     }));
   };
 
