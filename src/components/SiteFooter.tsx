@@ -8,7 +8,7 @@ interface SiteFooterProps {
   settings?: SiteSettings | null;
 }
 
-function limitString(value: string, max = 25) {
+function limitString(value: string, max = 40) {
   if (value.length <= max) return value;
   return `${value.slice(0, max)}...`;
 }
@@ -19,7 +19,7 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
   const siteDescription = limitString(
     settings?.site_description ||
       "L'établissement public d'enseignement supérieur de référence, engagé pour le développement durable et l'innovation à Madagascar.",
-    25
+    40
   );
 
   return (
