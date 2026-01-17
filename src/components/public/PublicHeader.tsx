@@ -284,8 +284,8 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
       children: [
         { label: 'Historique', href: '/universite/historique', icon: History },
         { label: 'Organisation', href: '/universite/organisation', icon: Building2 },
-        { label: 'Textes et arrêtés', href: '/universite/textes', icon: FileText },
         { label: 'Services', href: '/services', icon: Briefcase },
+        { label: 'Textes et arrêtés', href: '/universite/textes', icon: FileText },
       ]
     },
     { label: 'Établissements', href: '/etablissements' },
