@@ -19,7 +19,7 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
   const siteDescription = limitString(
     settings?.site_description ||
       "L'établissement public d'enseignement supérieur de référence, engagé pour le développement durable et l'innovation à Madagascar.",
-    15
+    25
   );
 
   return (
