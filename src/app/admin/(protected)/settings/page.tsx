@@ -144,7 +144,12 @@ export default function AdminSettingsPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
       const tokenRes = await fetch("/api/auth/token", { credentials: "include" });
       const tokenData = tokenRes.ok ? await tokenRes.json().catch(() => null) : null;
-      const authHeader = tokenData?.token ? { Authorization: `Bearer ${tokenData.token}` } : {};
+      const token = tokenData?.token as string | undefined;
+      const authHeader: HeadersInit | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
+      if (!token) {
+        showToast("error", "Session expirée. Veuillez vous reconnecter.");
+        return;
+      }
       const formData = new FormData();
       formData.append("file", file);
       formData.append("alt", type === "logo" ? "Logo du site" : "Favicon du site");

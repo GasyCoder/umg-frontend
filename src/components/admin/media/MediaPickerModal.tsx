@@ -109,7 +109,11 @@ export function MediaPickerModal({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
       const tokenRes = await fetch("/api/auth/token", { credentials: "include" });
       const tokenData = tokenRes.ok ? await tokenRes.json().catch(() => null) : null;
-      const authHeader = tokenData?.token ? { Authorization: `Bearer ${tokenData.token}` } : {};
+      const token = tokenData?.token as string | undefined;
+      const authHeader: HeadersInit | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
+      if (!token) {
+        throw new Error("Session expirée. Veuillez vous reconnecter.");
+      }
 
       // Upload files sequentially or in parallel
       const uploadPromises = Array.from(uploadFiles).map(async (file) => {
@@ -125,8 +129,8 @@ export function MediaPickerModal({
             if (res.status === 413) {
               throw new Error("Fichier trop volumineux (limite serveur).");
             }
-            const errorText = await res.text();
-            throw new Error(errorText || `Failed to upload ${file.name}`);
+            const errorData = await res.json().catch(() => null);
+            throw new Error(errorData?.message || `Échec de l'upload ${file.name} (code ${res.status}).`);
           }
           return res.json();
       });
@@ -138,6 +142,10 @@ export function MediaPickerModal({
       fetchMedias(1, ""); // Refresh library
     } catch (err) {
       console.error(err);
+      if (err instanceof TypeError && String(err.message).includes("fetch")) {
+        alert("Erreur réseau/CORS. Vérifiez l'accès au backend.");
+        return;
+      }
       const message =
         err instanceof Error
           ? err.message

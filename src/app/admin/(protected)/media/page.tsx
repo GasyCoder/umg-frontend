@@ -100,7 +100,13 @@ export default function AdminMediaPage() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
     const tokenRes = await fetch("/api/auth/token", { credentials: "include" });
     const tokenData = tokenRes.ok ? await tokenRes.json().catch(() => null) : null;
-    const authHeader = tokenData?.token ? { Authorization: `Bearer ${tokenData.token}` } : {};
+    const token = tokenData?.token as string | undefined;
+    const authHeader: HeadersInit | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
+    if (!token) {
+      setUploadError("Session expirée. Veuillez vous reconnecter.");
+      setUploading(false);
+      return;
+    }
 
     try {
       for (const file of selectedFiles) {
@@ -119,7 +125,7 @@ export default function AdminMediaPage() {
             throw new Error("Fichier trop volumineux (limite serveur).");
           }
           const errorData = await res.json().catch(() => null);
-          throw new Error(errorData?.message || `L'upload de ${file.name} a échoué.`);
+          throw new Error(errorData?.message || `L'upload de ${file.name} a échoué (code ${res.status}).`);
         }
       }
       
@@ -128,6 +134,10 @@ export default function AdminMediaPage() {
       await load(); // Refresh list
     } catch (e: any) {
       console.error("Upload failed", e);
+      if (e instanceof TypeError && String(e.message).includes("fetch")) {
+        setUploadError("Erreur réseau/CORS. Vérifiez l'accès au backend.");
+        return;
+      }
       setUploadError(e.message || "Erreur lors de l'upload. Vérifiez la taille/format du fichier.");
     } finally {
       setUploading(false);
