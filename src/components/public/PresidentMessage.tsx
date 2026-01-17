@@ -1,16 +1,39 @@
 "use client";
 
-import { Quote } from "lucide-react";
+import { useMemo, useState } from "react";
 import type { PresidentMessage } from "@/lib/types";
 
 interface PresidentMessageProps {
     data?: PresidentMessage | null;
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function looksLikeHtml(value: string) {
+  return /<\/?[a-z][\s\S]*>/i.test(value);
+}
+
 export default function PresidentMessage({ data }: PresidentMessageProps) {
+  const [expanded, setExpanded] = useState(false);
   const photoUrl =
     data?.photo?.url ||
     "https://lh3.googleusercontent.com/aida-public/AB6AXuCJsTyyt3qhu-9IbTwrB9In9ZkJ7cyG_NpJuOLXUCuXwkgnHBKdrUdm5F2qmT-3CGXAAmL_ICYgygjj_-TPlDcZlPlgUYcPrmX0HnJl0TKMJJmodknVFAuu39kxmu7ZzWzWtEx7TOSUaNzCyKfjSP0dA7usQKNv86m2xU1vL_xTyTAGvjBxR_ts11Yny5tjnhnVb2in91zKIZxxNNT41Pd_Zv4fY_Mq8EHdc7e5-jIcP6q_SkR4_ROMwV86XA1gjfTyTRwbLQytYtc";
+
+  const contentHtml = useMemo(() => {
+    const content = (data?.content ?? "").trim();
+    if (!content) return "";
+    if (looksLikeHtml(content)) return content;
+    return `<p>${escapeHtml(content).replaceAll("\n", "<br />")}</p>`;
+  }, [data?.content]);
+
+  const hasExpandableContent = Boolean(contentHtml);
 
   return (
     <section className="py-16 bg-slate-50 dark:bg-[#0B1120]/50 border-y border-slate-200 dark:border-slate-800 transition-colors">
@@ -44,20 +67,38 @@ export default function PresidentMessage({ data }: PresidentMessageProps) {
               </blockquote>
             </div>
             
-            <p className="text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
+            <p
+              className={`text-slate-500 dark:text-slate-400 leading-relaxed ${
+                expanded ? "mb-6" : "mb-4 line-clamp-2"
+              }`}
+            >
                {data?.title ? data.title : "En rejoignant l'UMG, vous intégrez une communauté dynamique, solidaire et tournée vers l'excellence. Ensemble, construisons l'avenir de Madagascar."}
             </p>
+
+            {expanded && hasExpandableContent ? (
+              <article className="prose prose-slate dark:prose-invert max-w-none mb-8">
+                <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+              </article>
+            ) : null}
+
+            {hasExpandableContent ? (
+              <div className="mb-8">
+                <button
+                  type="button"
+                  onClick={() => setExpanded((v) => !v)}
+                  aria-expanded={expanded}
+                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 transition-colors"
+                >
+                  {expanded ? "Réduire" : "Lire la suite"}
+                </button>
+              </div>
+            ) : null}
             
-            <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 pt-6">
+            <div className="flex items-center border-t border-slate-200 dark:border-slate-700 pt-6">
               <div>
                 <p className="font-bold text-slate-900 dark:text-white text-lg">{data?.president_name || "Prof. Ravelomanana Jean"}</p>
                 <p className="text-sm text-primary dark:text-blue-400 font-medium">{data?.president_title || "Président de l'Université"}</p>
               </div>
-              <img 
-                alt="Signature" 
-                className="h-12 opacity-80 dark:invert" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYztx2CFeWLJxIJa9ian_-rkTMDhVZ2IimFVi9jKogwMXMkrDYExTxtblC-DlByza-WbywcbD1fMdG6XKR5Z6e7I5NA2t1lYxnAg2-PH77BG-Yull0bzgo7k6HeYHDdMhNZMXBqMdm51SOr5W6X_Dss4XisYG8yFOiYCpQnGrZ7cPesYvX50Tvk5t6JpkK2veC0V0FKck9djEpt1F35i_aNdsyrr-bUeoMQ4oSnKoLzXVQepcP6Ot4vLDqFT9_dfnkgRLGUP4MtQg" 
-              />
             </div>
           </div>
           
