@@ -8,9 +8,19 @@ interface SiteFooterProps {
   settings?: SiteSettings | null;
 }
 
+function limitString(value: string, max = 15) {
+  if (value.length <= max) return value;
+  return `${value.slice(0, max)}...`;
+}
+
 export default function SiteFooter({ settings }: SiteFooterProps) {
   const currentYear = new Date().getFullYear();
   const social = settings?.social;
+  const siteDescription = limitString(
+    settings?.site_description ||
+      "L'établissement public d'enseignement supérieur de référence, engagé pour le développement durable et l'innovation à Madagascar.",
+    15
+  );
 
   return (
     <footer className="bg-primary dark:bg-[#0B1120] text-white pt-20 pb-8 transition-colors">
@@ -29,7 +39,7 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
                         </div>
                     </div>
                     <p className="text-sm leading-relaxed text-blue-100/80">
-                        {settings?.site_description || "L'établissement public d'enseignement supérieur de référence, engagé pour le développement durable et l'innovation à Madagascar."}
+                        {siteDescription}
                     </p>
                     <div className="flex gap-3">
                         {social?.facebook && (

@@ -447,8 +447,8 @@ export default function AdminSettingsPage() {
                       </div>
                       {aboutVideoUrl ? (
                         <div className="flex flex-col gap-3">
-                          <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-                            <video className="w-full" controls preload="metadata">
+                          <div className="mx-auto w-full max-w-lg aspect-video relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                            <video className="h-full w-full object-contain bg-black/90" controls preload="metadata">
                               <source src={aboutVideoUrl} />
                             </video>
                           </div>
@@ -476,11 +476,11 @@ export default function AdminSettingsPage() {
                       </div>
                       {aboutVideoPosterUrl ? (
                         <div className="flex flex-col gap-3">
-                          <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                          <div className="mx-auto w-full max-w-lg aspect-video relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                             <img
                               src={aboutVideoPosterUrl}
                               alt="Couverture vidéo"
-                              className="w-full object-cover"
+                              className="h-full w-full object-cover"
                             />
                           </div>
                           <div className="flex items-center gap-2">
