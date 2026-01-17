@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
 import {
-  GraduationCap,
   Laptop,
   BookOpen,
   Mail,
@@ -15,7 +14,9 @@ import {
   History,
   Building2,
   FileText,
-  Globe
+  Globe,
+  Briefcase,
+  FolderKanban
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { SiteSettings } from "@/lib/types";
@@ -43,11 +44,50 @@ interface NavItem {
   children?: NavItem[];
 }
 
+type ApiListResponse<T> = {
+  data?: T[];
+};
+
 type SearchItem = {
   id: string | number;
   title: string;
   href: string;
   subtitle?: string;
+};
+
+type PostSearchApiItem = {
+  id: number | string;
+  title: string;
+  slug: string;
+  published_at?: string | null;
+};
+
+type DocumentSearchApiItem = {
+  id: number | string;
+  title: string;
+  slug: string;
+  category?: { name?: string | null } | null;
+};
+
+type ServiceSearchApiItem = {
+  id: number | string;
+  name: string;
+  slug: string;
+  chef_service?: string | null;
+};
+
+type EtablissementSearchApiItem = {
+  id: number | string;
+  name: string;
+  slug: string;
+  acronym?: string | null;
+};
+
+type PartnerSearchApiItem = {
+  id: number | string;
+  name: string;
+  website_url?: string | null;
+  type?: string | null;
 };
 
 export default function PublicHeader({ settings }: PublicHeaderProps) {
@@ -169,18 +209,24 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
 
         if (searchRequestId.current !== currentId) return;
 
-        const [postsJson, documentsJson, servicesJson, etablissementsJson, partnersJson] = await Promise.all([
+        const [postsJson, documentsJson, servicesJson, etablissementsJson, partnersJson] = (await Promise.all([
           postsRes.ok ? postsRes.json() : { data: [] },
           documentsRes.ok ? documentsRes.json() : { data: [] },
           servicesRes.ok ? servicesRes.json() : { data: [] },
           etablissementsRes.ok ? etablissementsRes.json() : { data: [] },
           partnersRes.ok ? partnersRes.json() : { data: [] },
-        ]);
+        ])) as [
+          ApiListResponse<PostSearchApiItem>,
+          ApiListResponse<DocumentSearchApiItem>,
+          ApiListResponse<ServiceSearchApiItem>,
+          ApiListResponse<EtablissementSearchApiItem>,
+          ApiListResponse<PartnerSearchApiItem>
+        ];
 
         const partnersFiltered = (partnersJson?.data || [])
-          .filter((partner: any) => partner?.name?.toLowerCase().includes(query.toLowerCase()))
+          .filter((partner) => partner?.name?.toLowerCase().includes(query.toLowerCase()))
           .slice(0, 5)
-          .map((partner: any) => ({
+          .map((partner) => ({
             id: partner.id,
             title: partner.name,
             href: partner.website_url || "/partenaires",
@@ -188,25 +234,25 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
           }));
 
         setSearchResults({
-          posts: (postsJson?.data || []).map((post: any) => ({
+          posts: (postsJson?.data || []).map((post) => ({
             id: post.id,
             title: post.title,
             href: `/actualites/${post.slug}`,
             subtitle: post.published_at ? new Date(post.published_at).toLocaleDateString("fr-FR") : "Actualité",
           })),
-          documents: (documentsJson?.data || []).map((doc: any) => ({
+          documents: (documentsJson?.data || []).map((doc) => ({
             id: doc.id,
             title: doc.title,
             href: `/documents/${doc.slug}`,
             subtitle: doc.category?.name || "Document",
           })),
-          services: (servicesJson?.data || []).map((service: any) => ({
+          services: (servicesJson?.data || []).map((service) => ({
             id: service.id,
             title: service.name,
             href: `/services/${service.slug}`,
             subtitle: service.chef_service || "Service",
           })),
-          etablissements: (etablissementsJson?.data || []).map((etab: any) => ({
+          etablissements: (etablissementsJson?.data || []).map((etab) => ({
             id: etab.id,
             title: etab.name,
             href: `/etablissements/${etab.slug}`,
@@ -214,8 +260,9 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
           })),
           partners: partnersFiltered,
         });
-      } catch (error: any) {
-        if (error?.name !== "AbortError") {
+      } catch (error: unknown) {
+        const errorName = error instanceof Error ? error.name : null;
+        if (errorName !== "AbortError") {
           setSearchError("Impossible de charger la recherche.");
         }
       } finally {
@@ -238,10 +285,17 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
         { label: 'Historique', href: '/universite/historique', icon: History },
         { label: 'Organisation', href: '/universite/organisation', icon: Building2 },
         { label: 'Textes et arrêtés', href: '/universite/textes', icon: FileText },
+        { label: 'Services', href: '/services', icon: Briefcase },
       ]
     },
     { label: 'Établissements', href: '/etablissements' },
-    { label: 'Services', href: '/services' },
+    {
+      label: 'Projets Internationale',
+      children: [
+        { label: 'Projet InfPrev4frica', href: '/projets-internationale/infprev4frica', icon: FolderKanban },
+        { label: 'Projet DOCET4AFRICA', href: '/projets-internationale/docet4africa', icon: FolderKanban },
+      ],
+    },
     { label: 'Actualités', href: '/actualites' },
     { label: 'Partenaires', href: '/partenaires' },
     { label: 'Contact', href: '/contact' },
