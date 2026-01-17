@@ -8,6 +8,10 @@ interface PresidentMessageProps {
 }
 
 export default function PresidentMessage({ data }: PresidentMessageProps) {
+  const photoUrl =
+    data?.photo?.url ||
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuCJsTyyt3qhu-9IbTwrB9In9ZkJ7cyG_NpJuOLXUCuXwkgnHBKdrUdm5F2qmT-3CGXAAmL_ICYgygjj_-TPlDcZlPlgUYcPrmX0HnJl0TKMJJmodknVFAuu39kxmu7ZzWzWtEx7TOSUaNzCyKfjSP0dA7usQKNv86m2xU1vL_xTyTAGvjBxR_ts11Yny5tjnhnVb2in91zKIZxxNNT41Pd_Zv4fY_Mq8EHdc7e5-jIcP6q_SkR4_ROMwV86XA1gjfTyTRwbLQytYtc";
+
   return (
     <section className="py-16 bg-slate-50 dark:bg-[#0B1120]/50 border-y border-slate-200 dark:border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 md:px-10">
@@ -19,7 +23,7 @@ export default function PresidentMessage({ data }: PresidentMessageProps) {
               <div className="relative bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-xl">
                 <div 
                   className="aspect-[4/5] w-full rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-700 bg-cover bg-center" 
-                  style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJsTyyt3qhu-9IbTwrB9In9ZkJ7cyG_NpJuOLXUCuXwkgnHBKdrUdm5F2qmT-3CGXAAmL_ICYgygjj_-TPlDcZlPlgUYcPrmX0HnJl0TKMJJmodknVFAuu39kxmu7ZzWzWtEx7TOSUaNzCyKfjSP0dA7usQKNv86m2xU1vL_xTyTAGvjBxR_ts11Yny5tjnhnVb2in91zKIZxxNNT41Pd_Zv4fY_Mq8EHdc7e5-jIcP6q_SkR4_ROMwV86XA1gjfTyTRwbLQytYtc")' }}
+                  style={{ backgroundImage: `url("${photoUrl}")` }}
                 ></div>
               </div>
             </div>
