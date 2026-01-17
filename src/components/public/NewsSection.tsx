@@ -7,9 +7,10 @@ import NewsCard from "./NewsCard";
 
 interface NewsSectionProps {
   posts: Post[];
+  maxItems?: number;
 }
 
-export default function NewsSection({ posts }: NewsSectionProps) {
+export default function NewsSection({ posts, maxItems = 3 }: NewsSectionProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Section Header */}
@@ -32,7 +33,7 @@ export default function NewsSection({ posts }: NewsSectionProps) {
       {/* Posts Grid */}
       {posts && posts.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.slice(0, 6).map((post) => (
+          {posts.slice(0, maxItems).map((post) => (
             <NewsCard key={post.id} post={post} />
           ))}
         </div>
