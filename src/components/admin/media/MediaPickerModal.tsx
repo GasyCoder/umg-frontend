@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Search, Upload, Check, Image as ImageIcon, Loader2, Video, FileText } from "lucide-react";
 import { clsx } from "clsx";
+import { compressImageFile } from "@/lib/image-compress";
 
 export interface Media {
   id: number;
@@ -117,8 +118,9 @@ export function MediaPickerModal({
 
       // Upload files sequentially or in parallel
       const uploadPromises = Array.from(uploadFiles).map(async (file) => {
+          const preparedFile = await compressImageFile(file).catch(() => file);
           const formData = new FormData();
-          formData.append("file", file);
+          formData.append("file", preparedFile);
           const res = await fetch(`${apiUrl}/admin/media`, {
               method: "POST",
               body: formData,

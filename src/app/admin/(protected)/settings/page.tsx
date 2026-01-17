@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/Card";
 import { SkeletonFormPage } from "@/components/ui/Skeleton";
 import { MediaPickerModal } from "@/components/admin/media/MediaPickerModal";
+import { compressImageFile } from "@/lib/image-compress";
 
 type SettingItem = {
   key: string;
@@ -151,7 +152,8 @@ export default function AdminSettingsPage() {
         return;
       }
       const formData = new FormData();
-      formData.append("file", file);
+      const preparedFile = await compressImageFile(file).catch(() => file);
+      formData.append("file", preparedFile);
       formData.append("alt", type === "logo" ? "Logo du site" : "Favicon du site");
 
       const res = await fetch(`${apiUrl}/admin/media`, {

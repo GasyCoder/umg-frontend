@@ -22,6 +22,7 @@ import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
+import { compressImageFile } from "@/lib/image-compress";
 
 type MediaItem = {
   id: number;
@@ -110,8 +111,9 @@ export default function AdminMediaPage() {
 
     try {
       for (const file of selectedFiles) {
+        const preparedFile = await compressImageFile(file).catch(() => file);
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", preparedFile);
 
         const res = await fetch(`${apiUrl}/admin/media`, {
           method: "POST",
