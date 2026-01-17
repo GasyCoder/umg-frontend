@@ -8,7 +8,7 @@ interface SiteFooterProps {
   settings?: SiteSettings | null;
 }
 
-function limitString(value: string, max = 15) {
+function limitString(value: string, max = 25) {
   if (value.length <= max) return value;
   return `${value.slice(0, max)}...`;
 }
