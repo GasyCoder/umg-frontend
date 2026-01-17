@@ -1,10 +1,9 @@
 import { Suspense } from 'react';
 import { publicGet } from '@/lib/public-api';
 import type { Document, DocumentCategory, PaginatedResponse } from '@/lib/types';
-import { PageHeader } from '@/components/layout/PageLayout';
+import Container from '@/components/Container';
 import PageLayout from '@/components/layout/PageLayout';
-import { Breadcrumb } from '@/components/layout';
-import SidebarLeft, { SidebarWidget } from '@/components/layout/SidebarLeft';
+import { SidebarWidget } from '@/components/layout/SidebarLeft';
 import SidebarRight, { NewsletterWidget } from '@/components/layout/SidebarRight';
 import { DocumentCard } from '@/components/public';
 import Pagination from '@/components/ui/Pagination';
@@ -61,85 +60,65 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
   return (
     <main className="bg-slate-50/60 dark:bg-slate-950">
       {/* Page Header */}
-      <PageHeader
-        label="Documents"
-        title="Ressources officielles et téléchargeables"
-        subtitle="Accédez aux documents administratifs, guides, rapports et formulaires utiles pour étudiants, enseignants et partenaires."
-        variant="dark"
-      >
-        <div className="mt-8 max-w-xl">
-          <Suspense fallback={<div className="h-12 bg-white/10 rounded-xl animate-pulse" />}>
-            <SearchBox 
-              placeholder="Rechercher un document..."
-              paramName="q"
-              className="[&_input]:bg-white/10 [&_input]:border-white/20 [&_input]:text-white [&_input]:placeholder:text-indigo-100"
-            />
-          </Suspense>
-        </div>
-      </PageHeader>
+      <section className="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-white">
+        <Container className="max-w-[1280px] px-5 md:px-10">
+          <div className="py-6 md:py-8">
+            <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">
+              Documents
+            </p>
+            <h1 className="mt-3 text-xl md:text-3xl font-bold tracking-tight">
+              Ressources et téléchargements
+            </h1>
+            <p className="mt-3 max-w-xl text-base text-slate-600 dark:text-slate-300">
+              Documents administratifs, guides, rapports et formulaires.
+            </p>
+          </div>
+        </Container>
+      </section>
 
-      {/* Breadcrumb */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <Breadcrumb items={[{ label: 'Documents' }]} />
-        </div>
-      </div>
-
-      {/* Main Content with 3-Column Layout */}
+      {/* Main Content */}
       <PageLayout
-        variant="three-column"
-        sidebarLeft={
-          <SidebarLeft>
-            <SidebarWidget title="Documents">
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Consultez nos documents disponibles.
-              </p>
+        variant="with-right"
+        containerClassName="max-w-[1280px] px-5 md:px-10"
+        sidebarRight={
+          <SidebarRight sticky>
+            {/* Search */}
+            <SidebarWidget title="Rechercher">
+              <Suspense fallback={<div className="h-12 animate-pulse bg-slate-100 rounded" />}>
+                <SearchBox placeholder="Rechercher un document..." paramName="q" />
+              </Suspense>
             </SidebarWidget>
 
             {/* Categories Widget */}
             <SidebarWidget title="Catégories">
               <Suspense fallback={<div className="h-20 animate-pulse bg-slate-100 rounded" />}>
-                <DocumentCategoryFilter 
-                  categories={categories} 
-                  activeSlug={params.category}
-                />
+                <DocumentCategoryFilter categories={categories} activeSlug={params.category} />
               </Suspense>
             </SidebarWidget>
-          </SidebarLeft>
-        }
-        sidebarRight={
-          <SidebarRight sticky>
+
             {/* Quick Info */}
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-                Informations
-              </h3>
+            <SidebarWidget title="Informations">
               <p className="text-sm text-slate-600 dark:text-slate-300">
-                Tous les documents sont disponibles en téléchargement gratuit. 
-                Certains documents peuvent nécessiter une authentification.
+                Téléchargement gratuit. Certains documents peuvent nécessiter une authentification.
               </p>
               <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   <span className="font-semibold">{meta.total}</span> documents disponibles
                 </p>
               </div>
-            </div>
+            </SidebarWidget>
 
             {/* Newsletter Signup */}
             <NewsletterWidget />
           </SidebarRight>
         }
       >
-        {/* Documents List */}
+        {/* Documents Grid */}
         {documents.length > 0 ? (
           <>
-            <div className="space-y-4">
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-2">
               {documents.map((doc) => (
-                <DocumentCard 
-                  key={doc.id} 
-                  document={doc} 
-                  variant="row"
-                />
+                <DocumentCard key={doc.id} document={doc} />
               ))}
             </div>
 
