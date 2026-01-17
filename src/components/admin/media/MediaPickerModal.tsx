@@ -106,15 +106,25 @@ export function MediaPickerModal({
     setUploading(true);
     
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+      const tokenRes = await fetch("/api/auth/token", { credentials: "include" });
+      const tokenData = tokenRes.ok ? await tokenRes.json().catch(() => null) : null;
+      const authHeader = tokenData?.token ? { Authorization: `Bearer ${tokenData.token}` } : {};
+
       // Upload files sequentially or in parallel
       const uploadPromises = Array.from(uploadFiles).map(async (file) => {
           const formData = new FormData();
           formData.append("file", file);
-          const res = await fetch("/api/admin/media", {
+          const res = await fetch(`${apiUrl}/admin/media`, {
               method: "POST",
               body: formData,
+              credentials: "include",
+              headers: authHeader,
           });
           if (!res.ok) {
+            if (res.status === 413) {
+              throw new Error("Fichier trop volumineux (limite serveur).");
+            }
             const errorText = await res.text();
             throw new Error(errorText || `Failed to upload ${file.name}`);
           }
@@ -128,7 +138,11 @@ export function MediaPickerModal({
       fetchMedias(1, ""); // Refresh library
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de l'upload. Vérifiez la taille/format du fichier.");
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Erreur lors de l'upload. Vérifiez la taille/format du fichier.";
+      alert(message);
     } finally {
       setUploading(false);
     }

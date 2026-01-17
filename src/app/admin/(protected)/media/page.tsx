@@ -98,6 +98,9 @@ export default function AdminMediaPage() {
     setUploadError(null);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+    const tokenRes = await fetch("/api/auth/token", { credentials: "include" });
+    const tokenData = tokenRes.ok ? await tokenRes.json().catch(() => null) : null;
+    const authHeader = tokenData?.token ? { Authorization: `Bearer ${tokenData.token}` } : {};
 
     try {
       for (const file of selectedFiles) {
@@ -107,10 +110,14 @@ export default function AdminMediaPage() {
         const res = await fetch(`${apiUrl}/admin/media`, {
           method: "POST",
           body: formData,
-          credentials: 'include', // Important for sending cookies cross-domain
+          credentials: "include", // Important for sending cookies cross-domain
+          headers: authHeader,
         });
 
         if (!res.ok) {
+          if (res.status === 413) {
+            throw new Error("Fichier trop volumineux (limite serveur).");
+          }
           const errorData = await res.json().catch(() => null);
           throw new Error(errorData?.message || `L'upload de ${file.name} a échoué.`);
         }

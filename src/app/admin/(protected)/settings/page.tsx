@@ -142,6 +142,9 @@ export default function AdminSettingsPage() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+      const tokenRes = await fetch("/api/auth/token", { credentials: "include" });
+      const tokenData = tokenRes.ok ? await tokenRes.json().catch(() => null) : null;
+      const authHeader = tokenData?.token ? { Authorization: `Bearer ${tokenData.token}` } : {};
       const formData = new FormData();
       formData.append("file", file);
       formData.append("alt", type === "logo" ? "Logo du site" : "Favicon du site");
@@ -150,6 +153,7 @@ export default function AdminSettingsPage() {
         method: "POST",
         body: formData,
         credentials: "include",
+        headers: authHeader,
       });
 
       if (res.ok) {
