@@ -49,6 +49,7 @@ export function MediaPickerModal({
 
   // Upload state
   const [uploading, setUploading] = useState(false);
+  const [optimizing, setOptimizing] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<FileList | null>(null);
 
   const fetchMedias = useCallback(async (p = 1, q = "") => {
@@ -105,6 +106,7 @@ export function MediaPickerModal({
     }
 
     setUploading(true);
+    setOptimizing(true);
     
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
@@ -154,6 +156,7 @@ export function MediaPickerModal({
           : "Erreur lors de l'upload. Vérifiez la taille/format du fichier.";
       alert(message);
     } finally {
+      setOptimizing(false);
       setUploading(false);
     }
   };
@@ -340,12 +343,17 @@ export function MediaPickerModal({
                   <div className="text-sm font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-700 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600">
                     {uploadFiles.length} fichier(s) sélectionné(s)
                   </div>
-                  <div className="flex gap-2 justify-center">
-                    <Button variant="ghost" onClick={() => setUploadFiles(null)}>Annuler</Button>
-                    <Button onClick={handleUpload} loading={uploading}>Envoyer</Button>
-                  </div>
+                <div className="flex gap-2 justify-center">
+                  <Button variant="ghost" onClick={() => setUploadFiles(null)}>Annuler</Button>
+                  <Button onClick={handleUpload} loading={uploading}>Envoyer</Button>
                 </div>
-              )}
+                {optimizing && (
+                  <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                    Optimisation des images en cours...
+                  </div>
+                )}
+              </div>
+            )}
             </div>
           </div>
         )}

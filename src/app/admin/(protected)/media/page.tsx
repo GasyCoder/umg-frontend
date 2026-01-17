@@ -43,6 +43,7 @@ export default function AdminMediaPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [optimizing, setOptimizing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<globalThis.File[]>([]);
 
@@ -96,6 +97,7 @@ export default function AdminMediaPage() {
   const handleUploadConfirm = async () => {
     if (selectedFiles.length === 0) return;
     setUploading(true);
+    setOptimizing(true);
     setUploadError(null);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
@@ -142,6 +144,7 @@ export default function AdminMediaPage() {
       }
       setUploadError(e.message || "Erreur lors de l'upload. Vérifiez la taille/format du fichier.");
     } finally {
+      setOptimizing(false);
       setUploading(false);
     }
   };
@@ -328,6 +331,11 @@ export default function AdminMediaPage() {
             {uploadError && (
               <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
                 {uploadError}
+              </div>
+            )}
+            {optimizing && (
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                Optimisation des images en cours...
               </div>
             )}
 
