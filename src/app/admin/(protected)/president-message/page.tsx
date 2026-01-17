@@ -16,6 +16,7 @@ import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { SkeletonListPage } from "@/components/ui/Skeleton";
+import { MediaPickerModal, Media } from "@/components/admin/media/MediaPickerModal";
 
 type PresidentMessage = {
   id: number;
@@ -37,8 +38,12 @@ const emptyForm = {
   president_name: "",
   president_title: "Président",
   mandate_period: "",
+  photo_id: null as number | null,
+  photo: null as Media | null,
   is_active: false,
 };
+
+type PresidentMessageForm = typeof emptyForm;
 
 export default function AdminPresidentMessagePage() {
   const [data, setData] = useState<PresidentMessage[]>([]);
@@ -46,9 +51,10 @@ export default function AdminPresidentMessagePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selected, setSelected] = useState<PresidentMessage | null>(null);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<PresidentMessageForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showPhotoPicker, setShowPhotoPicker] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -77,6 +83,8 @@ export default function AdminPresidentMessagePage() {
       president_name: item.president_name,
       president_title: item.president_title || "Président",
       mandate_period: item.mandate_period || "",
+      photo_id: item.photo?.id || null,
+      photo: item.photo || null,
       is_active: item.is_active,
     });
     setModalOpen(true);
@@ -85,6 +93,7 @@ export default function AdminPresidentMessagePage() {
   async function handleSave() {
     setSaving(true);
     try {
+      const { photo, ...payload } = form;
       const url = selected
         ? `/api/admin/president-messages/${selected.id}`
         : "/api/admin/president-messages";
@@ -93,7 +102,7 @@ export default function AdminPresidentMessagePage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
@@ -129,6 +138,19 @@ export default function AdminPresidentMessagePage() {
     await fetch(`/api/admin/president-messages/${item.id}/activate`, { method: "POST" });
     load();
   }
+
+  const handleSelectPhoto = (medias: Media[]) => {
+    if (!medias.length) return;
+    setForm((prev) => ({
+      ...prev,
+      photo_id: medias[0].id,
+      photo: medias[0],
+    }));
+  };
+
+  const handleRemovePhoto = () => {
+    setForm((prev) => ({ ...prev, photo_id: null, photo: null }));
+  };
 
   const columns = [
     {
@@ -264,6 +286,33 @@ export default function AdminPresidentMessagePage() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              Photo du Président
+            </label>
+            {form.photo ? (
+              <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group">
+                <img
+                  src={form.photo.url}
+                  alt="Photo du président"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Button variant="danger" size="sm" onClick={handleRemovePhoto}>
+                    Retirer
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div
+                onClick={() => setShowPhotoPicker(true)}
+                className="aspect-video cursor-pointer border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-400 dark:hover:text-indigo-400 dark:hover:border-indigo-500 bg-slate-50 dark:bg-slate-800/50 transition-all"
+              >
+                Ajouter une photo
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
               Introduction
             </label>
             <textarea
@@ -308,6 +357,15 @@ export default function AdminPresidentMessagePage() {
           </Button>
         </div>
       </Modal>
+
+      <MediaPickerModal
+        isOpen={showPhotoPicker}
+        onClose={() => setShowPhotoPicker(false)}
+        onSelect={handleSelectPhoto}
+        multiple={false}
+        filterType="image"
+        accept="image/*"
+      />
 
       {/* Delete Modal */}
       <ConfirmModal

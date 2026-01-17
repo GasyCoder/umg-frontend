@@ -151,18 +151,18 @@ const leadership = [
     name: "Professeur Titulaire RANDRIANAMBININA Blanchard",
     role: "Président",
     image:
-      "http://127.0.0.1:8001/storage/president/sZSkn7mxKvaG83Yw2edsW14el2QDC3i7Vb9lbi8c.png",
+      "https://api.mahajanga-univ.mg/storage/president/sZSkn7mxKvaG83Yw2edsW14el2QDC3i7Vb9lbi8c.png",
   },
   {
     name: "Dr. RAKOTOARIVELO Geoslin",
     role: "Vice Président I",
-    image: "http://127.0.0.1:8001/assets/images/avatar/vice_president.jpg",
+    image: "https://api.mahajanga-univ.mg/assets/images/avatar/vice_president.jpg",
     rank: "1ère",
   },
   {
     name: "Pr Titulaire RAZAFIMAHEFA",
     role: "Vice Président II",
-    image: "http://127.0.0.1:8001/assets/images/avatar/pr_mahefa.jpg",
+    image: "https://api.mahajanga-univ.mg/assets/images/avatar/pr_mahefa.jpg",
     rank: "2ème",
   },
 ];
@@ -326,7 +326,7 @@ export default function OrganisationPage() {
                 </div>
                 <div className="px-6 py-6">
                   <LightboxImage
-                    src="http://127.0.0.1:8001/storage/orga/cuC6QctO4NrCIvQOgBj4GDfQ2ZcUM9U4QrPMqp0s.jpg"
+                    src="https://api.mahajanga-univ.mg/storage/orga/cuC6QctO4NrCIvQOgBj4GDfQ2ZcUM9U4QrPMqp0s.jpg"
                     alt="Organigramme de l'Université de Mahajanga"
                   />
                 </div>

@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
         hostname: 'lh3.googleusercontent.com',
       },
       {
+        protocol: 'https',
+        hostname: 'api.mahajanga-univ.mg',
+      },
+      {
+        protocol: 'https',
+        hostname: 'back.mahajanga-univ.mg',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
         port: '8000',
