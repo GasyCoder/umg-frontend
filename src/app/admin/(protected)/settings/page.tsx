@@ -141,13 +141,15 @@ export default function AdminSettingsPage() {
     else setUploadingFavicon(true);
 
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
       const formData = new FormData();
       formData.append("file", file);
       formData.append("alt", type === "logo" ? "Logo du site" : "Favicon du site");
 
-      const res = await fetch("/api/admin/media", {
+      const res = await fetch(`${apiUrl}/admin/media`, {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
 
       if (res.ok) {
