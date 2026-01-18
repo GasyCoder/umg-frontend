@@ -17,6 +17,7 @@ export { default as EtablissementTabs } from "./EtablissementTabs";
 
 // Business card components (These seem to be default based on Step 140 having 'default as')
 export { default as NewsCard } from "./NewsCard";
+export { default as ArchiveMonthSelect } from "./ArchiveMonthSelect";
 export { default as AnnouncementCard, AnnouncementList } from "./AnnouncementCard";
 export { default as EventCard, EventList } from "./EventCard";
 export { default as DocumentCard, DocumentList } from "./DocumentCard";

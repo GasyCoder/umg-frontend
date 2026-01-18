@@ -28,6 +28,7 @@ export default function NewsCard({
 
   const categoryName = post.categories?.[0]?.name || 'Communiqué';
   const isImportant = !!post.is_important;
+  const isArchived = post.status === "archived";
   const readingTime = typeof post.reading_time === "number" ? post.reading_time : null;
   const views = typeof post.views_count === "number" ? post.views_count : null;
 
@@ -56,6 +57,11 @@ export default function NewsCard({
             {isImportant ? (
               <span className="inline-block rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
                 Important
+              </span>
+            ) : null}
+            {isArchived ? (
+              <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                Archivé
               </span>
             ) : null}
           </div>
@@ -118,6 +124,11 @@ export default function NewsCard({
                 Important
               </span>
             ) : null}
+            {isArchived ? (
+              <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                Archivé
+              </span>
+            ) : null}
           </div>
           <h3 className="mt-1 text-sm font-semibold text-slate-900 dark:text-white line-clamp-2 group-hover:text-blue-600 transition-colors">
             <Link href={`/actualites/${post.slug}`}>
@@ -156,16 +167,21 @@ export default function NewsCard({
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
-          <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-            <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-indigo-600">
-              {categoryName}
+        <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-indigo-600">
+            {categoryName}
+          </span>
+          {isImportant ? (
+            <span className="rounded-full bg-indigo-600/90 px-3 py-1 text-xs font-semibold text-white">
+              Important
             </span>
-            {isImportant ? (
-              <span className="rounded-full bg-indigo-600/90 px-3 py-1 text-xs font-semibold text-white">
-                Important
-              </span>
-            ) : null}
-          </div>
+          ) : null}
+          {isArchived ? (
+            <span className="rounded-full bg-slate-900/70 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+              Archivé
+            </span>
+          ) : null}
+        </div>
         </div>
         <div className="flex-1 flex flex-col">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
@@ -233,6 +249,11 @@ export default function NewsCard({
           {isImportant ? (
             <span className="rounded-full bg-indigo-600/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
               Important
+            </span>
+          ) : null}
+          {isArchived ? (
+            <span className="rounded-full bg-slate-900/70 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+              Archivé
             </span>
           ) : null}
         </div>

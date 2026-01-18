@@ -10,6 +10,7 @@ import Pagination from '@/components/ui/Pagination';
 import SearchBox from '@/components/ui/SearchBox';
 import { CategoryFilter, TagFilter } from '@/components/public/CategoryFilter';
 import Link from 'next/link';
+import ArchiveMonthSelect, { type ArchiveMonth } from '@/components/public/ArchiveMonthSelect';
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,10 @@ async function fetchPosts(params: NewsPageSearchParams) {
   return publicGet<PaginatedResponse<Post>>(`/posts?${queryParts.join('&')}`, NEWS_FETCH_OPTIONS);
 }
 
+async function fetchArchiveMonths() {
+  return publicGet<{ data: ArchiveMonth[] }>(`/posts/archive-months?status=archived`, NEWS_FETCH_OPTIONS).catch(() => ({ data: [] }));
+}
+
 // Fetch categories for sidebar
 async function fetchCategories() {
   return publicGet<{ data: Category[] }>('/categories?with_count=true', NEWS_FETCH_OPTIONS).catch(() => ({ data: [] }));
@@ -68,7 +73,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
   const params = await searchParams;
   
   // Parallel data fetching
-  const [postsRes, categoriesRes, tagsRes, eventsRes, announcementsRes] = await Promise.all([
+  const [postsRes, categoriesRes, tagsRes, eventsRes, announcementsRes, archiveMonthsRes] = await Promise.all([
     fetchPosts(params).catch(() => ({
       data: [],
       meta: { current_page: 1, last_page: 1, per_page: 9, total: 0 },
@@ -77,6 +82,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
     fetchTags(),
     fetchEvents(),
     fetchAnnouncements(),
+    fetchArchiveMonths(),
   ]);
 
   const posts = postsRes.data || [];
@@ -85,6 +91,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
   const tags = tagsRes.data || [];
   const events = eventsRes.data || [];
   const announcements = announcementsRes.data || [];
+  const archiveMonths = archiveMonthsRes.data || [];
 
   const activeTags = params.tags?.split(',').filter(Boolean) || [];
 
@@ -142,6 +149,13 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
                 />
               </Suspense>
             </SidebarWidget>
+
+            {/* Archives */}
+            {archiveMonths.length > 0 && (
+              <SidebarWidget title="Archives">
+                <ArchiveMonthSelect options={archiveMonths} baseUrl="/actualites/archives" label="Par mois" />
+              </SidebarWidget>
+            )}
 
             {/* Tags Widget */}
             {tags.length > 0 && (
