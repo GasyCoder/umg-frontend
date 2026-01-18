@@ -32,7 +32,7 @@ export default function NewsSection({ posts, maxItems = 3 }: NewsSectionProps) {
 
       {/* Posts Grid */}
       {posts && posts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
           {posts.slice(0, maxItems).map((post) => (
             <NewsCard key={post.id} post={post} />
           ))}

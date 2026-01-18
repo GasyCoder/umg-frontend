@@ -47,7 +47,7 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full max-w-[420px] lg:max-w-[380px] ml-auto">
       {/* Section Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
@@ -75,10 +75,10 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
             return (
               <div
                 key={doc.id}
-                className="group flex gap-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-4 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800 transition-all"
+                className="group flex gap-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-3 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800 transition-all"
               >
                 {/* Icon */}
-                <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${colorClasses} shrink-0`}>
+                <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${colorClasses} shrink-0`}>
                   <IconComponent className="w-5 h-5" />
                 </div>
 

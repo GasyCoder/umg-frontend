@@ -75,11 +75,11 @@ async function NewsDocumentsBlock() {
   return (
     <section className="py-12 md:py-16 bg-white dark:bg-[#101622] transition-colors">
       <div className="max-w-7xl mx-auto px-4 md:px-10">
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+        <div className="grid gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-9">
             <NewsSection posts={posts} />
           </div>
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-3">
             <DocumentsSection documents={documents} />
           </div>
         </div>
