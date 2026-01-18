@@ -2,7 +2,6 @@
 
 import { ReactNode, useState } from 'react';
 import { Mail, Send, CheckCircle2, AlertCircle } from 'lucide-react';
-import { publicPost } from '@/lib/public-api';
 
 interface SidebarRightProps {
   children: ReactNode;
@@ -113,9 +112,13 @@ export function NewsletterWidget({ className = '' }: NewsletterWidgetProps) {
     try {
       setStatus('loading');
       setMessage('');
-      const res = await publicPost<{ message: string }>('/newsletter/subscribe', { email });
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ email }),
+      }).then((r) => r.json());
       setStatus('success');
-      setMessage(res.message || 'Merci ! Vérifiez votre boîte mail pour confirmer votre inscription.');
+      setMessage(res?.message || 'Merci ! Vérifiez votre boîte mail pour confirmer votre inscription.');
       setEmail('');
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Impossible d\'envoyer votre inscription. Réessayez.';

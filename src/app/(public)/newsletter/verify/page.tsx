@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { publicPost } from "@/lib/public-api";
 import Container from "@/components/Container";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -23,7 +22,15 @@ function VerifyContent() {
     const verify = async () => {
       setStatus("loading");
       try {
-        await publicPost("/newsletter/verify", { token });
+        const res = await fetch("/api/newsletter/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ token }),
+        });
+        if (!res.ok) {
+          const json = await res.json().catch(() => null);
+          throw new Error(json?.message || "Lien de vérification invalide ou expiré.");
+        }
         setStatus("success");
       } catch (err: any) {
         setStatus("error");

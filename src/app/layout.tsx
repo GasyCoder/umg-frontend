@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PwaRegister } from "@/components/PwaRegister";
 import "./globals.css";
@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   title: "Université de Mahajanga",
   description: "Site officiel de l'Université de Mahajanga",
   manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
   themeColor: "#101622",
 };
 

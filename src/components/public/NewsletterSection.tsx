@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Mail, ArrowUpRight, Send, CheckCircle2, AlertCircle } from "lucide-react";
-import { publicPost } from "@/lib/public-api";
 
 export default function NewsletterSection() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
@@ -21,10 +20,14 @@ export default function NewsletterSection() {
     try {
       setNewsletterStatus("loading");
       setNewsletterMessage("");
-      const res = await publicPost<{ message: string }>("/newsletter/subscribe", { email: newsletterEmail });
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ email: newsletterEmail }),
+      }).then((r) => r.json());
 
       setNewsletterStatus("success");
-      setNewsletterMessage(res.message || "Merci ! Vérifiez votre boîte mail pour confirmer votre inscription.");
+      setNewsletterMessage(res?.message || "Merci ! Vérifiez votre boîte mail pour confirmer votre inscription.");
       setNewsletterEmail("");
     } catch (error) {
       console.error(error);
