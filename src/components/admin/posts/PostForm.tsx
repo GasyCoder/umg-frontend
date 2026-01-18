@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Image as ImageIcon, X } from "lucide-react";
 import Link from "next/link";
-import { marked } from "marked";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
@@ -12,6 +11,7 @@ import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { MultiSelect } from "@/components/ui/MultiSelect";
 import { MediaPickerModal, Media } from "../media/MediaPickerModal";
 import { GalleryEditor, GalleryItem } from "./GalleryEditor";
+import { markdownToHtml } from "@/lib/markdown";
 
 interface Category {
   id: number;
@@ -121,7 +121,7 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
 
     const markdown = (formData.content_markdown || "").trim();
     const content_html =
-      contentMode === "markdown" ? (markdown ? marked.parse(markdown) : "") : formData.content_html;
+      contentMode === "markdown" ? (markdown ? markdownToHtml(markdown) : "") : formData.content_html;
 
     if (!content_html || content_html.trim().length === 0) {
       alert("Le contenu est obligatoire.");
@@ -344,10 +344,10 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
                       <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
                         Aperçu
                       </p>
-                      <div
-                        className="prose prose-slate dark:prose-invert max-w-none"
-                        dangerouslySetInnerHTML={{
-                          __html: marked.parse((formData.content_markdown || "").trim()),
+                    <div
+                      className="prose prose-slate dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{
+                          __html: markdownToHtml((formData.content_markdown || "").trim()),
                         }}
                       />
                     </div>

@@ -2,13 +2,13 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
-import { marked } from "marked";
 import { publicGet } from '@/lib/public-api';
 import type { Post, Event } from '@/lib/types';
 import Container from '@/components/Container';
 import { Breadcrumb } from '@/components/layout';
 import SidebarRight, { EventsWidget, NewsletterWidget } from '@/components/layout/SidebarRight';
 import { ArticleGallery, ShareButtons, NewsCard, EventList } from '@/components/public';
+import { markdownToHtml } from "@/lib/markdown";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -104,10 +104,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   const markdown = post.content_markdown?.trim() || "";
   const contentHtml = markdown
-    ? marked.parse(markdown)
+    ? markdownToHtml(markdown)
     : post.content_html
       ? looksLikeMarkdown(post.content_html)
-        ? marked.parse(post.content_html)
+        ? markdownToHtml(post.content_html)
         : post.content_html
       : "";
 
