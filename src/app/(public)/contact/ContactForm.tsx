@@ -84,6 +84,7 @@ export default function ContactForm() {
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
             placeholder="Votre nom"
+            required
             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           />
         </div>
@@ -97,6 +98,7 @@ export default function ContactForm() {
             value={form.email}
             onChange={(event) => setForm({ ...form, email: event.target.value })}
             placeholder="nom@umg.mg"
+            required
             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           />
         </div>
@@ -111,6 +113,7 @@ export default function ContactForm() {
           value={form.subject}
           onChange={(event) => setForm({ ...form, subject: event.target.value })}
           placeholder="Objet de votre message"
+          required
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
         />
       </div>
@@ -126,6 +129,7 @@ export default function ContactForm() {
           minLength={10}
           maxLength={200}
           placeholder="Votre message..."
+          required
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
         />
       </div>
@@ -158,6 +162,7 @@ export default function ContactForm() {
             onChange={(event) => setAnswer(event.target.value)}
             className="w-28 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
             placeholder="Reponse"
+            required
           />
           <button
             type="button"
