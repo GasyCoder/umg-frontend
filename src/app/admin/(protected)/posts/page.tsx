@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Archive, FileMinus, FileText, Calendar } from "lucide-react";
+import { Plus, Pencil, Trash2, Archive, FileMinus, FileText, Calendar, Eye } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
