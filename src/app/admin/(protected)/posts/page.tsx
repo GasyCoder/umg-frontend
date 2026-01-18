@@ -23,6 +23,9 @@ type Post = {
   unique_views_count?: number;
 };
 
+type PostStatus = Post["status"];
+type StatusFilter = "all" | PostStatus;
+
 export default function AdminPostsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -35,11 +38,65 @@ export default function AdminPostsPage() {
   const [statusAction, setStatusAction] = useState<"archive" | "draft" | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showNewsletterBanner, setShowNewsletterBanner] = useState(true);
+  const [counts, setCounts] = useState<Record<StatusFilter, number>>({
+    all: 0,
+    published: 0,
+    draft: 0,
+    pending: 0,
+    archived: 0,
+  });
+
+  const statusParam = searchParams.get("status");
+  const statusFilter: StatusFilter =
+    statusParam === "published" || statusParam === "draft" || statusParam === "pending" || statusParam === "archived"
+      ? statusParam
+      : "all";
+
+  function pushStatusFilter(next: StatusFilter) {
+    const params = new URLSearchParams();
+    if (next !== "all") params.set("status", next);
+    router.push(`/admin/posts${params.toString() ? `?${params.toString()}` : ""}`);
+  }
+
+  async function loadCounts() {
+    const targets: { key: StatusFilter; url: string }[] = [
+      { key: "all", url: "/api/admin/posts?per_page=1" },
+      { key: "published", url: "/api/admin/posts?per_page=1&status=published" },
+      { key: "draft", url: "/api/admin/posts?per_page=1&status=draft" },
+      { key: "pending", url: "/api/admin/posts?per_page=1&status=pending" },
+      { key: "archived", url: "/api/admin/posts?per_page=1&status=archived" },
+    ];
+
+    try {
+      const results = await Promise.all(
+        targets.map(async (t) => {
+          const res = await fetch(t.url);
+          if (!res.ok) return [t.key, 0] as const;
+          const json = await res.json().catch(() => null);
+          const total = Number(json?.meta?.total ?? 0);
+          return [t.key, Number.isFinite(total) ? total : 0] as const;
+        })
+      );
+
+      setCounts((prev) => {
+        const next = { ...prev };
+        for (const [key, value] of results) next[key] = value;
+        return next;
+      });
+    } catch {
+      // ignore (keep previous counts)
+    }
+  }
 
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/posts?per_page=50");
+      const url =
+        statusFilter === "all"
+          ? "/api/admin/posts?per_page=50"
+          : `/api/admin/posts?per_page=50&status=${encodeURIComponent(statusFilter)}`;
+
+      const res = await fetch(url);
       if (!res.ok) {
         setItems([]);
         return;
@@ -53,6 +110,10 @@ export default function AdminPostsPage() {
 
   useEffect(() => {
     void load();
+  }, [statusFilter]);
+
+  useEffect(() => {
+    void loadCounts();
   }, []);
 
   const newsletterQueuedParam = searchParams.get("newsletterQueued");
@@ -66,10 +127,10 @@ export default function AdminPostsPage() {
     setShowNewsletterBanner(true);
     const t = setTimeout(() => {
       // remove query params (so it doesn't show again on refresh)
-      router.replace("/admin/posts");
+      pushStatusFilter(statusFilter);
     }, 8000);
     return () => clearTimeout(t);
-  }, [hasNewsletterInfo, router]);
+  }, [hasNewsletterInfo, router, statusFilter]);
 
   async function handleDelete() {
     if (!selectedPost) return;
@@ -81,6 +142,7 @@ export default function AdminPostsPage() {
       if (res.ok) {
         setDeleteModalOpen(false);
         setSelectedPost(null);
+        void loadCounts();
         load();
       }
     } finally {
@@ -99,9 +161,15 @@ export default function AdminPostsPage() {
 
       const res = await fetch(endpoint, { method: "POST" });
       if (res.ok) {
+        const nextFilter: StatusFilter = statusAction === "archive" ? "archived" : "draft";
         setStatusModalOpen(false);
         setStatusAction(null);
         setSelectedPost(null);
+        void loadCounts();
+        if (statusFilter !== nextFilter) {
+          pushStatusFilter(nextFilter);
+          return;
+        }
         load();
       }
     } finally {
@@ -203,6 +271,45 @@ export default function AdminPostsPage() {
         </Link>
       </div>
 
+      {/* Status Filters */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          size="sm"
+          variant={statusFilter === "all" ? "primary" : "secondary"}
+          onClick={() => pushStatusFilter("all")}
+        >
+          Tous <span className="ml-2 text-xs opacity-90">({counts.all})</span>
+        </Button>
+        <Button
+          size="sm"
+          variant={statusFilter === "published" ? "primary" : "secondary"}
+          onClick={() => pushStatusFilter("published")}
+        >
+          Publiés <span className="ml-2 text-xs opacity-90">({counts.published})</span>
+        </Button>
+        <Button
+          size="sm"
+          variant={statusFilter === "draft" ? "primary" : "secondary"}
+          onClick={() => pushStatusFilter("draft")}
+        >
+          Brouillons <span className="ml-2 text-xs opacity-90">({counts.draft})</span>
+        </Button>
+        <Button
+          size="sm"
+          variant={statusFilter === "pending" ? "primary" : "secondary"}
+          onClick={() => pushStatusFilter("pending")}
+        >
+          En attente <span className="ml-2 text-xs opacity-90">({counts.pending})</span>
+        </Button>
+        <Button
+          size="sm"
+          variant={statusFilter === "archived" ? "primary" : "secondary"}
+          onClick={() => pushStatusFilter("archived")}
+        >
+          Archivés <span className="ml-2 text-xs opacity-90">({counts.archived})</span>
+        </Button>
+      </div>
+
       {hasNewsletterInfo && showNewsletterBanner ? (
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -229,7 +336,7 @@ export default function AdminPostsPage() {
               size="sm"
               onClick={() => {
                 setShowNewsletterBanner(false);
-                router.replace("/admin/posts");
+                pushStatusFilter(statusFilter);
               }}
             >
               Fermer
@@ -242,24 +349,24 @@ export default function AdminPostsPage() {
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">Total articles</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{items.length}</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{counts.all}</p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">Publiés</p>
           <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-            {items.filter((i) => i.status === "published").length}
+            {counts.published}
           </p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">Brouillons</p>
           <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-            {items.filter((i) => i.status === "draft").length}
+            {counts.draft}
           </p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">Archivés</p>
           <p className="text-2xl font-bold text-slate-700 dark:text-slate-200 mt-1">
-            {items.filter((i) => i.status === "archived").length}
+            {counts.archived}
           </p>
         </div>
       </div>
