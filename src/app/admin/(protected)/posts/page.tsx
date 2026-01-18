@@ -27,6 +27,15 @@ type Post = {
 type PostStatus = Post["status"];
 type StatusFilter = "all" | PostStatus;
 
+function getIsoWeek(date: Date): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return String(weekNo).padStart(2, "0");
+}
+
 export default function AdminPostsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -449,7 +458,9 @@ export default function AdminPostsPage() {
               variant="secondary"
               icon={<Mail className="w-4 h-4" />}
               onClick={() => {
-                setSendSubject(`Actualités - ${new Date().toLocaleDateString("fr-FR")}`);
+                const d = new Date();
+                const week = getIsoWeek(d);
+                setSendSubject(`Université de Mahajanga — Revue hebdomadaire • S${week} • ${d.toLocaleDateString("fr-FR")}`);
                 setSendModalOpen(true);
               }}
             >
