@@ -14,6 +14,7 @@ interface ArticlePageProps {
 }
 
 const NEWS_FETCH_OPTIONS = { cache: "no-store" as const };
+const HERO_IMAGE_CLASS = "object-cover object-[50%_25%]";
 
 // Fetch single post
 async function fetchPost(slug: string) {
@@ -26,13 +27,31 @@ async function fetchPost(slug: string) {
 }
 
 // Fetch related posts
-async function fetchRelatedPosts(postId: number, categorySlug?: string) {
+async function fetchRelatedPosts(post: Post) {
   try {
-    const query = categorySlug 
-      ? `/posts?per_page=3&exclude=${postId}&category=${categorySlug}`
-      : `/posts?per_page=3&exclude=${postId}`;
-    const res = await publicGet<{ data: Post[] }>(query, NEWS_FETCH_OPTIONS);
-    return res.data || [];
+    const categorySlug = post.categories?.[0]?.slug;
+    const tagSlugs = (post.tags || []).map((t) => t.slug).filter(Boolean);
+
+    const queryParts: string[] = [`per_page=12`, `exclude=${post.id}`];
+    if (categorySlug) queryParts.push(`category=${categorySlug}`);
+
+    const res = await publicGet<{ data: Post[] }>(`/posts?${queryParts.join("&")}`, NEWS_FETCH_OPTIONS);
+    const candidates = (res.data || []).filter((p) => p.id !== post.id);
+
+    const uniqueById = new Map<number, Post>();
+    for (const p of candidates) uniqueById.set(p.id, p);
+    const unique = Array.from(uniqueById.values());
+
+    if (!tagSlugs.length) return unique.slice(0, 3);
+
+    const score = (p: Post) =>
+      (p.tags || []).reduce((acc, t) => acc + (tagSlugs.includes(t.slug) ? 1 : 0), 0);
+
+    return unique
+      .map((p) => ({ p, s: score(p) }))
+      .sort((a, b) => b.s - a.s)
+      .map(({ p }) => p)
+      .slice(0, 3);
   } catch {
     return [];
   }
@@ -60,9 +79,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  const categorySlug = post.categories?.[0]?.slug;
   const [relatedPosts, events] = await Promise.all([
-    fetchRelatedPosts(post.id, categorySlug),
+    fetchRelatedPosts(post),
     fetchEvents(),
   ]);
 
@@ -85,7 +103,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           alt={post.title}
           fill
           priority
-          className="object-cover"
+          className={HERO_IMAGE_CLASS}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-slate-950/60 to-slate-950/90" />
         
