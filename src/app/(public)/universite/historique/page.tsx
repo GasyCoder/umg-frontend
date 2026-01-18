@@ -59,7 +59,7 @@ export default async function HistoriquePage() {
             Notre Histoire
           </h1>
           <p className="mt-4 text-slate-600 dark:text-slate-300 max-w-2xl">
-            De 1896 à aujourd&apos;hui, découvrez le parcours de l&apos;Université de Mahajanga.
+            De 1896 d’une école de médecine à Befalatana à aujourd&apos;hui, découvrez le parcours de l&apos;Université de Mahajanga.
           </p>
         </div>
       </div>
