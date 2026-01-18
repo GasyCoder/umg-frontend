@@ -36,8 +36,7 @@ function safeProjectMeta(value: unknown): ProjectMeta | null {
   const heroBadgesRaw = hero && Array.isArray(hero.badges) ? hero.badges : null;
   const heroBadges =
     heroBadgesRaw
-      ?.map((b) => (isRecord(b) ? b : null))
-      .filter(Boolean)
+      ?.filter(isRecord)
       .map((b) => ({
         variant:
           b.variant === "primary" || b.variant === "amber" || b.variant === "emerald"
@@ -50,8 +49,7 @@ function safeProjectMeta(value: unknown): ProjectMeta | null {
   const tabsRaw = Array.isArray(value.tabs) ? value.tabs : null;
   const tabs: ProjectMetaTab[] =
     tabsRaw
-      ?.map((t) => (isRecord(t) ? t : null))
-      .filter(Boolean)
+      ?.filter(isRecord)
       .map((t) => {
         const key = typeof t.key === "string" ? t.key : "tab";
         const label = typeof t.label === "string" ? t.label : key;
@@ -65,8 +63,7 @@ function safeProjectMeta(value: unknown): ProjectMeta | null {
         const imagesRaw = Array.isArray(t.images) ? t.images : null;
         const images =
           imagesRaw
-            ?.map((img) => (isRecord(img) ? img : null))
-            .filter(Boolean)
+            ?.filter(isRecord)
             .map((img) => ({
               src: typeof img.src === "string" ? img.src : "",
               alt: typeof img.alt === "string" ? img.alt : undefined,
@@ -77,8 +74,7 @@ function safeProjectMeta(value: unknown): ProjectMeta | null {
         const slidesRaw = Array.isArray(t.slides) ? t.slides : null;
         const slides =
           slidesRaw
-            ?.map((s) => (isRecord(s) ? s : null))
-            .filter(Boolean)
+            ?.filter(isRecord)
             .map((s) => ({
               src: typeof s.src === "string" ? s.src : "",
               alt: typeof s.alt === "string" ? s.alt : undefined,
@@ -279,4 +275,3 @@ export default function ProjectDynamicPage({ slug }: { slug: string }) {
     </main>
   );
 }
-
