@@ -6,12 +6,12 @@ export async function POST(req: Request) {
   if (!API_URL) return NextResponse.json({ message: "API_URL missing" }, { status: 500 });
 
   const body = await req.json().catch(() => null);
-  if (!body?.email) return NextResponse.json({ message: "email required" }, { status: 422 });
+  if (!body?.token) return NextResponse.json({ message: "token required" }, { status: 422 });
 
   const r = await fetch(`${API_URL}/newsletter/unsubscribe`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ email: body.email }),
+    body: JSON.stringify({ token: body.token }),
     cache: "no-store",
     redirect: "follow",
   }).catch(() => null);
@@ -22,4 +22,3 @@ export async function POST(req: Request) {
   const contentType = r.headers.get("content-type") || "application/json";
   return new NextResponse(buffer, { status: r.status, headers: { "content-type": contentType } });
 }
-
