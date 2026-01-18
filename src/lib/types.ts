@@ -30,6 +30,7 @@ export interface Post {
   slug: string;
   excerpt?: string | null;
   content_html?: string | null;
+  content_markdown?: string | null;
   published_at?: string | null;
   cover_image?: Media | null;
   categories?: Category[];

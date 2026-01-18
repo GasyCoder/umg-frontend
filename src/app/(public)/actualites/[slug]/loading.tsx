@@ -16,6 +16,7 @@ export default function ArticleLoading() {
               ))}
             </div>
             <Skeleton className="mt-4 h-10 w-3/4" />
+            <Skeleton className="mt-4 h-4 w-2/3" />
             <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-4 w-32" />

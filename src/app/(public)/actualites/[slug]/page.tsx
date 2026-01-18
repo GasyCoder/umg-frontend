@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
+import { marked } from "marked";
 import { publicGet } from '@/lib/public-api';
 import type { Post, Event } from '@/lib/types';
 import Container from '@/components/Container';
@@ -15,6 +16,12 @@ interface ArticlePageProps {
 
 const NEWS_FETCH_OPTIONS = { cache: "no-store" as const };
 const HERO_IMAGE_CLASS = "object-cover object-[50%_25%]";
+
+function looksLikeMarkdown(value: string) {
+  if (!value) return false;
+  if (value.includes("<")) return false;
+  return /(^|\n)\s{0,3}(#{1,6}\s|[-*+]\s|\d+\.\s|>\s)/.test(value) || /\*\*.+\*\*/.test(value);
+}
 
 // Fetch single post
 async function fetchPost(slug: string) {
@@ -93,6 +100,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     : 'Publication récente';
 
   const coverImageUrl = post.cover_image?.url || heroImage;
+  const excerpt = post.excerpt?.trim() || null;
+
+  const markdown = post.content_markdown?.trim() || "";
+  const contentHtml = markdown
+    ? marked.parse(markdown)
+    : post.content_html
+      ? looksLikeMarkdown(post.content_html)
+        ? marked.parse(post.content_html)
+        : post.content_html
+      : "";
 
   return (
     <main className="bg-white dark:bg-slate-950">
@@ -126,6 +143,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <h1 className="mt-4 max-w-4xl text-3xl font-bold tracking-tight md:text-5xl">
               {post.title}
             </h1>
+
+            {excerpt ? (
+              <p className="mt-4 max-w-3xl text-sm md:text-base text-white/80 line-clamp-3">
+                {excerpt}
+              </p>
+            ) : null}
             
             <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-sm text-white/80">
               <span className="inline-flex items-center gap-2">
@@ -165,13 +188,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <div className="space-y-10">
               {/* Article Content */}
               <article className="prose prose-slate max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-indigo-600 prose-img:rounded-xl">
-                {post.content_html ? (
-                  <div dangerouslySetInnerHTML={{ __html: post.content_html }} />
-	                ) : (
-	                  <p className="text-slate-600 dark:text-slate-300">
-	                    Contenu de l&apos;article non disponible.
-	                  </p>
-	                )}
+                {contentHtml ? (
+                  <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+                ) : (
+                  <p className="text-slate-600 dark:text-slate-300">
+                    Contenu de l&apos;article non disponible.
+                  </p>
+                )}
 	              </article>
 
               {/* Tags */}
@@ -278,7 +301,7 @@ export async function generateMetadata({ params }: ArticlePageProps) {
 
   return {
     title: `${post.title} | Université de Mahajanga`,
-    description: post.excerpt || `Découvrez: ${post.title}`,
+    description: post.excerpt || `Découvrez : ${post.title}`,
     openGraph: {
       title: post.title,
       description: post.excerpt || undefined,

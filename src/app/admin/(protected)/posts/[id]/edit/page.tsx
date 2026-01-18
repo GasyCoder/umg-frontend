@@ -27,6 +27,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
             slug: post.slug,
             excerpt: post.excerpt || "",
             content_html: post.content_html || "",
+            content_markdown: post.content_markdown || "",
             category_ids: post.categories?.map((c: any) => c.id) || [],
             tag_ids: post.tags?.map((t: any) => t.id) || [],
             status: post.status,
