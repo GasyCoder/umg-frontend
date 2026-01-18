@@ -20,6 +20,16 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
     return FileText;
   };
 
+  const formatFileTypeShort = (fileType: string | null | undefined) => {
+    const t = (fileType || "").toLowerCase();
+    if (!t) return "DOC";
+    if (t.includes("pdf")) return "PDF";
+    if (t.includes("word") || t.includes("document") || t.includes("officedocument")) return "DOC";
+    if (t.includes("image")) return "IMG";
+    if (t.includes("text") || t.includes("plain") || t.includes("code")) return "TXT";
+    return "DOC";
+  };
+
   // Get file color based on type
   const getFileColor = (fileType: string | null | undefined) => {
     if (!fileType) return "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400";
@@ -37,13 +47,6 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
-
-  // Limit string length
-  const limitString = (str: string, maxLength: number = 20) => {
-    if (!str) return "";
-    if (str.length <= maxLength) return str;
-    return `${str.substring(0, maxLength)}...`;
   };
 
   return (
@@ -71,6 +74,7 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
           {documents.slice(0, 6).map((doc) => {
             const IconComponent = getFileIcon(doc.file_type);
             const colorClasses = getFileColor(doc.file_type);
+            const fileTypeLabel = formatFileTypeShort(doc.file_type);
 
             return (
               <div
@@ -84,24 +88,25 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
 
                 {/* Content */}
                 <div className="flex flex-col flex-grow min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1 leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" title={doc.title}>
-                    {limitString(doc.title, 20)}
+                  <h3
+                    className="text-sm font-bold text-slate-900 dark:text-white mb-1 leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-2"
+                    title={doc.title}
+                  >
+                    {doc.title}
                   </h3>
 
-                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="font-semibold uppercase">
-                      {doc.file_type?.replace('application/', '').replace('/', ' ') || 'PDF'}
-                    </span>
-                    <span>•</span>
-                    <span>{formatFileSize(doc.file_size)}</span>
-                    {doc.category && (
+                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 min-w-0">
+                    <span className="font-semibold uppercase">{fileTypeLabel}</span>
+                    <span className="text-slate-300 dark:text-slate-600">•</span>
+                    <span className="shrink-0">{formatFileSize(doc.file_size)}</span>
+                    {doc.category?.name ? (
                       <>
-                        <span>•</span>
-                        <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                        <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
+                        <span className="text-amber-700 dark:text-amber-300 font-semibold truncate hidden sm:inline">
                           {doc.category.name}
                         </span>
                       </>
-                    )}
+                    ) : null}
                   </div>
                 </div>
 
@@ -109,7 +114,7 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
                 <a
                   href={doc.file_url || "#"}
                   download
-                  className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600 transition-all shrink-0"
+                  className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600 transition-all shrink-0"
                   title="Télécharger"
                   onClick={(e) => e.stopPropagation()}
                 >
