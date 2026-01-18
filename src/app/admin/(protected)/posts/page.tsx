@@ -17,7 +17,9 @@ type Post = {
   author?: { name: string };
   created_at: string;
   published_at?: string;
+  is_important?: boolean;
   views_count?: number;
+  unique_views_count?: number;
 };
 
 export default function AdminPostsPage() {
@@ -87,7 +89,12 @@ export default function AdminPostsPage() {
             <FileText className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <p className="font-medium text-slate-900 dark:text-white truncate max-w-xs">{item.title}</p>
+            <div className="flex items-center gap-2 min-w-0">
+              <p className="font-medium text-slate-900 dark:text-white truncate max-w-xs">{item.title}</p>
+              {item.is_important ? (
+                <Badge variant="primary" size="sm">Important</Badge>
+              ) : null}
+            </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">/{item.slug}</p>
           </div>
         </div>
@@ -129,6 +136,9 @@ export default function AdminPostsPage() {
         <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
           <Eye className="w-4 h-4" />
           {item.views_count ?? 0}
+          <span className="text-xs text-slate-400 dark:text-slate-500">
+            ({item.unique_views_count ?? 0} uniques)
+          </span>
         </div>
       ),
     },

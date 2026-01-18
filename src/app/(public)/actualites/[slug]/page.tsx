@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar, Clock, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, ArrowRight, Eye } from 'lucide-react';
 import { publicGet } from '@/lib/public-api';
 import type { Post, Event } from '@/lib/types';
 import Container from '@/components/Container';
@@ -161,6 +161,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   {post.reading_time} min de lecture
                 </span>
               )}
+              {typeof post.views_count === "number" ? (
+                <span className="inline-flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  {post.views_count} vue{post.views_count > 1 ? "s" : ""}
+                </span>
+              ) : null}
             </div>
           </div>
         </Container>

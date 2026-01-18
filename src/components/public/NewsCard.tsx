@@ -27,6 +27,7 @@ export default function NewsCard({
     : 'Publication récente';
 
   const categoryName = post.categories?.[0]?.name || 'Communiqué';
+  const isImportant = !!post.is_important;
 
   // Fallback image
   const imageUrl = post.cover_image?.url ||
@@ -46,9 +47,16 @@ export default function NewsCard({
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
-          <span className="inline-block rounded-full bg-amber-400 px-3 py-1 text-xs font-semibold text-slate-900">
-            {categoryName}
-          </span>
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-block rounded-full bg-amber-400 px-3 py-1 text-xs font-semibold text-slate-900">
+              {categoryName}
+            </span>
+            {isImportant ? (
+              <span className="inline-block rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
+                Important
+              </span>
+            ) : null}
+          </div>
           <h2 className="mt-4 text-2xl md:text-4xl font-bold text-white tracking-tight">
             {post.title}
           </h2>
@@ -93,9 +101,16 @@ export default function NewsCard({
           />
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-            {categoryName}
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+              {categoryName}
+            </span>
+            {isImportant ? (
+              <span className="rounded-full bg-indigo-600/10 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:text-indigo-300 dark:bg-indigo-900/30">
+                Important
+              </span>
+            ) : null}
+          </div>
           <h3 className="mt-1 text-sm font-semibold text-slate-900 dark:text-white line-clamp-2 group-hover:text-blue-600 transition-colors">
             <Link href={`/actualites/${post.slug}`}>
               {post.title}
@@ -119,9 +134,16 @@ export default function NewsCard({
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
-          <span className="absolute top-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-indigo-600">
-            {categoryName}
-          </span>
+          <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+            <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-indigo-600">
+              {categoryName}
+            </span>
+            {isImportant ? (
+              <span className="rounded-full bg-indigo-600/90 px-3 py-1 text-xs font-semibold text-white">
+                Important
+              </span>
+            ) : null}
+          </div>
         </div>
         <div className="flex-1 flex flex-col">
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
@@ -168,9 +190,16 @@ export default function NewsCard({
           priority={priority}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-indigo-600 backdrop-blur-sm">
-          {categoryName}
-        </span>
+        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-indigo-600 backdrop-blur-sm">
+            {categoryName}
+          </span>
+          {isImportant ? (
+            <span className="rounded-full bg-indigo-600/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+              Important
+            </span>
+          ) : null}
+        </div>
       </div>
       <div className="p-6">
         <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">

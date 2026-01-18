@@ -38,6 +38,9 @@ export interface Post {
   gallery?: Media[];
   reading_time?: number;
   is_slide?: boolean;
+  is_important?: boolean;
+  views_count?: number;
+  unique_views_count?: number;
 }
 
 export interface PresidentMessage {

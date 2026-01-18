@@ -34,6 +34,7 @@ export interface PostFormData {
   tag_ids: number[];
   status: string;
   notify_subscribers: boolean;
+  is_important?: boolean;
   cover_image_id?: number | null;
   cover_image?: Media | null;
   gallery: GalleryItem[];
@@ -71,6 +72,7 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
       tag_ids: [],
       status: "draft",
       notify_subscribers: false,
+      is_important: false,
       cover_image_id: null,
       cover_image: null,
       gallery: [],
@@ -374,8 +376,17 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
         <div className="lg:col-span-1 space-y-6">
             {/* Publication */}
             <Card>
-                <CardHeader>Publication</CardHeader>
-                <CardBody className="space-y-4">
+            <CardHeader>Publication</CardHeader>
+            <CardBody className="space-y-4">
+                    <label className="flex items-center gap-3 text-sm font-medium text-slate-900 dark:text-white">
+                        <input
+                            type="checkbox"
+                            checked={!!formData.is_important}
+                            onChange={(e) => setFormData({ ...formData, is_important: e.target.checked })}
+                            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        Article important (mis en avant)
+                    </label>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                             Statut
