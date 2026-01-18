@@ -103,7 +103,7 @@ function HeroBadge({ label, variant }: { label: string; variant: BadgeVariant })
 }
 
 export default function ProjectDynamicPage({ slug }: { slug: string }) {
-  const project = useProject(slug);
+  const { project, loading, error } = useProject(slug);
   const meta = useMemo(() => safeProjectMeta(project?.meta), [project?.meta]);
 
   const headerTitle = project?.title ?? "Projet";
@@ -119,11 +119,57 @@ export default function ProjectDynamicPage({ slug }: { slug: string }) {
   const firstTabKey = tabs[0]?.key;
   const [slideIndexByTab, setSlideIndexByTab] = useState<Record<string, number>>({});
 
+  if (loading) {
+    return (
+      <main className="bg-slate-50/60 dark:bg-slate-950">
+        <section className="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-white">
+          <div className="max-w-[1280px] px-5 md:px-10 mx-auto">
+            <div className="py-6 md:py-8 animate-pulse">
+              <div className="h-3 w-48 rounded bg-slate-200 dark:bg-slate-700" />
+              <div className="mt-4 h-8 w-72 rounded bg-slate-200 dark:bg-slate-700" />
+              <div className="mt-4 space-y-2 max-w-2xl">
+                <div className="h-4 w-full rounded bg-slate-200 dark:bg-slate-700" />
+                <div className="h-4 w-5/6 rounded bg-slate-200 dark:bg-slate-700" />
+              </div>
+              <div className="mt-6 h-16 w-48 rounded-2xl bg-slate-200 dark:bg-slate-700" />
+            </div>
+          </div>
+        </section>
+
+        <div className="max-w-[1280px] px-5 md:px-10 mx-auto py-8 md:py-12 animate-pulse">
+          <div className="grid gap-6 md:grid-cols-[280px_1fr]">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-10 rounded-xl bg-slate-100 dark:bg-slate-800" />
+                ))}
+              </div>
+            </div>
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div className="h-6 w-64 rounded bg-slate-200 dark:bg-slate-700" />
+              <div className="mt-4 space-y-2">
+                <div className="h-4 w-full rounded bg-slate-200 dark:bg-slate-700" />
+                <div className="h-4 w-11/12 rounded bg-slate-200 dark:bg-slate-700" />
+                <div className="h-4 w-10/12 rounded bg-slate-200 dark:bg-slate-700" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (!project) {
     return (
       <main className="bg-slate-50/60 dark:bg-slate-950">
         <ProjectHeader title={headerTitle} description={headerDescription} kicker={headerKicker} imageUrl={headerImageUrl} />
-        <div className="px-5 md:px-10 py-10 text-sm text-slate-600 dark:text-slate-300">Chargement…</div>
+        <div className="max-w-[1280px] px-5 md:px-10 mx-auto py-10">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p className="text-sm text-slate-700 dark:text-slate-300">
+              {error === "not_found" ? "Projet introuvable." : "Impossible de charger le projet pour le moment."}
+            </p>
+          </div>
+        </div>
       </main>
     );
   }
