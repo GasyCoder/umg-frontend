@@ -156,19 +156,23 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
       });
 
       if (res.ok) {
+        let newsletterQueued: number | undefined;
+        let newsletterCampaignId: number | undefined;
+        let resolvedSlug: string | undefined;
+
         try {
           const json = await res.json().catch(() => null);
-          const slug = (json?.data?.slug as string | undefined) || formData.slug;
-          const newsletterQueued = json?.meta?.newsletter?.queued as number | undefined;
-          const newsletterCampaignId = json?.meta?.newsletter?.campaign_id as number | undefined;
+          resolvedSlug = (json?.data?.slug as string | undefined) || formData.slug;
+          newsletterQueued = json?.meta?.newsletter?.queued as number | undefined;
+          newsletterCampaignId = json?.meta?.newsletter?.campaign_id as number | undefined;
 
-          if (slug) {
+          if (resolvedSlug) {
             await fetch("/api/admin/revalidate", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               credentials: "include",
               body: JSON.stringify({
-                paths: ["/actualites", `/actualites/${slug}`],
+                paths: ["/actualites", `/actualites/${resolvedSlug}`],
               }),
             }).catch(() => null);
           }
