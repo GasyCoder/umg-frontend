@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Pencil, Trash2, Eye, FileText, Calendar, MoreHorizontal } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -23,11 +24,14 @@ type Post = {
 };
 
 export default function AdminPostsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [items, setItems] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showNewsletterBanner, setShowNewsletterBanner] = useState(true);
 
   async function load() {
     setLoading(true);
@@ -47,6 +51,22 @@ export default function AdminPostsPage() {
   useEffect(() => {
     void load();
   }, []);
+
+  const newsletterQueuedParam = searchParams.get("newsletterQueued");
+  const newsletterCampaignIdParam = searchParams.get("newsletterCampaignId");
+  const newsletterQueued = newsletterQueuedParam ? Number(newsletterQueuedParam) : null;
+  const newsletterCampaignId = newsletterCampaignIdParam ? Number(newsletterCampaignIdParam) : null;
+  const hasNewsletterInfo = Number.isFinite(newsletterQueued as number);
+
+  useEffect(() => {
+    if (!hasNewsletterInfo) return;
+    setShowNewsletterBanner(true);
+    const t = setTimeout(() => {
+      // remove query params (so it doesn't show again on refresh)
+      router.replace("/admin/posts");
+    }, 8000);
+    return () => clearTimeout(t);
+  }, [hasNewsletterInfo, router]);
 
   async function handleDelete() {
     if (!selectedPost) return;
@@ -156,6 +176,41 @@ export default function AdminPostsPage() {
           <Button icon={<Plus className="w-4 h-4" />}>Nouvel article</Button>
         </Link>
       </div>
+
+      {hasNewsletterInfo && showNewsletterBanner ? (
+        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <Badge variant={newsletterQueued === 0 ? "warning" : "success"} dot>
+                Newsletter
+              </Badge>
+              <p className="font-semibold text-slate-900 dark:text-white">
+                {newsletterQueued === 0 ? "Aucun abonné actif" : "Envoi en cours"}
+              </p>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+              {newsletterQueued === 0
+                ? "Aucun email n'a été envoyé (0 abonné actif)."
+                : `${newsletterQueued} abonné(s) en file d'attente${newsletterCampaignId ? ` (campagne #${newsletterCampaignId})` : ""}.`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href="/admin/newsletter">
+              <Button variant="secondary" size="sm">Newsletter</Button>
+            </Link>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setShowNewsletterBanner(false);
+                router.replace("/admin/posts");
+              }}
+            >
+              Fermer
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-4">

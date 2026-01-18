@@ -162,15 +162,6 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
           const newsletterQueued = json?.meta?.newsletter?.queued as number | undefined;
           const newsletterCampaignId = json?.meta?.newsletter?.campaign_id as number | undefined;
 
-          if (formData.notify_subscribers && typeof newsletterQueued === "number") {
-            if (newsletterQueued === 0) {
-              alert("Aucun abonné actif: aucun email n'a été envoyé.");
-            } else if (typeof newsletterCampaignId === "number") {
-              // Simple confirmation for admins (no UI flash system)
-              alert(`Newsletter lancée: ${newsletterQueued} abonné(s) en file (campagne #${newsletterCampaignId}).`);
-            }
-          }
-
           if (slug) {
             await fetch("/api/admin/revalidate", {
               method: "POST",
@@ -185,7 +176,16 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
           // ignore
         }
 
-        router.push("/admin/posts");
+        if (formData.notify_subscribers && typeof newsletterQueued === "number") {
+          const params = new URLSearchParams();
+          params.set("newsletterQueued", String(newsletterQueued));
+          if (typeof newsletterCampaignId === "number") {
+            params.set("newsletterCampaignId", String(newsletterCampaignId));
+          }
+          router.push(`/admin/posts?${params.toString()}`);
+        } else {
+          router.push("/admin/posts");
+        }
         router.refresh();
       } else {
         const err = await res.json();
