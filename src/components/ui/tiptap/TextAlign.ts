@@ -35,12 +35,20 @@ export default Extension.create({
       setTextAlign:
         (alignment: Align) =>
         ({ commands }: { commands: any }) => {
-          return this.options.types.every((type: string) => commands.updateAttributes(type, { textAlign: alignment }));
+          let applied = false;
+          for (const type of this.options.types as string[]) {
+            applied = commands.updateAttributes(type, { textAlign: alignment }) || applied;
+          }
+          return applied;
         },
       unsetTextAlign:
         () =>
         ({ commands }: { commands: any }) => {
-          return this.options.types.every((type: string) => commands.resetAttributes(type, "textAlign"));
+          let applied = false;
+          for (const type of this.options.types as string[]) {
+            applied = commands.resetAttributes(type, "textAlign") || applied;
+          }
+          return applied;
         },
     } as any;
   },
