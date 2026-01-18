@@ -184,7 +184,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="py-3">
             <Breadcrumb
               items={[
-                { label: 'Actualités', href: '/actualites' },
+                post.status === "archived"
+                  ? { label: 'Archives', href: '/actualites/archives' }
+                  : { label: 'Actualités', href: '/actualites' },
                 { label: post.title },
               ]}
             />
