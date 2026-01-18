@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Calendar, ArrowRight, Clock } from 'lucide-react';
+import { Calendar, ArrowRight, Clock, Eye } from 'lucide-react';
 import type { Post } from '@/lib/types';
 
 type NewsCardVariant = 'default' | 'featured' | 'compact' | 'horizontal';
@@ -28,6 +28,8 @@ export default function NewsCard({
 
   const categoryName = post.categories?.[0]?.name || 'Communiqué';
   const isImportant = !!post.is_important;
+  const readingTime = typeof post.reading_time === "number" ? post.reading_time : null;
+  const views = typeof post.views_count === "number" ? post.views_count : null;
 
   // Fallback image
   const imageUrl = post.cover_image?.url ||
@@ -65,17 +67,23 @@ export default function NewsCard({
               {post.excerpt}
             </p>
           )}
-          <div className="mt-4 flex items-center gap-4 text-sm text-slate-300">
+          <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-300">
             <span className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               {formattedDate}
             </span>
-            {post.reading_time && (
+            {readingTime ? (
               <span className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                {post.reading_time} min
+                {readingTime} min
               </span>
-            )}
+            ) : null}
+            {views !== null ? (
+              <span className="flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                {views}
+              </span>
+            ) : null}
           </div>
           <Link
             href={`/actualites/${post.slug}`}
@@ -119,6 +127,20 @@ export default function NewsCard({
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {formattedDate}
           </p>
+          <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+            {readingTime ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" />
+                {readingTime} min
+              </span>
+            ) : null}
+            {views !== null ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5" />
+                {views}
+              </span>
+            ) : null}
+          </div>
         </div>
       </article>
     );
@@ -146,9 +168,23 @@ export default function NewsCard({
           </div>
         </div>
         <div className="flex-1 flex flex-col">
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-            <Calendar className="w-3.5 h-3.5" />
-            {formattedDate}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+            <span className="inline-flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5" />
+              {formattedDate}
+            </span>
+            {readingTime ? (
+              <span className="inline-flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5" />
+                {readingTime} min
+              </span>
+            ) : null}
+            {views !== null ? (
+              <span className="inline-flex items-center gap-2">
+                <Eye className="w-3.5 h-3.5" />
+                {views}
+              </span>
+            ) : null}
           </div>
           <h3 className="mt-2 text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
             <Link href={`/actualites/${post.slug}`}>
@@ -202,9 +238,23 @@ export default function NewsCard({
         </div>
       </div>
       <div className="p-6">
-        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-          <Calendar className="h-3.5 w-3.5" />
-          <span>{formattedDate}</span>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+          <span className="inline-flex items-center gap-2">
+            <Calendar className="h-3.5 w-3.5" />
+            <span>{formattedDate}</span>
+          </span>
+          {readingTime ? (
+            <span className="inline-flex items-center gap-2">
+              <Clock className="h-3.5 w-3.5" />
+              <span>{readingTime} min</span>
+            </span>
+          ) : null}
+          {views !== null ? (
+            <span className="inline-flex items-center gap-2">
+              <Eye className="h-3.5 w-3.5" />
+              <span>{views}</span>
+            </span>
+          ) : null}
         </div>
         <h3 className="mt-3 text-lg font-bold tracking-tight text-slate-900 dark:text-white line-clamp-2">
           {post.title}
