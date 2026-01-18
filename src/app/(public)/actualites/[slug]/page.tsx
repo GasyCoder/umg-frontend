@@ -79,7 +79,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   return (
     <main className="bg-white dark:bg-slate-950">
       {/* Hero Section */}
-      <section className="relative h-[36vh] min-h-[260px] overflow-hidden">
+      <section className="relative h-[52vh] min-h-[360px] md:h-[60vh] md:min-h-[420px] overflow-hidden">
         <Image
           src={coverImageUrl}
           alt={post.title}

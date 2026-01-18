@@ -5,7 +5,7 @@ import { Skeleton, SkeletonText } from "@/components/ui/Skeleton";
 export default function ArticleLoading() {
   return (
     <main className="bg-white dark:bg-slate-950">
-      <section className="relative h-[36vh] min-h-[260px] overflow-hidden">
+      <section className="relative h-[52vh] min-h-[360px] md:h-[60vh] md:min-h-[420px] overflow-hidden">
         <Skeleton className="h-full w-full rounded-none" />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-slate-950/60 to-slate-950/90" />
         <Container className="h-full">
