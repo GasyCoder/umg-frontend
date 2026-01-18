@@ -114,6 +114,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <main className="bg-white dark:bg-slate-950">
+      {post.status === "archived" ? (
+        <div className="bg-amber-50 text-amber-900 border-b border-amber-200 dark:bg-amber-900/20 dark:text-amber-100 dark:border-amber-800/50">
+          <Container>
+            <div className="py-3 text-sm">
+              <span className="font-semibold">Archive :</span> cet article est archivé, mais reste consultable.
+            </div>
+          </Container>
+        </div>
+      ) : null}
+
       {/* Hero Section */}
       <section className="relative h-[52vh] min-h-[360px] md:h-[60vh] md:min-h-[420px] overflow-hidden">
         <Image

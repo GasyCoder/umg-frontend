@@ -28,6 +28,7 @@ export interface Post {
   id: number;
   title: string;
   slug: string;
+  status?: 'draft' | 'pending' | 'published' | 'archived';
   excerpt?: string | null;
   content_html?: string | null;
   content_markdown?: string | null;
