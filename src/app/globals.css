@@ -56,6 +56,88 @@ body {
   line-height: 1.6;
 }
 
+/* Minimal typography for content blocks (Tailwind Typography replacement) */
+.prose {
+  color: inherit;
+}
+
+.prose :where(p, ul, ol, blockquote, pre, table) {
+  margin: 0.9rem 0;
+}
+
+.prose :where(h1, h2, h3, h4) {
+  margin: 1.2rem 0 0.6rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.prose h1 { font-size: 1.875rem; }
+.prose h2 { font-size: 1.5rem; }
+.prose h3 { font-size: 1.25rem; }
+.prose h4 { font-size: 1.125rem; }
+
+.prose :where(ul, ol) {
+  padding-left: 1.5rem;
+}
+
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li { margin: 0.25rem 0; }
+
+.prose blockquote {
+  border-left: 4px solid rgba(100, 116, 139, 0.35);
+  padding-left: 1rem;
+  color: rgba(100, 116, 139, 0.95);
+}
+
+.dark .prose blockquote {
+  border-left-color: rgba(148, 163, 184, 0.35);
+  color: rgba(203, 213, 225, 0.9);
+}
+
+.prose a {
+  color: #4f46e5;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dark .prose a {
+  color: #a5b4fc;
+}
+
+.prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+  background: rgba(148, 163, 184, 0.18);
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.35rem;
+}
+
+.dark .prose code {
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.prose pre {
+  overflow: auto;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.dark .prose pre {
+  background: rgba(2, 6, 23, 0.6);
+}
+
+.prose pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.prose img {
+  max-width: 100%;
+  border-radius: 0.75rem;
+}
+
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
