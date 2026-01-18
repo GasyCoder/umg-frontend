@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Eye, FileText, Calendar, MoreHorizontal } from "lucide-react";
+import { Plus, Pencil, Trash2, Archive, FileMinus, FileText, Calendar } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +13,7 @@ type Post = {
   id: number;
   title: string;
   slug: string;
-  status: "published" | "draft" | "scheduled";
+  status: "published" | "draft" | "pending" | "archived";
   categories?: { name: string }[];
   author?: { name: string };
   created_at: string;
@@ -31,6 +31,9 @@ export default function AdminPostsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [statusAction, setStatusAction] = useState<"archive" | "draft" | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showNewsletterBanner, setShowNewsletterBanner] = useState(true);
 
   async function load() {
@@ -85,14 +88,37 @@ export default function AdminPostsPage() {
     }
   }
 
+  async function handleStatusUpdate() {
+    if (!selectedPost || !statusAction) return;
+    setUpdatingStatus(true);
+    try {
+      const endpoint =
+        statusAction === "archive"
+          ? `/api/admin/posts/${selectedPost.id}/archive`
+          : `/api/admin/posts/${selectedPost.id}/draft`;
+
+      const res = await fetch(endpoint, { method: "POST" });
+      if (res.ok) {
+        setStatusModalOpen(false);
+        setStatusAction(null);
+        setSelectedPost(null);
+        load();
+      }
+    } finally {
+      setUpdatingStatus(false);
+    }
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "published":
         return <Badge variant="success" dot>Publié</Badge>;
       case "draft":
         return <Badge variant="warning" dot>Brouillon</Badge>;
-      case "scheduled":
-        return <Badge variant="info" dot>Programmé</Badge>;
+      case "pending":
+        return <Badge variant="info" dot>En attente</Badge>;
+      case "archived":
+        return <Badge variant="default" dot>Archivé</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -213,7 +239,7 @@ export default function AdminPostsPage() {
       ) : null}
 
       {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">Total articles</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{items.length}</p>
@@ -228,6 +254,12 @@ export default function AdminPostsPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400">Brouillons</p>
           <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
             {items.filter((i) => i.status === "draft").length}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+          <p className="text-sm text-slate-500 dark:text-slate-400">Archivés</p>
+          <p className="text-2xl font-bold text-slate-700 dark:text-slate-200 mt-1">
+            {items.filter((i) => i.status === "archived").length}
           </p>
         </div>
       </div>
@@ -249,6 +281,32 @@ export default function AdminPostsPage() {
             >
               <Pencil className="w-4 h-4" />
             </Link>
+            {item.status === "published" ? (
+              <button
+                onClick={() => {
+                  setSelectedPost(item);
+                  setStatusAction("archive");
+                  setStatusModalOpen(true);
+                }}
+                className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors"
+                title="Archiver"
+              >
+                <Archive className="w-4 h-4" />
+              </button>
+            ) : null}
+            {item.status !== "draft" ? (
+              <button
+                onClick={() => {
+                  setSelectedPost(item);
+                  setStatusAction("draft");
+                  setStatusModalOpen(true);
+                }}
+                className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+                title="Mettre en brouillon"
+              >
+                <FileMinus className="w-4 h-4" />
+              </button>
+            ) : null}
             <button
               onClick={() => {
                 setSelectedPost(item);
@@ -261,6 +319,24 @@ export default function AdminPostsPage() {
             </button>
           </div>
         )}
+      />
+
+      {/* Status Confirmation */}
+      <ConfirmModal
+        isOpen={statusModalOpen}
+        onClose={() => {
+          setStatusModalOpen(false);
+          setStatusAction(null);
+        }}
+        onConfirm={handleStatusUpdate}
+        title={statusAction === "archive" ? "Archiver l'article" : "Mettre en brouillon"}
+        message={
+          statusAction === "archive"
+            ? `Êtes-vous sûr de vouloir archiver "${selectedPost?.title}" ?`
+            : `Êtes-vous sûr de vouloir mettre "${selectedPost?.title}" en brouillon ? Il ne sera plus visible publiquement.`
+        }
+        confirmText={statusAction === "archive" ? "Archiver" : "Mettre en brouillon"}
+        loading={updatingStatus}
       />
 
       {/* Delete Confirmation */}
