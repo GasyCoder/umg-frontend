@@ -13,10 +13,12 @@ interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
 
+const NEWS_REVALIDATE_SECONDS = 30;
+
 // Fetch single post
 async function fetchPost(slug: string) {
   try {
-    const res = await publicGet<{ data: Post }>(`/posts/${slug}`, 60);
+    const res = await publicGet<{ data: Post }>(`/posts/${slug}`, NEWS_REVALIDATE_SECONDS);
     return res.data;
   } catch {
     return null;
@@ -29,7 +31,7 @@ async function fetchRelatedPosts(postId: number, categorySlug?: string) {
     const query = categorySlug 
       ? `/posts?per_page=3&exclude=${postId}&category=${categorySlug}`
       : `/posts?per_page=3&exclude=${postId}`;
-    const res = await publicGet<{ data: Post[] }>(query, 120);
+    const res = await publicGet<{ data: Post[] }>(query, NEWS_REVALIDATE_SECONDS);
     return res.data || [];
   } catch {
     return [];
@@ -181,7 +183,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     Temps forts et moments clés de cette actualité.
                   </p>
                   <div className="mt-6">
-                    <ArticleGallery />
+                    <ArticleGallery images={post.gallery.map((m) => m.url).filter(Boolean)} />
                   </div>
                 </div>
               )}

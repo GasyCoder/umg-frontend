@@ -12,6 +12,8 @@ import { CategoryFilter, TagFilter } from '@/components/public/CategoryFilter';
 
 export const dynamic = "force-dynamic";
 
+const NEWS_REVALIDATE_SECONDS = 30;
+
 interface NewsPageSearchParams {
   page?: string;
   category?: string;
@@ -38,17 +40,17 @@ async function fetchPosts(params: NewsPageSearchParams) {
     queryParts.push(`q=${encodeURIComponent(params.q)}`);
   }
   
-  return publicGet<PaginatedResponse<Post>>(`/posts?${queryParts.join('&')}`, 300);
+  return publicGet<PaginatedResponse<Post>>(`/posts?${queryParts.join('&')}`, NEWS_REVALIDATE_SECONDS);
 }
 
 // Fetch categories for sidebar
 async function fetchCategories() {
-  return publicGet<{ data: Category[] }>('/categories?with_count=true', 300).catch(() => ({ data: [] }));
+  return publicGet<{ data: Category[] }>('/categories?with_count=true', NEWS_REVALIDATE_SECONDS).catch(() => ({ data: [] }));
 }
 
 // Fetch tags for sidebar
 async function fetchTags() {
-  return publicGet<{ data: Tag[] }>('/tags?with_count=true', 300).catch(() => ({ data: [] }));
+  return publicGet<{ data: Tag[] }>('/tags?with_count=true', NEWS_REVALIDATE_SECONDS).catch(() => ({ data: [] }));
 }
 
 // Fetch events for sidebar

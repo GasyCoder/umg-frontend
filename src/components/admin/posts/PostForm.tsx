@@ -136,6 +136,23 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
       });
 
       if (res.ok) {
+        try {
+          const json = await res.json().catch(() => null);
+          const slug = (json?.data?.slug as string | undefined) || formData.slug;
+          if (slug) {
+            await fetch("/api/admin/revalidate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({
+                paths: ["/actualites", `/actualites/${slug}`],
+              }),
+            }).catch(() => null);
+          }
+        } catch {
+          // ignore
+        }
+
         router.push("/admin/posts");
         router.refresh();
       } else {
