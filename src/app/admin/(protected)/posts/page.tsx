@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Archive, FileMinus, FileText, Calendar, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, Archive, FileMinus, FileText, Calendar, Eye, RefreshCw } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
@@ -35,7 +35,7 @@ export default function AdminPostsPage() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
-  const [statusAction, setStatusAction] = useState<"archive" | "draft" | null>(null);
+  const [statusAction, setStatusAction] = useState<"archive" | "draft" | "publish" | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showNewsletterBanner, setShowNewsletterBanner] = useState(true);
   const [counts, setCounts] = useState<Record<StatusFilter, number>>({
@@ -154,14 +154,16 @@ export default function AdminPostsPage() {
     if (!selectedPost || !statusAction) return;
     setUpdatingStatus(true);
     try {
-      const endpoint =
-        statusAction === "archive"
-          ? `/api/admin/posts/${selectedPost.id}/archive`
-          : `/api/admin/posts/${selectedPost.id}/draft`;
+      const endpoint = (() => {
+        if (statusAction === "archive") return `/api/admin/posts/${selectedPost.id}/archive`;
+        if (statusAction === "draft") return `/api/admin/posts/${selectedPost.id}/draft`;
+        return `/api/admin/posts/${selectedPost.id}/publish`;
+      })();
 
       const res = await fetch(endpoint, { method: "POST" });
       if (res.ok) {
-        const nextFilter: StatusFilter = statusAction === "archive" ? "archived" : "draft";
+        const nextFilter: StatusFilter =
+          statusAction === "archive" ? "archived" : statusAction === "draft" ? "draft" : "published";
         setStatusModalOpen(false);
         setStatusAction(null);
         setSelectedPost(null);
@@ -388,6 +390,19 @@ export default function AdminPostsPage() {
             >
               <Pencil className="w-4 h-4" />
             </Link>
+            {item.status === "draft" || item.status === "archived" ? (
+              <button
+                onClick={() => {
+                  setSelectedPost(item);
+                  setStatusAction("publish");
+                  setStatusModalOpen(true);
+                }}
+                className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+                title="Republier"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            ) : null}
             {item.status === "published" ? (
               <button
                 onClick={() => {
@@ -436,13 +451,27 @@ export default function AdminPostsPage() {
           setStatusAction(null);
         }}
         onConfirm={handleStatusUpdate}
-        title={statusAction === "archive" ? "Archiver l'article" : "Mettre en brouillon"}
+        title={
+          statusAction === "archive"
+            ? "Archiver l'article"
+            : statusAction === "draft"
+              ? "Mettre en brouillon"
+              : "Republier l'article"
+        }
         message={
           statusAction === "archive"
             ? `Êtes-vous sûr de vouloir archiver "${selectedPost?.title}" ?`
-            : `Êtes-vous sûr de vouloir mettre "${selectedPost?.title}" en brouillon ? Il ne sera plus visible publiquement.`
+            : statusAction === "draft"
+              ? `Êtes-vous sûr de vouloir mettre "${selectedPost?.title}" en brouillon ? Il ne sera plus visible publiquement.`
+              : `Êtes-vous sûr de vouloir republier "${selectedPost?.title}" ? Il redeviendra visible publiquement.`
         }
-        confirmText={statusAction === "archive" ? "Archiver" : "Mettre en brouillon"}
+        confirmText={
+          statusAction === "archive"
+            ? "Archiver"
+            : statusAction === "draft"
+              ? "Mettre en brouillon"
+              : "Republier"
+        }
         loading={updatingStatus}
       />
 
