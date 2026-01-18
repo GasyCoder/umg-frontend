@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Archive, FileMinus, FileText, Calendar, Eye, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, Archive, FileMinus, FileText, Calendar, Eye, RefreshCw, Mail } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { ConfirmModal } from "@/components/ui/Modal";
+import { ConfirmModal, Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
 
 type Post = {
   id: number;
@@ -38,6 +39,13 @@ export default function AdminPostsPage() {
   const [statusAction, setStatusAction] = useState<"archive" | "draft" | "publish" | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showNewsletterBanner, setShowNewsletterBanner] = useState(true);
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState<"archive" | "draft" | "publish" | "delete" | null>(null);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [sendModalOpen, setSendModalOpen] = useState(false);
+  const [sendSubject, setSendSubject] = useState("");
+  const [sendingDigest, setSendingDigest] = useState(false);
   const [counts, setCounts] = useState<Record<StatusFilter, number>>({
     all: 0,
     published: 0,
@@ -56,6 +64,14 @@ export default function AdminPostsPage() {
     const params = new URLSearchParams();
     if (next !== "all") params.set("status", next);
     router.push(`/admin/posts${params.toString() ? `?${params.toString()}` : ""}`);
+  }
+
+  function pushWithNewsletterInfo(next: StatusFilter, queued: number, campaignId: number) {
+    const params = new URLSearchParams();
+    if (next !== "all") params.set("status", next);
+    params.set("newsletterQueued", String(queued));
+    params.set("newsletterCampaignId", String(campaignId));
+    router.push(`/admin/posts?${params.toString()}`);
   }
 
   async function loadCounts() {
@@ -99,10 +115,12 @@ export default function AdminPostsPage() {
       const res = await fetch(url);
       if (!res.ok) {
         setItems([]);
+        setSelectedKeys(new Set());
         return;
       }
       const json = await res.json().catch(() => null);
       setItems(json?.data ?? []);
+      setSelectedKeys(new Set());
     } finally {
       setLoading(false);
     }
@@ -147,6 +165,113 @@ export default function AdminPostsPage() {
       }
     } finally {
       setDeleting(false);
+    }
+  }
+
+  const selectedIds = Array.from(selectedKeys).map((k) => Number(k)).filter((n) => Number.isFinite(n));
+
+  async function runBulk(action: NonNullable<typeof bulkAction>) {
+    if (selectedIds.length === 0) return;
+    setBulkLoading(true);
+    try {
+      const selected = items.filter((i) => selectedKeys.has(String(i.id)));
+      const eligibleIds = (() => {
+        if (action === "archive") return selected.filter((p) => p.status === "published").map((p) => p.id);
+        if (action === "draft") return selected.filter((p) => p.status === "published" || p.status === "archived").map((p) => p.id);
+        if (action === "publish") return selected.filter((p) => p.status === "draft" || p.status === "archived").map((p) => p.id);
+        return selected.map((p) => p.id);
+      })();
+
+      if (eligibleIds.length === 0) {
+        alert("Aucun article sélectionné n'est éligible pour cette action.");
+        setBulkModalOpen(false);
+        setBulkAction(null);
+        return;
+      }
+
+      const endpointForId = (id: number) => {
+        if (action === "archive") return [`/api/admin/posts/${id}/archive`, "POST"] as const;
+        if (action === "draft") return [`/api/admin/posts/${id}/draft`, "POST"] as const;
+        if (action === "publish") return [`/api/admin/posts/${id}/publish`, "POST"] as const;
+        return [`/api/admin/posts/${id}`, "DELETE"] as const;
+      };
+
+      const results = await Promise.all(
+        eligibleIds.map(async (id) => {
+          const [url, method] = endpointForId(id);
+          const res = await fetch(url, { method });
+          return { id, ok: res.ok, status: res.status };
+        })
+      );
+
+      const failed = results.filter((r) => !r.ok);
+      if (failed.length) {
+        alert(`${failed.length} action(s) ont échoué (droits insuffisants ou statut invalide).`);
+      }
+
+      const nextFilter: StatusFilter =
+        action === "archive" ? "archived" : action === "draft" ? "draft" : action === "publish" ? "published" : statusFilter;
+
+      setBulkModalOpen(false);
+      setBulkAction(null);
+      setSelectedKeys(new Set());
+      void loadCounts();
+
+      if (nextFilter !== statusFilter) {
+        pushStatusFilter(nextFilter);
+        return;
+      }
+      load();
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
+  async function handleSendDigest() {
+    if (selectedIds.length === 0) return;
+    const subject = sendSubject.trim();
+    if (!subject) return;
+
+    const selected = items.filter((i) => selectedKeys.has(String(i.id)));
+    const invalid = selected.filter((p) => p.status !== "published");
+    if (invalid.length) {
+      alert("Sélection invalide: uniquement des articles Publiés peuvent être envoyés par email.");
+      return;
+    }
+
+    setSendingDigest(true);
+    try {
+      const res = await fetch("/api/admin/newsletter/campaigns/from-posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          post_ids: selectedIds,
+          subject,
+          send_now: true,
+        }),
+      });
+
+      if (!res.ok) {
+        alert("Échec d'envoi newsletter.");
+        return;
+      }
+
+      const json = await res.json().catch(() => null);
+      const queued = Number(json?.meta?.newsletter?.queued ?? 0);
+      const campaignId = Number(json?.meta?.newsletter?.campaign_id ?? 0);
+
+      setSendModalOpen(false);
+      setSelectedKeys(new Set());
+      void loadCounts();
+
+      if (campaignId > 0) {
+        pushWithNewsletterInfo(statusFilter, queued, campaignId);
+        return;
+      }
+
+      load();
+    } finally {
+      setSendingDigest(false);
     }
   }
 
@@ -312,6 +437,72 @@ export default function AdminPostsPage() {
         </Button>
       </div>
 
+      {/* Bulk actions */}
+      {selectedIds.length > 0 ? (
+        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="text-sm text-slate-700 dark:text-slate-200">
+            <span className="font-semibold">{selectedIds.length}</span> sélectionné(s)
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<Mail className="w-4 h-4" />}
+              onClick={() => {
+                setSendSubject(`Actualités - ${new Date().toLocaleDateString("fr-FR")}`);
+                setSendModalOpen(true);
+              }}
+            >
+              Envoyer par email
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<Archive className="w-4 h-4" />}
+              onClick={() => {
+                setBulkAction("archive");
+                setBulkModalOpen(true);
+              }}
+            >
+              Archiver
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<FileMinus className="w-4 h-4" />}
+              onClick={() => {
+                setBulkAction("draft");
+                setBulkModalOpen(true);
+              }}
+            >
+              Brouillon
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<RefreshCw className="w-4 h-4" />}
+              onClick={() => {
+                setBulkAction("publish");
+                setBulkModalOpen(true);
+              }}
+            >
+              Republier
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              icon={<Trash2 className="w-4 h-4" />}
+              onClick={() => {
+                setBulkAction("delete");
+                setBulkModalOpen(true);
+              }}
+            >
+              Supprimer
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       {hasNewsletterInfo && showNewsletterBanner ? (
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -381,6 +572,10 @@ export default function AdminPostsPage() {
         loading={loading}
         emptyMessage="Aucun article trouvé"
         searchPlaceholder="Rechercher un article..."
+        rowSelection={{
+          selectedKeys,
+          onChange: setSelectedKeys,
+        }}
         actions={(item) => (
           <div className="flex items-center gap-1">
             <Link
@@ -442,6 +637,79 @@ export default function AdminPostsPage() {
           </div>
         )}
       />
+
+      {/* Bulk Confirmation */}
+      <ConfirmModal
+        isOpen={bulkModalOpen}
+        onClose={() => {
+          setBulkModalOpen(false);
+          setBulkAction(null);
+        }}
+        onConfirm={() => bulkAction && runBulk(bulkAction)}
+        title={
+          bulkAction === "archive"
+            ? "Archiver les articles"
+            : bulkAction === "draft"
+              ? "Mettre en brouillon"
+              : bulkAction === "publish"
+                ? "Republier les articles"
+                : "Supprimer les articles"
+        }
+        message={
+          bulkAction === "delete"
+            ? `Êtes-vous sûr de vouloir supprimer ${selectedIds.length} article(s) ? Cette action est irréversible.`
+            : `Confirmer l'action sur ${selectedIds.length} article(s).`
+        }
+        confirmText={
+          bulkAction === "archive"
+            ? "Archiver"
+            : bulkAction === "draft"
+              ? "Mettre en brouillon"
+              : bulkAction === "publish"
+                ? "Republier"
+                : "Supprimer"
+        }
+        variant={bulkAction === "delete" ? "danger" : "primary"}
+        loading={bulkLoading}
+      />
+
+      {/* Send newsletter modal */}
+      <Modal
+        isOpen={sendModalOpen}
+        onClose={() => setSendModalOpen(false)}
+        title="Envoyer une newsletter (articles sélectionnés)"
+        size="md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setSendModalOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={handleSendDigest}
+              loading={sendingDigest}
+              icon={<Mail className="w-4 h-4" />}
+              disabled={sendSubject.trim().length === 0 || selectedIds.length === 0}
+            >
+              Envoyer
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            {selectedIds.length} article(s) seront envoyés aux abonnés sous forme de cards dans un seul email.
+          </p>
+          <Input
+            label="Objet"
+            value={sendSubject}
+            onChange={(e) => setSendSubject(e.target.value)}
+            placeholder="Objet de la newsletter"
+          />
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Astuce: sélectionne uniquement des articles publiés pour éviter un refus de l’API.
+          </div>
+        </div>
+      </Modal>
 
       {/* Status Confirmation */}
       <ConfirmModal
