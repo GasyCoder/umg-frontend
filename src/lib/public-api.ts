@@ -3,6 +3,12 @@ import type { SiteSettings } from "./types";
 
 const DEFAULT_TIMEOUT_MS = 8000;
 
+type PublicGetOptions = {
+  revalidate?: number;
+  cache?: RequestCache;
+  tags?: string[];
+};
+
 async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -28,15 +34,30 @@ async function safeJson(res: Response) {
   }
 }
 
-export async function publicGet<T>(path: string, revalidate = 60, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<T> {
+export async function publicGet<T>(
+  path: string,
+  options: number | PublicGetOptions = 60,
+  timeoutMs = DEFAULT_TIMEOUT_MS
+): Promise<T> {
   const baseUrl = getBaseUrl();
   if (!baseUrl) {
     throw new Error("NEXT_PUBLIC_API_URL missing");
   }
 
+  const normalized: PublicGetOptions = typeof options === "number" ? { revalidate: options } : options;
+  const cache = normalized.cache;
+  const next =
+    cache === "no-store"
+      ? undefined
+      : {
+          revalidate: normalized.revalidate ?? 60,
+          tags: normalized.tags,
+        };
+
   const res = await fetchWithTimeout(`${baseUrl}${path}`, {
     headers: { Accept: "application/json" },
-    next: { revalidate },
+    cache,
+    next,
   }, timeoutMs);
 
   if (!res.ok) {

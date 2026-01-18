@@ -12,7 +12,7 @@ import { CategoryFilter, TagFilter } from '@/components/public/CategoryFilter';
 
 export const dynamic = "force-dynamic";
 
-const NEWS_REVALIDATE_SECONDS = 30;
+const NEWS_FETCH_OPTIONS = { cache: "no-store" as const };
 
 interface NewsPageSearchParams {
   page?: string;
@@ -40,17 +40,17 @@ async function fetchPosts(params: NewsPageSearchParams) {
     queryParts.push(`q=${encodeURIComponent(params.q)}`);
   }
   
-  return publicGet<PaginatedResponse<Post>>(`/posts?${queryParts.join('&')}`, NEWS_REVALIDATE_SECONDS);
+  return publicGet<PaginatedResponse<Post>>(`/posts?${queryParts.join('&')}`, NEWS_FETCH_OPTIONS);
 }
 
 // Fetch categories for sidebar
 async function fetchCategories() {
-  return publicGet<{ data: Category[] }>('/categories?with_count=true', NEWS_REVALIDATE_SECONDS).catch(() => ({ data: [] }));
+  return publicGet<{ data: Category[] }>('/categories?with_count=true', NEWS_FETCH_OPTIONS).catch(() => ({ data: [] }));
 }
 
 // Fetch tags for sidebar
 async function fetchTags() {
-  return publicGet<{ data: Tag[] }>('/tags?with_count=true', NEWS_REVALIDATE_SECONDS).catch(() => ({ data: [] }));
+  return publicGet<{ data: Tag[] }>('/tags?with_count=true', NEWS_FETCH_OPTIONS).catch(() => ({ data: [] }));
 }
 
 // Fetch events for sidebar
@@ -100,7 +100,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
               Nos actualités
             </h1>
             <p className="mt-3 max-w-xl text-base text-slate-600 dark:text-slate-300">
-              Informations et annonces de l'université.
+              Informations et annonces de l&apos;université.
             </p>
           </div>
         </Container>

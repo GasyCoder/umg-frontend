@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, Clock, User, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import { publicGet } from '@/lib/public-api';
-import type { Post, Event, Announcement } from '@/lib/types';
+import type { Post, Event } from '@/lib/types';
 import Container from '@/components/Container';
 import { Breadcrumb } from '@/components/layout';
 import SidebarRight, { EventsWidget, NewsletterWidget } from '@/components/layout/SidebarRight';
@@ -13,12 +13,12 @@ interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
 
-const NEWS_REVALIDATE_SECONDS = 30;
+const NEWS_FETCH_OPTIONS = { cache: "no-store" as const };
 
 // Fetch single post
 async function fetchPost(slug: string) {
   try {
-    const res = await publicGet<{ data: Post }>(`/posts/${slug}`, NEWS_REVALIDATE_SECONDS);
+    const res = await publicGet<{ data: Post }>(`/posts/${slug}`, NEWS_FETCH_OPTIONS);
     return res.data;
   } catch {
     return null;
@@ -31,7 +31,7 @@ async function fetchRelatedPosts(postId: number, categorySlug?: string) {
     const query = categorySlug 
       ? `/posts?per_page=3&exclude=${postId}&category=${categorySlug}`
       : `/posts?per_page=3&exclude=${postId}`;
-    const res = await publicGet<{ data: Post[] }>(query, NEWS_REVALIDATE_SECONDS);
+    const res = await publicGet<{ data: Post[] }>(query, NEWS_FETCH_OPTIONS);
     return res.data || [];
   } catch {
     return [];
@@ -149,12 +149,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <article className="prose prose-slate max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-indigo-600 prose-img:rounded-xl">
                 {post.content_html ? (
                   <div dangerouslySetInnerHTML={{ __html: post.content_html }} />
-                ) : (
-                  <p className="text-slate-600 dark:text-slate-300">
-                    Contenu de l'article non disponible.
-                  </p>
-                )}
-              </article>
+	                ) : (
+	                  <p className="text-slate-600 dark:text-slate-300">
+	                    Contenu de l&apos;article non disponible.
+	                  </p>
+	                )}
+	              </article>
 
               {/* Tags */}
               {post.tags && post.tags.length > 0 && (
@@ -192,12 +192,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             {/* Sidebar */}
             <SidebarRight sticky>
               {/* Share */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
-                  Partager l'article
-                </h3>
-                <ShareButtons />
-              </div>
+	              <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+	                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
+	                  Partager l&apos;article
+	                </h3>
+	                <ShareButtons />
+	              </div>
 
               {/* Upcoming Events */}
               {events.length > 0 && (

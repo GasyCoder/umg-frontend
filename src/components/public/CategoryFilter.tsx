@@ -122,6 +122,9 @@ export function TagFilter({
             `}
           >
             #{tag.name}
+            {tag.posts_count !== undefined && (
+              <span className="ml-1 opacity-70">({tag.posts_count})</span>
+            )}
           </Link>
         ))}
       </div>
