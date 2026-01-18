@@ -7,18 +7,39 @@ function escapeHtml(input: string) {
     .replaceAll("'", "&#39;");
 }
 
+function isSafeUrl(url: string) {
+  const u = url.trim().toLowerCase();
+  return (
+    u.startsWith("http://") ||
+    u.startsWith("https://") ||
+    u.startsWith("mailto:") ||
+    u.startsWith("tel:") ||
+    u.startsWith("/") ||
+    u.startsWith("#")
+  );
+}
+
 function parseInline(text: string) {
   let s = escapeHtml(text);
 
   // Inline code
   s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
 
+  // Images ![alt](url)
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt: string, url: string) => {
+    const src = isSafeUrl(url) ? url : "#";
+    return `<img src="${src}" alt="${alt}" class="max-w-full rounded-lg my-4" loading="lazy" />`;
+  });
+
   // Bold / italic
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");
 
   // Links [label](url)
-  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label: string, url: string) => {
+    const href = isSafeUrl(url) ? url : "#";
+    return `<a href="${href}" target="_blank" rel="noreferrer">${label}</a>`;
+  });
 
   return s;
 }
@@ -114,4 +135,3 @@ export function markdownToHtml(markdown: string) {
 
   return out.join("\n");
 }
-
