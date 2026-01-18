@@ -96,6 +96,21 @@ export interface Partner {
   is_active: boolean;
 }
 
+export interface Project {
+  id: number;
+  slug: string;
+  kicker?: string | null;
+  title: string;
+  subtitle?: string | null;
+  description?: string | null;
+  meta?: Record<string, unknown> | null;
+  hero_image_id?: number | null;
+  hero_image_url?: string | null;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Event {
   id: number;
   title: string;

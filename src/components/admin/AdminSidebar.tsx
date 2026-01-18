@@ -24,6 +24,7 @@ import {
   Handshake,
   Presentation,
   Crown,
+  FolderKanban,
 } from "lucide-react";
 
 interface NavItem {
@@ -41,6 +42,7 @@ const navItems: NavItem[] = [
   { label: "Établissements", href: "/admin/etablissements", icon: <Building2 className="w-5 h-5" /> },
   { label: "Services", href: "/admin/services", icon: <Briefcase className="w-5 h-5" /> },
   { label: "Partenaires", href: "/admin/partners", icon: <Handshake className="w-5 h-5" /> },
+  { label: "Projets", href: "/admin/projects", icon: <FolderKanban className="w-5 h-5" /> },
   { label: "Pages Université", href: "/admin/organization", icon: <Landmark className="w-5 h-5" /> },
   { label: "Présidents/Recteurs", href: "/admin/presidents", icon: <Crown className="w-5 h-5" /> },
   { label: "Mot du Président", href: "/admin/president-message", icon: <User className="w-5 h-5" /> },
