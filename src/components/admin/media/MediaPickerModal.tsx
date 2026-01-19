@@ -56,7 +56,7 @@ export function MediaPickerModal({
     setLoading(true);
     try {
       const typeParam = filterType ? `&type=${filterType}` : "";
-      const res = await fetch(`/api/admin/media?page=${p}&q=${q}&per_page=18${typeParam}`);
+      const res = await fetch(`/api/admin/media?page=${p}&q=${q}&per_page=18&entry_type=file${typeParam}`);
       const data = await res.json();
       setMedias(data.data || []);
       setTotalPages(data.meta?.last_page || 1);
