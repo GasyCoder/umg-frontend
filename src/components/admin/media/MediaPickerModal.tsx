@@ -14,8 +14,10 @@ export interface Media {
   disk: string;
   mime: string;
   size: number;
+  name?: string;
   alt?: string;
   created_at?: string;
+  entry_type?: "file" | "folder";
 }
 
 interface MediaPickerModalProps {
@@ -41,6 +43,10 @@ export function MediaPickerModal({
   const [loading, setLoading] = useState(false);
   const [medias, setMedias] = useState<Media[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
+  const [breadcrumbs, setBreadcrumbs] = useState<{ id: number | null; name: string }[]>([
+    { id: null, name: "Accueil" },
+  ]);
   
   // Pagination / Search state
   const [page, setPage] = useState(1);
@@ -52,27 +58,41 @@ export function MediaPickerModal({
   const [optimizing, setOptimizing] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<FileList | null>(null);
 
-  const fetchMedias = useCallback(async (p = 1, q = "") => {
-    setLoading(true);
-    try {
-      const typeParam = filterType ? `&type=${filterType}` : "";
-      const res = await fetch(`/api/admin/media?page=${p}&q=${q}&per_page=18&entry_type=file${typeParam}`);
-      const data = await res.json();
-      setMedias(data.data || []);
-      setTotalPages(data.meta?.last_page || 1);
-      setPage(data.meta?.current_page || 1);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchMedias = useCallback(
+    async (p = 1, q = "", folderId: number | null = null) => {
+      setLoading(true);
+      try {
+        const typeParam = filterType ? `&type=${filterType}` : "";
+        const parentParam = folderId ? `&parent_id=${folderId}` : "&parent_id=root";
+        const res = await fetch(
+          `/api/admin/media?page=${p}&q=${q}&per_page=18${typeParam}${parentParam}`
+        );
+        const data = await res.json();
+        setMedias(data.data || []);
+        setTotalPages(data.meta?.last_page || 1);
+        setPage(data.meta?.current_page || 1);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filterType]
+  );
 
   useEffect(() => {
     if (isOpen && activeTab === "library") {
-      fetchMedias(1, search);
+      fetchMedias(1, search, currentFolderId);
     }
-  }, [isOpen, activeTab, fetchMedias, search]);
+  }, [isOpen, activeTab, fetchMedias, search, currentFolderId]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentFolderId(null);
+      setBreadcrumbs([{ id: null, name: "Accueil" }]);
+      setSelectedIds([]);
+    }
+  }, [isOpen]);
 
   const handleSelect = (media: Media) => {
     if (multiple) {
@@ -161,6 +181,9 @@ export function MediaPickerModal({
     }
   };
 
+  const getFolderLabel = (media: Media) =>
+    media.name || media.alt || media.url?.split("/").pop() || `Dossier ${media.id}`;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -213,14 +236,33 @@ export function MediaPickerModal({
         {activeTab === "library" && (
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Toolbar */}
-            <div className="flex gap-2 mb-4">
-              <Input
-                placeholder="Rechercher..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                leftIcon={<Search className="w-4 h-4" />}
-                className="max-w-xs"
-              />
+            <div className="flex flex-col gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+                {breadcrumbs.map((crumb, index) => (
+                  <button
+                    key={`${crumb.id ?? "root"}-${index}`}
+                    type="button"
+                    onClick={() => {
+                      if (crumb.id === currentFolderId) return;
+                      setCurrentFolderId(crumb.id);
+                      setBreadcrumbs((prev) => prev.slice(0, index + 1));
+                      setSelectedIds([]);
+                    }}
+                    className="px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-slate-400"
+                  >
+                    {crumb.name}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Rechercher..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  leftIcon={<Search className="w-4 h-4" />}
+                  className="max-w-xs"
+                />
+              </div>
             </div>
 
             {/* Grid */}
@@ -237,43 +279,62 @@ export function MediaPickerModal({
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                   {medias.map((media) => {
+                    const isFolder = media.entry_type === "folder";
                     const isImage = media.mime?.startsWith("image/");
                     const isVideo = media.mime?.startsWith("video/");
                     const isPdf = media.mime === "application/pdf";
+
+                    const handleItemClick = () => {
+                      if (isFolder) {
+                        setCurrentFolderId(media.id);
+                        setBreadcrumbs((prev) => [...prev, { id: media.id, name: getFolderLabel(media) }]);
+                        setSelectedIds([]);
+                        return;
+                      }
+                      handleSelect(media);
+                    };
+
                     return (
-                    <div
-                      key={media.id}
-                      onClick={() => handleSelect(media)}
-                      className={clsx(
-                        "group relative aspect-square rounded-lg overflow-hidden border cursor-pointer transition-all",
-                        selectedIds.includes(media.id)
-                          ? "border-indigo-600 ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-slate-900"
-                          : "border-slate-200 dark:border-slate-700 hover:border-indigo-300"
-                      )}
-                    >
-                      {isImage ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={media.url}
-                          alt={media.alt || "Media"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center gap-2 text-slate-500 dark:text-slate-300">
-                          {isVideo ? <Video className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
-                          <span className="text-[10px] font-semibold uppercase tracking-wider">
-                            {isVideo ? "Video" : isPdf ? "PDF" : "Fichier"}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {selectedIds.includes(media.id) && (
-                        <div className="absolute inset-0 bg-indigo-900/40 flex items-center justify-center">
-                          <Check className="w-8 h-8 text-white drop-shadow-md" />
-                        </div>
-                      )}
-                    </div>
-                  );
+                      <div
+                        key={media.id}
+                        onClick={handleItemClick}
+                        className={clsx(
+                          "group relative aspect-square rounded-lg overflow-hidden border cursor-pointer transition-all",
+                          selectedIds.includes(media.id)
+                            ? "border-indigo-600 ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-slate-900"
+                            : "border-slate-200 dark:border-slate-700 hover:border-indigo-300"
+                        )}
+                      >
+                        {isFolder ? (
+                          <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center gap-2 text-slate-500 dark:text-slate-300">
+                            <Folder className="w-10 h-10 text-yellow-500" />
+                            <span className="text-[12px] font-semibold uppercase tracking-wider">
+                              {getFolderLabel(media)}
+                            </span>
+                          </div>
+                        ) : isImage ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={media.url}
+                            alt={media.alt || "Media"}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center gap-2 text-slate-500 dark:text-slate-300">
+                            {isVideo ? <Video className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
+                            <span className="text-[10px] font-semibold uppercase tracking-wider">
+                              {isVideo ? "Video" : isPdf ? "PDF" : "Fichier"}
+                            </span>
+                          </div>
+                        )}
+
+                        {selectedIds.includes(media.id) && (
+                          <div className="absolute inset-0 bg-indigo-900/40 flex items-center justify-center">
+                            <Check className="w-8 h-8 text-white drop-shadow-md" />
+                          </div>
+                        )}
+                      </div>
+                    );
                   })}
                 </div>
               )}
@@ -282,25 +343,25 @@ export function MediaPickerModal({
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-4 pt-2 border-t border-slate-100 dark:border-slate-700">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={page === 1}
-                  onClick={() => fetchMedias(page - 1, search)}
-                >
-                  Précédent
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={page === 1}
+                    onClick={() => fetchMedias(page - 1, search, currentFolderId)}
+                  >
+                    Précédent
+                  </Button>
                 <span className="text-sm text-slate-600 dark:text-slate-400">
                   Page {page} / {totalPages}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={page === totalPages}
-                  onClick={() => fetchMedias(page + 1, search)}
-                >
-                  Suivant
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={page === totalPages}
+                    onClick={() => fetchMedias(page + 1, search, currentFolderId)}
+                  >
+                    Suivant
+                  </Button>
               </div>
             )}
           </div>
