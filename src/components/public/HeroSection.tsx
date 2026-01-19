@@ -9,6 +9,7 @@ import "swiper/css/effect-fade";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { ArrowRight, CheckCircle, Globe, ChevronLeft, ChevronRight } from "lucide-react";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 export interface Slide {
   id: number;
@@ -44,25 +45,26 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ slides }: HeroSectionProps) {
+  const { t } = useI18n();
   const verifiedSlides = useMemo(() => {
     if (!slides || slides.length === 0) {
       return [
         {
           id: 0,
-          title: "L'Excellence Académique au Cœur de Madagascar",
-          subtitle: "Un environnement moderne pour réussir.",
-          description: "Former les leaders de demain à travers une pédagogie innovante, une recherche de pointe et un engagement communautaire fort.",
+          title: t("hero.fallback.title"),
+          subtitle: t("hero.fallback.subtitle"),
+          description: t("hero.fallback.description"),
           image_url: "https://lh3.googleusercontent.com/aida-public/AB6AXuAkeQiz_Jk1Dn_hBcGJfNF7fspqvjw6x0ui9NCGA4COyiBNWWl0QlARhUcuLIB9_jA4kAwbh0q5WR6fz8iGk4DBfmU3_Yzx7Ln3y19QjfryHwWuT7G-fRz_e-uomhlmdGP62gYnUpm-DcXeGA7pn2G4zzj9EYkO2isVINku9zw-uYvZttEyQoVegWdanUiM0Yb10NIHRa13pbhLRyBxSlmZF3jZj71m08_cTT3QP-ChRIfRWwxM42ZIMlSVjHZRK5sN9vYpqVsZ0-Y",
-          cta_text: "Découvrir",
+          cta_text: t("hero.fallback.cta"),
           cta_url: "/etablissements",
-          category: { id: 0, name: "Université de Mahajanga", slug: "umg" },
+          category: { id: 0, name: t("hero.fallback.category"), slug: "umg" },
           bg_color_light: "bg-blue-900",
           bg_color_dark: "bg-slate-800",
         }
       ];
     }
     return slides;
-  }, [slides]);
+  }, [slides, t]);
 
   // Get background colors from the first slide (all slides share the same background)
   const bgClasses = buildBgClasses(
@@ -73,7 +75,7 @@ export default function HeroSection({ slides }: HeroSectionProps) {
   return (
     <section className={`relative ${bgClasses} overflow-hidden pb-16 pt-8 lg:pt-16 lg:pb-20`}>
       {/* Background Effects */}
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+      <div className="absolute top-0 right-0 h-[28rem] w-[28rem] sm:h-[42rem] sm:w-[42rem] lg:h-[50rem] lg:w-[50rem] bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-10 relative z-10">
         <Swiper
@@ -103,7 +105,7 @@ export default function HeroSection({ slides }: HeroSectionProps) {
             <SwiperSlide key={slide.id}>
               <div className="grid lg:grid-cols-2 gap-12 items-center">
                 {/* Text Content */}
-                <div className="flex flex-col gap-6">
+                <div className="order-2 lg:order-1 flex flex-col gap-6">
                   {(slide.category || slide.subtitle) && (
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-sm w-fit">
                       <span className="size-2 rounded-full bg-accent animate-pulse"></span>
@@ -135,20 +137,20 @@ export default function HeroSection({ slides }: HeroSectionProps) {
                     )}
                   </div>
 
-                  <div className="flex gap-8 pt-4 border-t border-white/10">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-8 pt-4 border-t border-white/10">
                     <div className="flex items-center gap-2">
                       <CheckCircle className="text-accent w-5 h-5" />
-                      <span className="text-sm font-medium text-blue-100">Diplômes reconnus</span>
+                      <span className="text-sm font-medium text-blue-100">{t("hero.check.recognizedDegrees")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Globe className="text-accent w-5 h-5" />
-                      <span className="text-sm font-medium text-blue-100">Partenaires internationaux</span>
+                      <span className="text-sm font-medium text-blue-100">{t("hero.check.internationalPartners")}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Media Content */}
-                <div className="relative w-full aspect-[4/3] lg:aspect-[16/11] rounded-2xl overflow-hidden shadow-2xl shadow-black/20 group">
+                <div className="order-1 lg:order-2 relative w-full aspect-[4/3] lg:aspect-[16/11] rounded-2xl overflow-hidden shadow-2xl shadow-black/20 group">
                   <div
                     className="absolute inset-0 bg-cover bg-center transform transition-transform duration-[3000ms] hover:scale-105"
                     style={{ backgroundImage: `url(${slide.image_url || "/images/placeholder.jpg"})` }}
@@ -171,8 +173,8 @@ export default function HeroSection({ slides }: HeroSectionProps) {
                   )}
 
                   <div className="absolute bottom-6 left-6 text-white max-w-xs z-20">
-                    <p className="font-bold text-sm">{slide.category?.name || "Université de Mahajanga"}</p>
-                    <p className="text-xs text-white/70">{slide.subtitle || "Un environnement moderne pour réussir."}</p>
+                    <p className="font-bold text-sm">{slide.category?.name || t("hero.fallback.category")}</p>
+                    <p className="text-xs text-white/70">{slide.subtitle || t("hero.fallback.subtitle")}</p>
                   </div>
                 </div>
               </div>

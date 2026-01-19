@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Lightbulb, Users, Globe, Award, Play } from "lucide-react";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 type AboutSectionProps = {
   videoUrl?: string | null;
@@ -9,6 +10,7 @@ type AboutSectionProps = {
 };
 
 export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionProps) {
+  const { t } = useI18n();
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   return (
@@ -19,17 +21,19 @@ export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionP
           <div className="w-full lg:w-1/2">
             <div className="flex items-center gap-3 mb-4">
               <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-primary dark:text-blue-300 text-xs font-bold uppercase rounded-full tracking-wider">
-                À Propos de L'UMG
+                {t("about.badge")}
               </span>
             </div>
             
             <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white leading-tight mb-6">
-              Une université <span className="text-primary dark:text-blue-400">dédiée à l'avenir</span> et à l'innovation
+              {t("about.title.before")}{" "}
+              <span className="text-primary dark:text-blue-400">{t("about.title.highlight")}</span>{" "}
+              {t("about.title.after")}
             </h2>
             
             <div className="prose prose-slate dark:prose-invert text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
               <p>
-                Bienvenue à l'Université de Mahajanga. Notre mission est de fournir une éducation de qualité supérieure accessible à tous, tout en favorisant la recherche et le développement durable de notre région.
+                {t("about.lead")}
               </p>
             </div>
             
@@ -39,8 +43,8 @@ export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionP
                   <Lightbulb className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 dark:text-white">Innovation</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Recherche appliquée aux besoins locaux.</p>
+                  <h4 className="font-bold text-slate-900 dark:text-white">{t("about.value.innovation.title")}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t("about.value.innovation.desc")}</p>
                 </div>
               </div>
               
@@ -49,8 +53,8 @@ export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionP
                   <Users className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 dark:text-white">Inclusion</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Une chance pour chaque talent.</p>
+                  <h4 className="font-bold text-slate-900 dark:text-white">{t("about.value.inclusion.title")}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t("about.value.inclusion.desc")}</p>
                 </div>
               </div>
               
@@ -59,8 +63,8 @@ export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionP
                   <Globe className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 dark:text-white">Ouverture</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Partenariats à l'international.</p>
+                  <h4 className="font-bold text-slate-900 dark:text-white">{t("about.value.opening.title")}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t("about.value.opening.desc")}</p>
                 </div>
               </div>
               
@@ -69,15 +73,15 @@ export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionP
                   <Award className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 dark:text-white">Excellence</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Formations de haut niveau.</p>
+                  <h4 className="font-bold text-slate-900 dark:text-white">{t("about.value.excellence.title")}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t("about.value.excellence.desc")}</p>
                 </div>
               </div>
             </div>
             
             <div className="mt-8">
               <a href="/etablissements" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-primary hover:bg-primary-light transition-colors shadow-lg shadow-blue-900/10">
-                Voir tous nos établissements
+                {t("about.cta.establishments")}
               </a>
             </div>
           </div>
@@ -100,7 +104,7 @@ export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionP
                 }
               >
                 <source src={videoUrl || "/videos/umg-about.mp4"} type="video/mp4" />
-                Votre navigateur ne supporte pas la lecture vidéo.
+                {t("about.video.unsupported")}
               </video>
               <div
                 className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${

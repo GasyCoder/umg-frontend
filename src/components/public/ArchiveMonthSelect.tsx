@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 export type ArchiveMonth = {
   year: number;
@@ -24,6 +25,7 @@ export default function ArchiveMonthSelect({
   monthParam = "month",
   label = "Archives",
 }: Props) {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -61,7 +63,7 @@ export default function ArchiveMonthSelect({
           dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200
         "
       >
-        <option value="">Toutes les dates</option>
+        <option value="">{t("archives.allDates")}</option>
         {options.map((o) => {
           const y = String(o.year).padStart(4, "0");
           const m = String(o.month).padStart(2, "0");
@@ -77,4 +79,3 @@ export default function ArchiveMonthSelect({
     </div>
   );
 }
-

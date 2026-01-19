@@ -56,9 +56,37 @@ body {
   line-height: 1.6;
 }
 
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
+
+img,
+video,
+canvas,
+svg,
+iframe {
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
 /* Minimal typography for content blocks (Tailwind Typography replacement) */
 .prose {
   color: inherit;
+  overflow-wrap: anywhere;
 }
 
 .prose :where(p, ul, ol, blockquote, pre, table) {
@@ -136,6 +164,33 @@ body {
 .prose img {
   max-width: 100%;
   border-radius: 0.75rem;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prose :where(th, td) {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.dark .prose :where(th, td) {
+  border-color: rgba(51, 65, 85, 0.8);
+}
+
+.prose thead th {
+  background: rgba(148, 163, 184, 0.12);
+  font-weight: 700;
+  text-align: left;
+}
+
+.dark .prose thead th {
+  background: rgba(2, 6, 23, 0.35);
 }
 
 

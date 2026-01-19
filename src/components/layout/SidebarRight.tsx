@@ -2,6 +2,7 @@
 
 import { ReactNode, useState } from 'react';
 import { Mail, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 interface SidebarRightProps {
   children: ReactNode;
@@ -33,11 +34,13 @@ interface AnnouncementWidgetProps {
 }
 
 export function AnnouncementWidget({ 
-  title = 'Annonces', 
+  title, 
   children, 
   className = '',
   variant = 'default'
 }: AnnouncementWidgetProps) {
+  const { t } = useI18n();
+  const resolvedTitle = title ?? t("sidebar.announcements");
   const variantStyles = {
     default: 'border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900',
     highlight: 'border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 dark:border-amber-800/50',
@@ -51,9 +54,9 @@ export function AnnouncementWidget({
         ${className}
       `}
     >
-      {title ? (
+      {resolvedTitle ? (
         <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
-          {title}
+          {resolvedTitle}
         </h3>
       ) : null}
       {children}
@@ -69,10 +72,12 @@ interface EventsWidgetProps {
 }
 
 export function EventsWidget({ 
-  title = 'Événements à venir', 
+  title, 
   children, 
   className = '' 
 }: EventsWidgetProps) {
+  const { t } = useI18n();
+  const resolvedTitle = title ?? t("sidebar.eventsUpcoming");
   return (
     <div
       className={`
@@ -81,9 +86,9 @@ export function EventsWidget({
         ${className}
       `}
     >
-      {title ? (
+      {resolvedTitle ? (
         <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
-          {title}
+          {resolvedTitle}
         </h3>
       ) : null}
       {children}
@@ -97,6 +102,7 @@ interface NewsletterWidgetProps {
 }
 
 export function NewsletterWidget({ className = '' }: NewsletterWidgetProps) {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -105,7 +111,7 @@ export function NewsletterWidget({ className = '' }: NewsletterWidgetProps) {
     event.preventDefault();
     if (!email) {
       setStatus('error');
-      setMessage('Merci de renseigner votre adresse e-mail.');
+      setMessage(t("home.newsletter.requiredEmail"));
       return;
     }
 
@@ -118,10 +124,10 @@ export function NewsletterWidget({ className = '' }: NewsletterWidgetProps) {
         body: JSON.stringify({ email }),
       }).then((r) => r.json());
       setStatus('success');
-      setMessage(res?.message || 'Merci ! Vérifiez votre boîte mail pour confirmer votre inscription.');
+      setMessage(res?.message || t("home.newsletter.successDefault"));
       setEmail('');
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Impossible d\'envoyer votre inscription. Réessayez.';
+      const msg = error instanceof Error ? error.message : t("home.newsletter.errorDefault");
       setStatus('error');
       setMessage(msg);
     }
@@ -136,22 +142,22 @@ export function NewsletterWidget({ className = '' }: NewsletterWidgetProps) {
     >
       <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
         <Mail className="h-3.5 w-3.5" />
-        Newsletter
+        {t("home.newsletter.badge")}
       </div>
-      <h3 className="mt-3 text-lg font-semibold">Recevoir nos actualités</h3>
+      <h3 className="mt-3 text-lg font-semibold">{t("sidebar.newsletter.title")}</h3>
       <p className="mt-2 text-sm text-indigo-100">
-        Recevez les annonces officielles et événements.
+        {t("sidebar.newsletter.subtitle")}
       </p>
       <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
         <label htmlFor="newsletter-email" className="sr-only">
-          Votre email
+          {t("sidebar.newsletter.emailLabel")}
         </label>
         <input
           id="newsletter-email"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="votre@email.com"
+          placeholder={t("sidebar.newsletter.emailPlaceholder")}
           className="rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-indigo-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
         <button
@@ -160,11 +166,11 @@ export function NewsletterWidget({ className = '' }: NewsletterWidgetProps) {
           className="rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-amber-300 transition-colors disabled:opacity-70"
         >
           {status === 'loading' ? (
-            'Envoi...'
+            t("home.newsletter.submitting")
           ) : (
             <span className="inline-flex items-center gap-2">
               <Send className="h-4 w-4" />
-              S'inscrire
+              {t("home.newsletter.submit")}
             </span>
           )}
         </button>

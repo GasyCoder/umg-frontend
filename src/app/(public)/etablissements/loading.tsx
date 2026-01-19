@@ -7,7 +7,7 @@ export default function EtablissementsLoading() {
       <PageLayout variant="full" containerClassName="max-w-[1280px] px-5 md:px-10">
         <div className="mb-8 space-y-3">
           <Skeleton className="h-9 w-64" />
-          <Skeleton className="h-4 w-[32rem]" />
+          <Skeleton className="h-4 w-full max-w-[32rem]" />
         </div>
 
         <div className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 mb-8">

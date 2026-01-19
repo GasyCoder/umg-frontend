@@ -11,6 +11,7 @@ import SearchBox from '@/components/ui/SearchBox';
 import { CategoryFilter, TagFilter } from '@/components/public/CategoryFilter';
 import Link from 'next/link';
 import ArchiveMonthSelect, { type ArchiveMonth } from '@/components/public/ArchiveMonthSelect';
+import { getServerI18n } from '@/i18n/server';
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,7 @@ async function fetchAnnouncements() {
 }
 
 export default async function NewsPage({ searchParams }: NewsPageProps) {
+  const { t } = await getServerI18n();
   const params = await searchParams;
   
   // Parallel data fetching
@@ -103,20 +105,20 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
           <div className="py-6 md:py-8">
             <div className="flex items-center justify-between gap-4">
             <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">
-              Actualités
+              {t("news.page.kicker")}
             </p>
               <Link
                 href="/actualites/archives"
                 className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
-                Voir les archives
+                {t("news.archives.link")}
               </Link>
             </div>
             <h1 className="mt-3 text-xl md:text-3xl font-bold tracking-tight">
-              Nos actualités
+              {t("news.page.title")}
             </h1>
             <p className="mt-3 max-w-xl text-base text-slate-600 dark:text-slate-300">
-              Informations et annonces de l&apos;université.
+              {t("news.page.subtitle")}
             </p>
           </div>
         </Container>
@@ -131,17 +133,17 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
         sidebarRight={
           <SidebarRight sticky>
             {/* Search */}
-            <SidebarWidget title="Rechercher">
+            <SidebarWidget title={t("news.sidebar.search")}>
               <Suspense fallback={<div className="h-12 animate-pulse bg-slate-100 rounded" />}>
                 <SearchBox 
-                  placeholder="Rechercher une actualité..."
+                  placeholder={t("news.sidebar.searchPlaceholder")}
                   paramName="q"
                 />
               </Suspense>
             </SidebarWidget>
 
             {/* Categories Widget */}
-            <SidebarWidget title="Catégories">
+            <SidebarWidget title={t("news.sidebar.categories")}>
               <Suspense fallback={<div className="h-20 animate-pulse bg-slate-100 rounded" />}>
                 <CategoryFilter 
                   categories={categories} 
@@ -152,14 +154,14 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
 
             {/* Archives */}
             {archiveMonths.length > 0 && (
-              <SidebarWidget title="Archives">
-                <ArchiveMonthSelect options={archiveMonths} baseUrl="/actualites/archives" label="Par mois" />
+              <SidebarWidget title={t("news.sidebar.archives")}>
+                <ArchiveMonthSelect options={archiveMonths} baseUrl="/actualites/archives" label={t("news.sidebar.archivesByMonth")} />
               </SidebarWidget>
             )}
 
             {/* Tags Widget */}
             {tags.length > 0 && (
-              <SidebarWidget title="Tags populaires">
+              <SidebarWidget title={t("news.sidebar.tagsPopular")}>
                 <Suspense fallback={<div className="h-16 animate-pulse bg-slate-100 rounded" />}>
                   <TagFilter 
                     tags={tags} 
@@ -220,10 +222,10 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-              Aucune actualité trouvée
+              {t("news.empty.title")}
             </h3>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              Essayez de modifier vos filtres ou effectuez une nouvelle recherche.
+              {t("news.empty.subtitle")}
             </p>
           </div>
         )}

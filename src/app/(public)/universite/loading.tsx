@@ -8,8 +8,8 @@ export default function UniversiteLoading() {
         <Container className="max-w-[1280px] px-5 md:px-10">
           <div className="py-10 md:py-12 space-y-3">
             <Skeleton className="h-3 w-28" />
-            <Skeleton className="h-8 w-[28rem]" />
-            <Skeleton className="h-4 w-[32rem]" />
+            <Skeleton className="h-8 w-full max-w-[28rem]" />
+            <Skeleton className="h-4 w-full max-w-[32rem]" />
             <div className="mt-6 flex flex-wrap gap-3">
               <Skeleton className="h-10 w-44 rounded-full" />
               <Skeleton className="h-10 w-48 rounded-full" />

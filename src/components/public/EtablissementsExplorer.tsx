@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import clsx from "clsx";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 const FALLBACK_IMAGE = "/images/placeholder.jpg";
 
@@ -53,6 +54,7 @@ export function EtablissementsFilters({
   onTypeChange,
   className = "",
 }: EtablissementsFiltersProps) {
+  const { t } = useI18n();
   return (
     <div
       className={clsx(
@@ -68,7 +70,7 @@ export function EtablissementsFilters({
           <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Rechercher un établissement (ex: Médecine, Sciences...)"
+            placeholder={t("etablissements.filters.searchPlaceholder")}
             className="h-12 w-full rounded-lg border border-[#dbdfe6] bg-white pl-10 pr-3 text-[#111318] placeholder-[#616f89] transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white"
           />
         </div>
@@ -82,10 +84,10 @@ export function EtablissementsFilters({
               onChange={(event) => onTypeChange(event.target.value as EtablissementsFiltersProps["typeFilter"])}
               className="h-12 w-full appearance-none rounded-lg border border-[#dbdfe6] bg-white pl-10 pr-10 text-[#111318] transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             >
-              <option value="">Tous les types</option>
-              <option value="faculte">Facultes</option>
-              <option value="ecole">Ecoles</option>
-              <option value="institut">Instituts</option>
+              <option value="">{t("etablissements.filters.allTypes")}</option>
+              <option value="faculte">{t("etablissements.filters.faculties")}</option>
+              <option value="ecole">{t("etablissements.filters.schools")}</option>
+              <option value="institut">{t("etablissements.filters.institutes")}</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-[#616f89]">
               <span className="material-symbols-outlined text-[20px]">expand_more</span>
@@ -97,7 +99,7 @@ export function EtablissementsFilters({
             className="flex h-12 items-center gap-2 rounded-lg border border-[#dbdfe6] bg-white px-4 text-sm font-medium text-[#111318] transition-all hover:border-primary/40 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
           >
             <span className="material-symbols-outlined text-[20px] text-[#616f89]">sort_by_alpha</span>
-            <span>{sortOrder === "asc" ? "A - Z" : "Z - A"}</span>
+            <span>{sortOrder === "asc" ? t("etablissements.sort.az") : t("etablissements.sort.za")}</span>
             <span className="material-symbols-outlined text-[18px] text-[#616f89]">
               {sortOrder === "asc" ? "south" : "north"}
             </span>
@@ -112,7 +114,7 @@ export function EtablissementsFilters({
               )}
             >
               <span className="material-symbols-outlined text-[18px]">grid_view</span>
-              Grille
+              {t("etablissements.view.grid")}
             </button>
             <button
               type="button"
@@ -123,7 +125,7 @@ export function EtablissementsFilters({
               )}
             >
               <span className="material-symbols-outlined text-[18px]">view_list</span>
-              Liste
+              {t("etablissements.view.list")}
             </button>
           </div>
         </div>
@@ -139,6 +141,7 @@ export default function EtablissementsExplorer({
   query = "",
   typeFilter = "",
 }: EtablissementsExplorerProps) {
+  const { lang, t } = useI18n();
   const getType = (name: string) => {
     const lowered = name.toLowerCase();
     if (lowered.includes("facult")) return "faculte";
@@ -151,13 +154,13 @@ export default function EtablissementsExplorer({
     const type = getType(name);
     switch (type) {
       case "faculte":
-        return { label: "Faculte", className: "text-primary ring-primary/20" };
+        return { label: t("etablissements.type.faculty"), className: "text-primary ring-primary/20" };
       case "ecole":
-        return { label: "Ecole", className: "text-green-600 ring-green-600/20" };
+        return { label: t("etablissements.type.school"), className: "text-green-600 ring-green-600/20" };
       case "institut":
-        return { label: "Institut", className: "text-amber-600 ring-amber-600/20" };
+        return { label: t("etablissements.type.institute"), className: "text-amber-600 ring-amber-600/20" };
       default:
-        return { label: "Etablissement", className: "text-slate-600 ring-slate-400/20" };
+        return { label: t("etablissements.type.establishment"), className: "text-slate-600 ring-slate-400/20" };
     }
   };
 
@@ -186,18 +189,18 @@ export default function EtablissementsExplorer({
     items.sort((a, b) => {
       const left = a.name || "";
       const right = b.name || "";
-      return left.localeCompare(right, "fr", { sensitivity: "base" });
+      return left.localeCompare(right, lang === "fr" ? "fr" : "en", { sensitivity: "base" });
     });
     if (sortOrder === "desc") items.reverse();
     return items;
-  }, [filtered, sortOrder]);
+  }, [filtered, sortOrder, lang]);
 
   if (sorted.length === 0) {
     return (
       <div className="mt-12 text-center">
         <span className="material-symbols-outlined mx-auto text-4xl text-slate-300">school</span>
         <p className="mt-4 text-slate-500 dark:text-slate-300">
-          Aucun établissement disponible pour le moment.
+          {t("etablissements.empty")}
         </p>
       </div>
     );
@@ -241,9 +244,9 @@ export default function EtablissementsExplorer({
                 </div>
                 <div className="flex flex-wrap gap-4 text-sm text-[#616f89] dark:text-gray-400">
                   {etab.director_name && (
-                    <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-[18px]">person</span>
-                      {etab.director_title || "Direction"}: {etab.director_name}
+                      {etab.director_title || t("etablissements.card.management")}: {etab.director_name}
                     </span>
                   )}
                   {etab.address && (
@@ -256,11 +259,11 @@ export default function EtablissementsExplorer({
                 <p className="mt-3 line-clamp-2 text-sm leading-normal text-[#616f89] dark:text-gray-400">
                   {etab.description
                     ? etab.description.replace(/<[^>]*>/g, "")
-                    : "Présentation de l'établissement en cours de mise à jour."}
+                    : t("etablissements.card.descriptionFallback")}
                 </p>
               </div>
               <span className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 px-4 text-sm font-bold text-primary transition-all duration-200 group-hover:bg-primary group-hover:text-white">
-                Voir les détails
+                {t("etablissements.card.details")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </span>
             </Link>
@@ -321,7 +324,7 @@ export default function EtablissementsExplorer({
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px]">person</span>
                     <span className="font-medium">
-                      {etab.director_title || "Direction"}: {etab.director_name}
+                      {etab.director_title || t("etablissements.card.management")}: {etab.director_name}
                     </span>
                   </div>
                 )}
@@ -335,10 +338,10 @@ export default function EtablissementsExplorer({
               <p className="mb-4 line-clamp-2 text-sm leading-normal text-[#616f89] dark:text-gray-400">
                 {etab.description
                   ? etab.description.replace(/<[^>]*>/g, "")
-                  : "Présentation de l'établissement en cours de mise à jour."}
+                  : t("etablissements.card.descriptionFallback")}
               </p>
               <span className="mt-auto inline-flex h-10 w-full items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary transition-all duration-200 group-hover:bg-primary group-hover:text-white">
-                Voir les détails
+                {t("etablissements.card.details")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </span>
             </div>

@@ -11,6 +11,7 @@ import SearchBox from '@/components/ui/SearchBox';
 import { CategoryFilter, TagFilter } from '@/components/public/CategoryFilter';
 import Link from 'next/link';
 import ArchiveMonthSelect, { type ArchiveMonth } from '@/components/public/ArchiveMonthSelect';
+import { getServerI18n } from '@/i18n/server';
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,7 @@ async function fetchAnnouncements() {
 }
 
 export default async function NewsArchivesPage({ searchParams }: NewsPageProps) {
+  const { t } = await getServerI18n();
   const params = await searchParams;
 
   const [postsRes, categoriesRes, tagsRes, eventsRes, announcementsRes, archiveMonthsRes] = await Promise.all([
@@ -94,20 +96,20 @@ export default async function NewsArchivesPage({ searchParams }: NewsPageProps) 
           <div className="py-6 md:py-8">
             <div className="flex items-center justify-between gap-4">
             <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">
-              Archives
+              {t("archives.page.kicker")}
             </p>
               <Link
                 href="/actualites"
                 className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
-                Retour aux actualités
+                {t("archives.page.back")}
               </Link>
             </div>
             <h1 className="mt-3 text-xl md:text-3xl font-bold tracking-tight">
-              Archives des actualités
+              {t("archives.page.title")}
             </h1>
             <p className="mt-3 max-w-xl text-base text-slate-600 dark:text-slate-300">
-              Retrouvez les anciennes publications (articles archivés).
+              {t("archives.page.subtitle")}
             </p>
           </div>
         </Container>
@@ -118,26 +120,26 @@ export default async function NewsArchivesPage({ searchParams }: NewsPageProps) 
         containerClassName="max-w-[1280px] px-5 md:px-10"
         sidebarRight={
           <SidebarRight sticky>
-            <SidebarWidget title="Rechercher">
+            <SidebarWidget title={t("news.sidebar.search")}>
               <Suspense fallback={<div className="h-12 animate-pulse bg-slate-100 rounded" />}>
-                <SearchBox placeholder="Rechercher dans les archives..." paramName="q" />
+                <SearchBox placeholder={t("archives.sidebar.searchPlaceholder")} paramName="q" />
               </Suspense>
             </SidebarWidget>
 
-            <SidebarWidget title="Catégories">
+            <SidebarWidget title={t("news.sidebar.categories")}>
               <Suspense fallback={<div className="h-20 animate-pulse bg-slate-100 rounded" />}>
                 <CategoryFilter categories={categories} activeSlug={params.category} />
               </Suspense>
             </SidebarWidget>
 
             {archiveMonths.length > 0 && (
-              <SidebarWidget title="Archives">
-                <ArchiveMonthSelect options={archiveMonths} baseUrl="/actualites/archives" label="Par mois" />
+              <SidebarWidget title={t("news.sidebar.archives")}>
+                <ArchiveMonthSelect options={archiveMonths} baseUrl="/actualites/archives" label={t("news.sidebar.archivesByMonth")} />
               </SidebarWidget>
             )}
 
             {tags.length > 0 && (
-              <SidebarWidget title="Tags populaires">
+              <SidebarWidget title={t("news.sidebar.tagsPopular")}>
                 <Suspense fallback={<div className="h-16 animate-pulse bg-slate-100 rounded" />}>
                   <TagFilter tags={tags} activeSlugs={activeTags} />
                 </Suspense>
@@ -182,10 +184,10 @@ export default async function NewsArchivesPage({ searchParams }: NewsPageProps) 
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-              Aucune archive trouvée
+              {t("archives.empty.title")}
             </h3>
             <p className="mt-2 text-slate-600 dark:text-slate-400">
-              Aucun article archivé ne correspond à vos critères.
+              {t("archives.empty.subtitle")}
             </p>
           </div>
         )}

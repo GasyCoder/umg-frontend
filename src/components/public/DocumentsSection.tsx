@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { FileText, Download, ArrowRight, File, FileCode, FileImage } from "lucide-react";
 import type { Document } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 interface DocumentsSectionProps {
   documents: Document[];
 }
 
 export default function DocumentsSection({ documents }: DocumentsSectionProps) {
+  const { t } = useI18n();
   // Get file icon based on type
   const getFileIcon = (fileType: string | null | undefined) => {
     if (!fileType) return FileText;
@@ -55,13 +57,13 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            Documents
+            {t("home.documents.title")}
           </h2>
           <Link
             href="/documents"
             className="inline-flex items-center gap-1 text-sm font-semibold text-amber-600 dark:text-amber-400 hover:gap-2 transition-all"
           >
-            Voir tout
+            {t("home.documents.seeAll")}
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
@@ -115,7 +117,7 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
                   href={doc.file_url || "#"}
                   download
                   className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600 transition-all shrink-0"
-                  title="Télécharger"
+                  title={t("home.documents.download")}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Download className="w-4 h-4" />
@@ -126,7 +128,7 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
         </div>
       ) : (
         <div className="text-center py-10 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Aucun document disponible.</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">{t("home.documents.empty")}</p>
         </div>
       )}
     </div>

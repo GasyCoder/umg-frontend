@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { FileText, FileSpreadsheet, FileArchive, FileImage, Download, ExternalLink } from 'lucide-react';
 import type { Document } from '@/lib/types';
+import { getServerI18n } from "@/i18n/server";
 
 interface DocumentCardProps {
   document: Document;
@@ -9,12 +10,13 @@ interface DocumentCardProps {
   className?: string;
 }
 
-export default function DocumentCard({ 
+export default async function DocumentCard({ 
   document, 
   variant = 'default',
   baseApiUrl = process.env.NEXT_PUBLIC_API_URL || '',
   className = '' 
 }: DocumentCardProps) {
+  const { lang, t } = await getServerI18n();
   // Determine icon based on file type
   const getFileIcon = () => {
     const type = document.file_type?.toLowerCase() || '';
@@ -35,15 +37,20 @@ export default function DocumentCard({
   // Format file size
   const formatFileSize = (bytes?: number | null) => {
     if (!bytes) return null;
-    if (bytes < 1024) return `${bytes} o`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+    if (lang === "fr") {
+      if (bytes < 1024) return `${bytes} o`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`;
+      return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+    }
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const fileSize = formatFileSize(document.file_size);
   const fileType = document.file_type?.toUpperCase() || 'PDF';
 
-  const formattedDate = new Date(document.created_at).toLocaleDateString('fr-FR', {
+  const formattedDate = new Date(document.created_at).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US", {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -71,7 +78,7 @@ export default function DocumentCard({
         <a
           href={downloadUrl}
           className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-          title="Télécharger"
+          title={t("documents.download")}
         >
           <Download className="w-4 h-4" />
         </a>
@@ -102,7 +109,7 @@ export default function DocumentCard({
               {document.title}
             </Link>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300 line-clamp-1">
-              {document.excerpt || 'Document institutionnel disponible en téléchargement.'}
+              {document.excerpt || t("documents.fallbackExcerpt")}
             </p>
           </div>
         </div>
@@ -116,7 +123,7 @@ export default function DocumentCard({
             className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors"
           >
             <Download className="w-4 h-4" />
-            Télécharger
+            {t("documents.download")}
           </a>
         </div>
       </div>
@@ -171,7 +178,7 @@ export default function DocumentCard({
           className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-blue-600"
         >
           <Download className="w-4 h-4" />
-          Télécharger
+          {t("documents.download")}
         </a>
       </div>
     </div>
@@ -185,17 +192,18 @@ interface DocumentListProps {
   className?: string;
 }
 
-export function DocumentList({
+export async function DocumentList({
   documents,
   maxItems = 5,
   className = '',
 }: DocumentListProps) {
+  const { t } = await getServerI18n();
   const items = documents.slice(0, maxItems);
 
   if (items.length === 0) {
     return (
       <p className="text-sm text-slate-500 dark:text-slate-400 italic">
-        Aucun document disponible.
+        {t("documents.none")}
       </p>
     );
   }
@@ -210,7 +218,7 @@ export function DocumentList({
           href="/documents"
           className="pt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-blue-600"
         >
-          Voir tous les documents
+          {t("documents.viewAll")}
           <ExternalLink className="w-4 h-4" />
         </Link>
       )}

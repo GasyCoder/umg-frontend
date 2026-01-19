@@ -6,6 +6,7 @@ import PageLayout from "@/components/layout/PageLayout";
 import EtablissementsExplorer, {
   EtablissementsFilters,
 } from "@/components/public/EtablissementsExplorer";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 type Etablissement = {
   id: number;
@@ -28,6 +29,7 @@ export default function EtablissementsPageClient({
 }: {
   etablissements: Etablissement[];
 }) {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"" | "faculte" | "ecole" | "institut">("");
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -39,10 +41,10 @@ export default function EtablissementsPageClient({
         <div className="mb-8">
           <div className="flex flex-col gap-3">
             <h1 className="text-3xl font-black leading-tight tracking-[-0.033em] text-[#111318] dark:text-white md:text-4xl">
-              Nos établissements
+              {t("etablissements.title")}
             </h1>
             <p className="max-w-2xl text-base font-normal leading-normal text-[#616f89] dark:text-gray-400">
-              Découvrez les établissements d'enseignement et de recherche de l'Université de Mahajanga. Explorez nos facultés, écoles et instituts répartis sur nos différents campus.
+              {t("etablissements.subtitle")}
             </p>
           </div>
         </div>
@@ -69,16 +71,16 @@ export default function EtablissementsPageClient({
 
         <div className="mt-10 rounded-2xl border border-emerald-200/80 bg-emerald-50/70 p-5 text-slate-700 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-slate-200">
           <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-100">
-            Consultez nos documents disponibles
+            {t("etablissements.docs.title")}
           </h3>
           <p className="mt-2 text-sm text-emerald-900/80 dark:text-emerald-100/80">
-            Guides, rapports, formulaires et ressources utiles pour les étudiants et partenaires.
+            {t("etablissements.docs.subtitle")}
           </p>
           <Link
             href="/documents"
             className="mt-4 inline-flex items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
           >
-            Accéder aux documents
+            {t("etablissements.docs.cta")}
           </Link>
         </div>
       </PageLayout>

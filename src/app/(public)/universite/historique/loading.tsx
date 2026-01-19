@@ -7,7 +7,7 @@ export default function HistoriqueLoading() {
         <div className="max-w-7xl mx-auto px-4 md:px-10 space-y-3">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="h-8 w-52" />
-          <Skeleton className="h-4 w-[26rem]" />
+          <Skeleton className="h-4 w-full max-w-[26rem]" />
         </div>
       </div>
 

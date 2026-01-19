@@ -4,6 +4,8 @@ import PublicHeader from "@/components/public/PublicHeader";
 import ScrollToTop from "@/components/public/ScrollToTop";
 import SiteFooter from "@/components/SiteFooter";
 import type { Metadata } from "next";
+import { getRequestLang } from "@/i18n/server";
+import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -28,31 +30,34 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
+  const lang = await getRequestLang();
   const settings = await getSiteSettings().catch(() => null);
 
   return (
-    <div className={`min-h-screen flex flex-col ${nunito.className} bg-[#f6f6f8] dark:bg-[#101622] text-[#111318] dark:text-white transition-colors duration-300`}>
-       {/* Material Symbols */}
-       <link 
+    <LanguageProvider initialLang={lang}>
+      <div className={`min-h-screen flex flex-col ${nunito.className} bg-[#f6f6f8] dark:bg-[#101622] text-[#111318] dark:text-white transition-colors duration-300`}>
+        {/* Material Symbols */}
+        <link 
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
           rel="stylesheet" 
-       />
-       {/* Nunito Font Fallback */}
-       <link 
+        />
+        {/* Nunito Font Fallback */}
+        <link 
           href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" 
           rel="stylesheet" 
-       />
-       <style>{`
-          .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
-          }
-       `}</style>
-       <PublicHeader settings={settings} />
-       <main className="flex-1 w-full flex flex-col">
-         {children}
-       </main>
-       <ScrollToTop />
-       <SiteFooter settings={settings} />
-    </div>
+        />
+        <style>{`
+            .material-symbols-outlined {
+              font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            }
+        `}</style>
+        <PublicHeader settings={settings} />
+        <main className="flex-1 w-full flex flex-col">
+          {children}
+        </main>
+        <ScrollToTop />
+        <SiteFooter settings={settings} />
+      </div>
+    </LanguageProvider>
   );
 }

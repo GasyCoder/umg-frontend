@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { PresidentMessage } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 interface PresidentMessageProps {
     data?: PresidentMessage | null;
@@ -21,6 +22,7 @@ function looksLikeHtml(value: string) {
 }
 
 export default function PresidentMessage({ data }: PresidentMessageProps) {
+  const { t } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const photoUrl =
     data?.photo?.url ||
@@ -55,15 +57,15 @@ export default function PresidentMessage({ data }: PresidentMessageProps) {
           <div className="w-full md:w-7/12">
             <div className="flex items-center gap-3 mb-6">
               <span className="h-px w-8 bg-slate-300 dark:bg-slate-600"></span>
-              <span className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-xs">Gouvernance</span>
+              <span className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-xs">{t("president.kicker")}</span>
             </div>
             
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-6">Le Mot du Président</h2>
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-6">{t("president.title")}</h2>
             
             <div className="relative pl-8 mb-8">
               <span className="absolute top-0 left-0 text-6xl text-primary/20 dark:text-white/10 font-serif font-black leading-none">“</span>
               <blockquote className="text-xl font-medium text-slate-700 dark:text-slate-300 italic leading-relaxed">
-                {data?.intro || "L'Université de Mahajanga s'engage à être un phare de savoir et d'innovation pour l'Océan Indien. Nous croyons en la force de la diversité et en la capacité de nos étudiants à transformer le monde de demain."}
+                {data?.intro || t("president.fallback.quote")}
               </blockquote>
             </div>
             
@@ -72,7 +74,7 @@ export default function PresidentMessage({ data }: PresidentMessageProps) {
                 expanded ? "mb-6" : "mb-4 line-clamp-2"
               }`}
             >
-               {data?.title ? data.title : "En rejoignant l'UMG, vous intégrez une communauté dynamique, solidaire et tournée vers l'excellence. Ensemble, construisons l'avenir de Madagascar."}
+               {data?.title ? data.title : t("president.fallback.lead")}
             </p>
 
             {expanded && hasExpandableContent ? (
@@ -89,7 +91,7 @@ export default function PresidentMessage({ data }: PresidentMessageProps) {
                   aria-expanded={expanded}
                   className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 transition-colors"
                 >
-                  {expanded ? "Réduire" : "Lire la suite"}
+                  {expanded ? t("president.less") : t("president.more")}
                 </button>
               </div>
             ) : null}
@@ -97,7 +99,7 @@ export default function PresidentMessage({ data }: PresidentMessageProps) {
             <div className="flex items-center border-t border-slate-200 dark:border-slate-700 pt-6">
               <div>
                 <p className="font-bold text-slate-900 dark:text-white text-lg">{data?.president_name || "Prof. Ravelomanana Jean"}</p>
-                <p className="text-sm text-primary dark:text-blue-400 font-medium">{data?.president_title || "Président de l'Université"}</p>
+                <p className="text-sm text-primary dark:text-blue-400 font-medium">{data?.president_title || t("president.fallback.title")}</p>
               </div>
             </div>
           </div>

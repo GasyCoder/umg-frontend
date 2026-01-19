@@ -9,7 +9,7 @@ export default function PartenairesLoading() {
           <div className="py-10 md:py-12 space-y-3">
             <Skeleton className="h-3 w-32" />
             <Skeleton className="h-8 w-72" />
-            <Skeleton className="h-4 w-[26rem]" />
+            <Skeleton className="h-4 w-full max-w-[26rem]" />
           </div>
         </Container>
       </section>

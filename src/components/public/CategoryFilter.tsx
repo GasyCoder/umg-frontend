@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { Category, Tag } from '@/lib/types';
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 interface CategoryFilterProps {
   categories: Category[];
@@ -17,6 +18,7 @@ export function CategoryFilter({
   baseUrl = '/actualites',
   className = '' 
 }: CategoryFilterProps) {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   
   const getUrl = (categorySlug?: string) => {
@@ -44,7 +46,7 @@ export function CategoryFilter({
             }
           `}
         >
-          Toutes
+          {t("filters.all")}
         </Link>
         {categories.map((category) => (
           <Link

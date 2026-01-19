@@ -91,20 +91,20 @@ async function NewsDocumentsBlock() {
 function HeroSkeleton() {
   return (
     <section className="relative bg-slate-900 overflow-hidden pb-16 pt-8 lg:pt-16 lg:pb-20">
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="absolute top-0 right-0 h-[28rem] w-[28rem] sm:h-[42rem] sm:w-[42rem] lg:h-[50rem] lg:w-[50rem] bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
       <div className="max-w-7xl mx-auto px-4 md:px-10 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="flex flex-col gap-6">
+          <div className="order-2 lg:order-1 flex flex-col gap-6">
             <Skeleton className="h-7 w-40 rounded-full" />
             <Skeleton className="h-10 w-3/4" />
             <SkeletonText lines={3} className="max-w-lg" />
             <Skeleton className="h-12 w-40 rounded-lg" />
-            <div className="flex gap-8 pt-4 border-t border-white/10">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-8 pt-4 border-t border-white/10">
               <Skeleton className="h-4 w-36" />
               <Skeleton className="h-4 w-36" />
             </div>
           </div>
-          <Skeleton className="aspect-[4/3] lg:aspect-[16/11] rounded-2xl" />
+          <Skeleton className="order-1 lg:order-2 aspect-[4/3] lg:aspect-[16/11] rounded-2xl" />
         </div>
       </div>
     </section>

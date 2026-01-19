@@ -9,7 +9,7 @@ export default function ServicesLoading() {
           <div className="py-10 md:py-12 space-y-3">
             <Skeleton className="h-3 w-28" />
             <Skeleton className="h-8 w-80" />
-            <Skeleton className="h-4 w-[28rem]" />
+            <Skeleton className="h-4 w-full max-w-[28rem]" />
           </div>
         </Container>
       </section>

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Container from "@/components/Container";
 import Link from "next/link";
 import { Briefcase, MapPin, Phone, FileText } from "lucide-react";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 type Service = {
   id: number;
@@ -20,6 +21,7 @@ type DocumentFilter = "all" | "with" | "without";
 type SortOrder = "asc" | "desc";
 
 export default function ServicesPageClient({ services }: { services: Service[] }) {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [docFilter, setDocFilter] = useState<DocumentFilter>("all");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
@@ -55,12 +57,12 @@ export default function ServicesPageClient({ services }: { services: Service[] }
       <section className="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-white">
         <Container className="max-w-[1280px] px-5 md:px-10">
           <div className="py-10 md:py-12">
-            <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">Services</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">{t("services.kicker")}</p>
             <h1 className="mt-4 text-xl md:text-3xl font-bold tracking-tight">
-              Services administratifs et académiques
+              {t("services.title")}
             </h1>
             <p className="mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
-              Accédez aux différents services de l'université pour vos démarches administratives et académiques.
+              {t("services.subtitle")}
             </p>
           </div>
         </Container>
@@ -77,7 +79,7 @@ export default function ServicesPageClient({ services }: { services: Service[] }
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Rechercher un service..."
+                  placeholder={t("services.searchPlaceholder")}
                   className="h-12 w-full rounded-lg border border-[#dbdfe6] bg-white pl-10 pr-3 text-[#111318] placeholder-[#616f89] transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                 />
               </div>
@@ -91,9 +93,9 @@ export default function ServicesPageClient({ services }: { services: Service[] }
                     onChange={(event) => setDocFilter(event.target.value as DocumentFilter)}
                     className="h-12 w-full appearance-none rounded-lg border border-[#dbdfe6] bg-white pl-10 pr-10 text-[#111318] transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                   >
-                    <option value="all">Tous les services</option>
-                    <option value="with">Avec document</option>
-                    <option value="without">Sans document</option>
+                    <option value="all">{t("services.filter.all")}</option>
+                    <option value="with">{t("services.filter.withDocument")}</option>
+                    <option value="without">{t("services.filter.withoutDocument")}</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-[#616f89]">
                     <span className="material-symbols-outlined text-[20px]">expand_more</span>
@@ -105,7 +107,7 @@ export default function ServicesPageClient({ services }: { services: Service[] }
                   className="flex h-12 items-center gap-2 rounded-lg border border-[#dbdfe6] bg-white px-4 text-sm font-medium text-[#111318] transition-all hover:border-primary/40 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                 >
                   <span className="material-symbols-outlined text-[20px] text-[#616f89]">sort_by_alpha</span>
-                  <span>{sortOrder === "asc" ? "A - Z" : "Z - A"}</span>
+                  <span>{sortOrder === "asc" ? t("services.sort.az") : t("services.sort.za")}</span>
                   <span className="material-symbols-outlined text-[18px] text-[#616f89]">
                     {sortOrder === "asc" ? "south" : "north"}
                   </span>
@@ -135,7 +137,7 @@ export default function ServicesPageClient({ services }: { services: Service[] }
 
                     {service.chef_service && (
                       <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                        <span className="font-medium">Chef de service:</span> {service.chef_service}
+                        <span className="font-medium">{t("services.card.chefService")}:</span> {service.chef_service}
                       </p>
                     )}
 
@@ -160,7 +162,7 @@ export default function ServicesPageClient({ services }: { services: Service[] }
                         className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                       >
                         <FileText className="h-4 w-4" />
-                        Télécharger le document
+                        {t("services.card.download")}
                       </Link>
                     )}
                   </div>
@@ -172,7 +174,7 @@ export default function ServicesPageClient({ services }: { services: Service[] }
             <div className="text-center py-12">
               <Briefcase className="mx-auto h-12 w-12 text-slate-300" />
               <p className="mt-4 text-slate-500 dark:text-slate-300">
-                Aucun service disponible pour le moment.
+                {t("services.empty")}
               </p>
             </div>
           )}

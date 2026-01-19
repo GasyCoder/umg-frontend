@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { SiteSettings } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 
@@ -91,12 +92,12 @@ type PartnerSearchApiItem = {
 };
 
 export default function PublicHeader({ settings }: PublicHeaderProps) {
+  const { lang, setLang, t } = useI18n();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [hash, setHash] = useState("");
   const [langOpen, setLangOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState<"FR" | "EN">("FR");
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
@@ -280,25 +281,25 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
 
   const navItems: NavItem[] = [
     {
-      label: 'Université',
+      label: t("nav.university"),
       children: [
-        { label: 'Historique', href: '/universite/historique', icon: History },
-        { label: 'Organisation', href: '/universite/organisation', icon: Building2 },
-        { label: 'Services', href: '/services', icon: Briefcase },
-        { label: 'Textes et arrêtés', href: '/universite/textes', icon: FileText },
+        { label: t("nav.university.history"), href: '/universite/historique', icon: History },
+        { label: t("nav.university.organization"), href: '/universite/organisation', icon: Building2 },
+        { label: t("nav.university.services"), href: '/services', icon: Briefcase },
+        { label: t("nav.university.texts"), href: '/universite/textes', icon: FileText },
       ]
     },
-    { label: 'Établissements', href: '/etablissements' },
+    { label: t("nav.establishments"), href: '/etablissements' },
     {
-      label: 'Projets Internationale',
+      label: t("nav.internationalProjects"),
       children: [
-        { label: 'Projet InfPrev4frica', href: '/projets-internationale/infprev4frica', icon: FolderKanban },
-        { label: 'Projet DOCET4AFRICA', href: '/projets-internationale/docet4africa', icon: FolderKanban },
+        { label: t("nav.project.infprev"), href: '/projets-internationale/infprev4frica', icon: FolderKanban },
+        { label: t("nav.project.docet"), href: '/projets-internationale/docet4africa', icon: FolderKanban },
       ],
     },
-    { label: 'Actualités', href: '/actualites' },
-    { label: 'Partenaires', href: '/partenaires' },
-    { label: 'Contact', href: '/contact' },
+    { label: t("nav.news"), href: '/actualites' },
+    { label: t("nav.partners"), href: '/partenaires' },
+    { label: t("nav.contact"), href: '/contact' },
   ];
 
   // Vérifier si un lien est actif
@@ -323,9 +324,9 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
   return (
     <>
       {/* Topbar */}
-      <div className="relative z-[60] bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 py-2 px-4 md:px-10 text-xs font-medium transition-colors">
-        <div className="max-w-7xl mx-auto px-4 md:px-10 flex justify-between items-center">
-          <div className="flex gap-6">
+      <div className="relative z-[60] bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 py-2 text-xs font-medium transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-3">
+          <div className="min-w-0 flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link
               className="hover:text-blue-600 dark:hover:text-blue-500 transition-colors flex items-center gap-1.5"
               href={topbarLinks.library.url}
@@ -342,7 +343,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
               <Laptop className="w-4 h-4 text-amber-500" /> {topbarLinks.digital.label}
             </Link>
           </div>
-          <div className="flex gap-4 items-center">
+          <div className="flex items-center gap-4 shrink-0">
             <div className="hidden md:flex gap-4 items-center">
               <Link
                 className="hover:text-blue-600 dark:hover:text-blue-500 transition-colors flex items-center gap-1.5"
@@ -354,7 +355,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
               </Link>
             </div>
 
-            {/* Language Switcher */}
+              {/* Language Switcher */}
             <div className="relative">
               <button
                 type="button"
@@ -365,7 +366,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                 className="flex items-center gap-1.5 cursor-pointer bg-slate-50 dark:bg-slate-800 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
                 <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                <span className="font-bold text-blue-600 dark:text-blue-400">{currentLang}</span>
+                <span className="font-bold text-blue-600 dark:text-blue-400">{lang === "fr" ? t("lang.fr") : t("lang.en")}</span>
                 <ChevronDown className={`w-3 h-3 transition-transform ${langOpen ? "rotate-180" : ""}`} />
               </button>
 
@@ -374,32 +375,32 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      setCurrentLang("FR");
+                      setLang("fr");
                       setLangOpen(false);
                     }}
                     className={`w-full px-4 py-2 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
-                      currentLang === "FR"
+                      lang === "fr"
                         ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                         : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
                     }`}
                   >
-                    <span className="w-5 h-4 rounded overflow-hidden flex-shrink-0 bg-slate-200 flex items-center justify-center text-[10px] font-bold">FR</span>
-                    Français
+                    <span className="w-5 h-4 rounded overflow-hidden flex-shrink-0 bg-slate-200 flex items-center justify-center text-[10px] font-bold">{t("lang.fr")}</span>
+                    {t("lang.french")}
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      setCurrentLang("EN");
+                      setLang("en");
                       setLangOpen(false);
                     }}
                     className={`w-full px-4 py-2 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
-                      currentLang === "EN"
+                      lang === "en"
                         ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                         : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
                     }`}
                   >
-                    <span className="w-5 h-4 rounded overflow-hidden flex-shrink-0 bg-slate-200 flex items-center justify-center text-[10px] font-bold">EN</span>
-                    English
+                    <span className="w-5 h-4 rounded overflow-hidden flex-shrink-0 bg-slate-200 flex items-center justify-center text-[10px] font-bold">{t("lang.en")}</span>
+                    {t("lang.english")}
                   </button>
                 </div>
               )}
@@ -410,9 +411,9 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
 
       {/* Main Header */}
       <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 shadow-sm transition-colors">
-        <div className="max-w-7xl mx-auto px-4 md:px-10 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3 group">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Link href="/" className="flex items-center gap-3 group min-w-0">
               <div className="size-10 flex items-center justify-center">
                 <img
                   src={settings?.logo_url || "/images/placeholder.jpg"}
@@ -420,11 +421,11 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                   className="w-full h-full object-contain p-1"
                 />
               </div>
-              <div>
-                <h1 className="text-primary dark:text-white text-xl font-bold leading-none tracking-tight group-hover:text-primary-light dark:group-hover:text-blue-300 transition-colors">
+              <div className="min-w-0">
+                <h1 className="text-primary dark:text-white text-xl font-bold leading-none tracking-tight group-hover:text-primary-light dark:group-hover:text-blue-300 transition-colors truncate">
                   {settings?.site_name || "UMG"}
                 </h1>
-                <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Université pour le développement</p>
+                <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider font-semibold truncate">{t("header.tagline")}</p>
               </div>
             </Link>
           </div>
@@ -496,7 +497,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
               type="button"
               className="size-9 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors"
               onClick={() => setSearchOpen(true)}
-              aria-label="Ouvrir la recherche"
+              aria-label={t("search.open")}
             >
               <Search className="w-5 h-5" />
             </button>
@@ -612,7 +613,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                   type="search"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Rechercher dans tout le site..."
+                  placeholder={t("search.placeholder")}
                   className="w-full h-12 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                 />
                 {searchQuery && (
@@ -620,7 +621,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                     type="button"
                     onClick={() => setSearchQuery("")}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                    aria-label="Effacer la recherche"
+                    aria-label={t("search.clear")}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -630,7 +631,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                 type="button"
                 onClick={() => setSearchOpen(false)}
                 className="size-10 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                aria-label="Fermer la recherche"
+                aria-label={t("search.close")}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -638,7 +639,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
 
             <div className="px-6 pb-6 pt-4">
               {searchLoading && (
-                <p className="text-sm text-slate-500 dark:text-slate-400">Recherche en cours...</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t("search.loading")}</p>
               )}
               {searchError && (
                 <p className="text-sm text-red-500">{searchError}</p>
@@ -646,11 +647,11 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
               {!searchLoading && !searchError && searchQuery && (
                 <div className="space-y-5">
                   {([
-                    { label: "Actualités", items: searchResults.posts },
-                    { label: "Documents", items: searchResults.documents },
-                    { label: "Services", items: searchResults.services },
-                    { label: "Établissements", items: searchResults.etablissements },
-                    { label: "Partenaires", items: searchResults.partners },
+                    { label: t("search.section.news"), items: searchResults.posts },
+                    { label: t("search.section.documents"), items: searchResults.documents },
+                    { label: t("search.section.services"), items: searchResults.services },
+                    { label: t("search.section.establishments"), items: searchResults.etablissements },
+                    { label: t("search.section.partners"), items: searchResults.partners },
                   ] as const).map((section) => (
                     <div key={section.label}>
                       <div className="flex items-center justify-between">
@@ -678,7 +679,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
                           ))}
                         </div>
                       ) : (
-                        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Aucun résultat.</p>
+                        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t("search.noResults")}</p>
                       )}
                     </div>
                   ))}
@@ -686,7 +687,7 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
               )}
               {!searchLoading && !searchError && !searchQuery && (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Saisissez un mot-clé pour lancer la recherche sur tout le site.
+                  {t("search.hint")}
                 </p>
               )}
             </div>

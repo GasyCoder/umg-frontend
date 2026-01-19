@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Facebook, Twitter, Linkedin, Instagram, Youtube, MapPin, Mail, Phone, GraduationCap } from 'lucide-react';
 import type { SiteSettings } from '@/lib/types';
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 interface SiteFooterProps {
   settings?: SiteSettings | null;
@@ -14,6 +15,7 @@ function limitString(value: string, max = 100) {
 }
 
 export default function SiteFooter({ settings }: SiteFooterProps) {
+  const { t } = useI18n();
   const currentYear = new Date().getFullYear();
   const social = settings?.social;
   const siteDescription = limitString(
@@ -63,7 +65,7 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
                 {/* Column 2: Contact */}
                 <div>
                     <h4 className="text-white font-bold mb-6 text-base flex items-center gap-2">
-                        Contact
+                        {t("footer.contact")}
                         <span className="h-px flex-grow bg-white/10 ml-2"></span>
                     </h4>
                     <ul className="flex flex-col gap-4 text-sm text-blue-100/80">
@@ -85,7 +87,7 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
                 {/* Column 3: Accès Rapide */}
                 <div>
                     <h4 className="text-white font-bold mb-6 text-base flex items-center gap-2">
-                        Accès Rapide
+                        {t("footer.quickAccess")}
                         <span className="h-px flex-grow bg-white/10 ml-2"></span>
                     </h4>
                     <ul className="flex flex-col gap-3 text-sm text-blue-100/80">
@@ -100,7 +102,7 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
                 {/* Column 4: Institution */}
                 <div>
                     <h4 className="text-white font-bold mb-6 text-base flex items-center gap-2">
-                        Institution
+                        {t("footer.institution")}
                         <span className="h-px flex-grow bg-white/10 ml-2"></span>
                     </h4>
                     <ul className="flex flex-col gap-3 text-sm text-blue-100/80">
@@ -118,9 +120,9 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
             <div className="pt-8 border-t border-white/10 text-center md:text-left flex flex-col md:flex-row justify-between items-center text-xs text-blue-200/60">
                 <p>© {currentYear} {settings?.site_name || "Université de Mahajanga"}. Tous droits réservés.</p>
                 <div className="flex gap-6 mt-4 md:mt-0">
-                    <Link className="hover:text-blue-400 transition-colors" href="#">Mentions Légales</Link>
-                    <Link className="hover:text-blue-400 transition-colors" href="#">Politique de Confidentialité</Link>
-                    <Link className="hover:text-blue-400 transition-colors" href="#">Plan du Site</Link>
+                    <Link className="hover:text-blue-400 transition-colors" href="#">{t("footer.legal")}</Link>
+                    <Link className="hover:text-blue-400 transition-colors" href="#">{t("footer.privacy")}</Link>
+                    <Link className="hover:text-blue-400 transition-colors" href="#">{t("footer.sitemap")}</Link>
                 </div>
             </div>
         </div>

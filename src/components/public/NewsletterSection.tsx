@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Mail, ArrowUpRight, Send, CheckCircle2, AlertCircle } from "lucide-react";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 export default function NewsletterSection() {
+  const { t } = useI18n();
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [newsletterMessage, setNewsletterMessage] = useState("");
@@ -13,7 +15,7 @@ export default function NewsletterSection() {
     event.preventDefault();
     if (!newsletterEmail) {
       setNewsletterStatus("error");
-      setNewsletterMessage("Merci de renseigner votre adresse e-mail.");
+      setNewsletterMessage(t("home.newsletter.requiredEmail"));
       return;
     }
 
@@ -27,11 +29,11 @@ export default function NewsletterSection() {
       }).then((r) => r.json());
 
       setNewsletterStatus("success");
-      setNewsletterMessage(res?.message || "Merci ! Vérifiez votre boîte mail pour confirmer votre inscription.");
+      setNewsletterMessage(res?.message || t("home.newsletter.successDefault"));
       setNewsletterEmail("");
     } catch (error) {
       console.error(error);
-      const message = error instanceof Error ? error.message : "Impossible d'envoyer votre inscription. Réessayez dans un instant.";
+      const message = error instanceof Error ? error.message : t("home.newsletter.errorDefault");
       setNewsletterStatus("error");
       setNewsletterMessage(message);
     }
@@ -52,14 +54,14 @@ export default function NewsletterSection() {
             <div className="relative z-10">
               <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5 mb-4">
                 <Mail className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">Newsletter</span>
+                <span className="text-xs font-bold uppercase tracking-wider">{t("home.newsletter.badge")}</span>
               </div>
 
               <h3 className="text-xl md:text-2xl font-bold mb-3">
-                Recevez les infos essentielles de l'UMG
+                {t("home.newsletter.title")}
               </h3>
               <p className="text-blue-100 text-sm mb-6">
-                Publications officielles, calendriers académiques et événements majeurs directement dans votre boîte mail.
+                {t("home.newsletter.subtitle")}
               </p>
 
               <form onSubmit={handleNewsletterSubmit} className="space-y-3">
@@ -69,7 +71,7 @@ export default function NewsletterSection() {
                       type="email"
                       value={newsletterEmail}
                       onChange={(event) => setNewsletterEmail(event.target.value)}
-                      placeholder="Votre adresse e-mail"
+                      placeholder={t("home.newsletter.emailPlaceholder")}
                       className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-sm text-white placeholder:text-blue-200 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent transition-all"
                     />
                   </div>
@@ -81,12 +83,12 @@ export default function NewsletterSection() {
                     {newsletterStatus === "loading" ? (
                       <>
                         <div className="w-4 h-4 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
-                        Envoi...
+                        {t("home.newsletter.submitting")}
                       </>
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        Je m'abonne
+                        {t("home.newsletter.subscribeCta")}
                       </>
                     )}
                   </button>
@@ -121,14 +123,14 @@ export default function NewsletterSection() {
 
             <div className="relative z-10">
               <div className="inline-flex items-center gap-2 bg-amber-500/20 text-amber-400 rounded-full px-3 py-1.5 mb-4">
-                <span className="text-xs font-bold uppercase tracking-wider">Candidature</span>
+                <span className="text-xs font-bold uppercase tracking-wider">{t("home.apply.badge")}</span>
               </div>
 
               <h3 className="text-xl md:text-2xl font-bold mb-3">
-                S'inscrire à l'Université
+                {t("home.apply.title")}
               </h3>
               <p className="text-slate-300 text-sm mb-6">
-                Explorez nos filières, rencontrez nos équipes pédagogiques et choisissez l'établissement qui vous correspond.
+                {t("home.apply.subtitle")}
               </p>
 
               <div className="flex flex-wrap gap-3">
@@ -136,14 +138,14 @@ export default function NewsletterSection() {
                   href="/universite"
                   className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-3 text-sm font-bold transition-colors shadow-lg"
                 >
-                  S'inscrire maintenant
+                  {t("home.apply.cta")}
                   <ArrowUpRight className="w-4 h-4" />
                 </Link>
                 <Link
                   href="/etablissements"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-600 hover:border-slate-500 text-white px-6 py-3 text-sm font-bold hover:bg-slate-700/50 transition-colors"
                 >
-                  Nos établissements
+                  {t("home.apply.secondary")}
                 </Link>
               </div>
             </div>

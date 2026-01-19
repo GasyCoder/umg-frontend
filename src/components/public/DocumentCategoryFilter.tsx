@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { DocumentCategory } from '@/lib/types';
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 interface DocumentCategoryFilterProps {
   categories: DocumentCategory[];
@@ -17,6 +18,7 @@ export function DocumentCategoryFilter({
   baseUrl = '/documents',
   className = '' 
 }: DocumentCategoryFilterProps) {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   
   const getUrl = (categorySlug?: string) => {
@@ -44,7 +46,7 @@ export function DocumentCategoryFilter({
             }
           `}
         >
-          <span>Tous les documents</span>
+          <span>{t("documents.categories.all")}</span>
         </Link>
         {categories.map((category) => (
           <Link

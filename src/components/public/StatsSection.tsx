@@ -1,6 +1,7 @@
 "use client";
 
 import { Users, GraduationCap, UserCog, Building2 } from "lucide-react";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 interface StatsProps {
   stats?: {
@@ -12,32 +13,34 @@ interface StatsProps {
 }
 
 export default function StatsSection({ stats }: StatsProps) {
+  const { lang, t } = useI18n();
+  const numberLocale = lang === "fr" ? "fr-FR" : "en-US";
   const statsData = [
     {
       icon: Users,
-      value: stats?.students ? stats.students.toLocaleString('fr-FR') : "12 000",
-      label: "Étudiants",
+      value: stats?.students ? stats.students.toLocaleString(numberLocale) : "12,000",
+      label: t("stats.students"),
       color: "text-blue-600 dark:text-blue-400",
       bg: "bg-blue-50 dark:bg-blue-900/30"
     },
     {
       icon: GraduationCap,
-      value: stats?.teachers ? stats.teachers.toLocaleString('fr-FR') : "500",
-      label: "Enseignants",
+      value: stats?.teachers ? stats.teachers.toLocaleString(numberLocale) : "500",
+      label: t("stats.teachers"),
       color: "text-amber-600 dark:text-amber-400",
       bg: "bg-amber-50 dark:bg-amber-900/30"
     },
     {
       icon: UserCog,
-      value: stats?.staff ? stats.staff.toLocaleString('fr-FR') : "200",
-      label: "Personnels Administratifs",
+      value: stats?.staff ? stats.staff.toLocaleString(numberLocale) : "200",
+      label: t("stats.staff"),
       color: "text-purple-600 dark:text-purple-400",
       bg: "bg-purple-50 dark:bg-purple-900/30"
     },
     {
       icon: Building2,
       value: stats?.establishments?.toString() || "6",
-      label: "Établissements",
+      label: t("stats.establishments"),
       color: "text-emerald-600 dark:text-emerald-400",
       bg: "bg-emerald-50 dark:bg-emerald-900/30"
     },

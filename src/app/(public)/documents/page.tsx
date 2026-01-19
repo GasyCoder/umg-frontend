@@ -9,6 +9,7 @@ import { DocumentCard } from '@/components/public';
 import Pagination from '@/components/ui/Pagination';
 import SearchBox from '@/components/ui/SearchBox';
 import { DocumentCategoryFilter } from '@/components/public/DocumentCategoryFilter';
+import { getServerI18n } from '@/i18n/server';
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ async function fetchDocumentCategories() {
 }
 
 export default async function DocumentsPage({ searchParams }: DocumentsPageProps) {
+  const { t } = await getServerI18n();
   const params = await searchParams;
   
   const [documentsRes, categoriesRes] = await Promise.all([
@@ -64,13 +66,13 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
         <Container className="max-w-[1280px] px-5 md:px-10">
           <div className="py-6 md:py-8">
             <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">
-              Documents
+              {t("documents.page.kicker")}
             </p>
             <h1 className="mt-3 text-xl md:text-3xl font-bold tracking-tight">
-              Ressources et téléchargements
+              {t("documents.page.title")}
             </h1>
             <p className="mt-3 max-w-xl text-base text-slate-600 dark:text-slate-300">
-              Documents administratifs, guides, rapports et formulaires.
+              {t("documents.page.subtitle")}
             </p>
           </div>
         </Container>
@@ -83,27 +85,27 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
         sidebarRight={
           <SidebarRight sticky>
             {/* Search */}
-            <SidebarWidget title="Rechercher">
+            <SidebarWidget title={t("documents.sidebar.search")}>
               <Suspense fallback={<div className="h-12 animate-pulse bg-slate-100 rounded" />}>
-                <SearchBox placeholder="Rechercher un document..." paramName="q" />
+                <SearchBox placeholder={t("documents.sidebar.searchPlaceholder")} paramName="q" />
               </Suspense>
             </SidebarWidget>
 
             {/* Categories Widget */}
-            <SidebarWidget title="Catégories">
+            <SidebarWidget title={t("documents.sidebar.categories")}>
               <Suspense fallback={<div className="h-20 animate-pulse bg-slate-100 rounded" />}>
                 <DocumentCategoryFilter categories={categories} activeSlug={params.category} />
               </Suspense>
             </SidebarWidget>
 
             {/* Quick Info */}
-            <SidebarWidget title="Informations">
+            <SidebarWidget title={t("documents.sidebar.info")}>
               <p className="text-sm text-slate-600 dark:text-slate-300">
-                Téléchargement gratuit. Certains documents peuvent nécessiter une authentification.
+                {t("documents.sidebar.infoText")}
               </p>
               <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  <span className="font-semibold">{meta.total}</span> documents disponibles
+                  {t("documents.sidebar.count", { count: meta.total })}
                 </p>
               </div>
             </SidebarWidget>
@@ -141,10 +143,10 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-              Aucun document trouvé
+              {t("documents.empty.title")}
             </h3>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              Essayez de modifier vos filtres ou effectuez une nouvelle recherche.
+              {t("documents.empty.subtitle")}
             </p>
           </div>
         )}

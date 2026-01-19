@@ -5,22 +5,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { Handshake, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Partner } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 const FALLBACK_LOGO = "/images/placeholder.jpg";
-const FALLBACK_PARTNERS: Partner[] = [
-  { id: -1, name: "Partenaire institutionnel", logo_url: FALLBACK_LOGO, is_active: true, type: "national" },
-  { id: -2, name: "Partenaire academique", logo_url: FALLBACK_LOGO, is_active: true, type: "international" },
-  { id: -3, name: "Partenaire technique", logo_url: FALLBACK_LOGO, is_active: true, type: "national" },
-  { id: -4, name: "Partenaire recherche", logo_url: FALLBACK_LOGO, is_active: true, type: "international" },
-  { id: -5, name: "Partenaire developpement", logo_url: FALLBACK_LOGO, is_active: true, type: "national" },
-];
 
 export default function PartnersSection() {
+  const { t } = useI18n();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(5);
+  const FALLBACK_PARTNERS: Partner[] = [
+    { id: -1, name: t("partners.fallback.1"), logo_url: FALLBACK_LOGO, is_active: true, type: "national" },
+    { id: -2, name: t("partners.fallback.2"), logo_url: FALLBACK_LOGO, is_active: true, type: "international" },
+    { id: -3, name: t("partners.fallback.3"), logo_url: FALLBACK_LOGO, is_active: true, type: "national" },
+    { id: -4, name: t("partners.fallback.4"), logo_url: FALLBACK_LOGO, is_active: true, type: "international" },
+    { id: -5, name: t("partners.fallback.5"), logo_url: FALLBACK_LOGO, is_active: true, type: "national" },
+  ];
 
   useEffect(() => {
     const updateItemsPerView = () => {
@@ -121,11 +123,11 @@ export default function PartnersSection() {
             <div className="flex items-center gap-2 mb-2">
               <Handshake className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                Nos Relations
+                {t("partners.kicker")}
               </span>
             </div>
             <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">
-              Ils nous font confiance
+              {t("partners.title")}
             </h2>
           </div>
 
@@ -136,7 +138,7 @@ export default function PartnersSection() {
                 onClick={goToPrevious}
                 disabled={currentIndex === 0}
                 className="p-2 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                aria-label="Précédent"
+                aria-label={t("partners.prev")}
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -145,7 +147,7 @@ export default function PartnersSection() {
                 onClick={goToNext}
                 disabled={currentIndex >= maxIndex}
                 className="p-2 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                aria-label="Suivant"
+                aria-label={t("partners.next")}
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -162,7 +164,7 @@ export default function PartnersSection() {
                 onClick={goToPrevious}
                 disabled={currentIndex === 0}
                 className="sm:hidden absolute -left-2 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                aria-label="Précédent"
+                aria-label={t("partners.prev")}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -171,7 +173,7 @@ export default function PartnersSection() {
                 onClick={goToNext}
                 disabled={currentIndex >= maxIndex}
                 className="sm:hidden absolute -right-2 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                aria-label="Suivant"
+                aria-label={t("partners.next")}
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -221,7 +223,7 @@ export default function PartnersSection() {
             href="/partenaires"
             className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
           >
-            Voir tous nos partenaires
+            {t("partners.viewAll")}
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -231,6 +233,7 @@ export default function PartnersSection() {
 }
 
 function PartnerCard({ partner }: { partner: Partner }) {
+  const { t } = useI18n();
   const content = (
     <div className="group flex flex-col items-center text-center p-4 rounded-xl from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
       {/* Logo Container */}
@@ -256,7 +259,7 @@ function PartnerCard({ partner }: { partner: Partner }) {
             ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
             : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
         }`}>
-          {partner.type === 'international' ? 'International' : 'National'}
+          {partner.type === 'international' ? t("partners.type.international") : t("partners.type.national")}
         </span>
       )}
     </div>
