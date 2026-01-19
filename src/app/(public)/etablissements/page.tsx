@@ -48,13 +48,14 @@ type Etablissement = {
   website: string | null;
   logo: { url: string } | null;
   cover_image: { url: string } | null;
+  is_doctoral: boolean;
 };
 
 export default async function EtablissementsPage() {
   let etablissements: Etablissement[] = [];
   try {
     const res = await publicGet<{ data: Etablissement[] }>("/etablissements?per_page=50", 300);
-    etablissements = res.data || [];
+    etablissements = (res.data || []).filter((etablissement) => !etablissement.is_doctoral);
   } catch {
     // No etablissements yet
   }

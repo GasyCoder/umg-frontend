@@ -61,6 +61,25 @@ export default function EtablissementsPageClient({
           className="mb-8"
         />
 
+        <div className="mb-8 rounded-2xl border border-slate-200 bg-white px-6 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Recherche</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Écoles doctorales</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Les écoles doctorales de l’Université de Mahajanga réunissent les doctorants autour des défis du
+                vivant, des écosystèmes et de la santé-environnement.
+              </p>
+            </div>
+            <Link
+              href="/recherche/ecole-doctorale"
+              className="inline-flex items-center justify-center rounded-full border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-600 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-slate-900"
+            >
+              Consulter les écoles doctorales
+            </Link>
+          </div>
+        </div>
+
         <EtablissementsExplorer
           etablissements={etablissements}
           view={view}

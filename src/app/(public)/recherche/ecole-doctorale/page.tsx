@@ -8,6 +8,7 @@ const doctoralSchools = [
     overview:
       "Former des doctorants capables de modéliser les systèmes vivants, dʼinnover en biotechnologie et de valoriser les ressources naturelles de Madagascar.",
     domains: "Biologie quantitative · Modélisation mathématique · Biotechnologies",
+    slug: "edgvm",
   },
   {
     sigle: "EDEN",
@@ -15,6 +16,7 @@ const doctoralSchools = [
     overview:
       "Développer des recherches sur les écosystèmes terrestres et marins, la conservation de la biodiversité et lʼadaptation aux changements climatiques.",
     domains: "Écologie · Gestion des ressources naturelles · Climatologie",
+    slug: "eden",
   },
   {
     sigle: "EDNES",
@@ -22,6 +24,7 @@ const doctoralSchools = [
     overview:
       "Articuler nutrition durable, santé publique et environnement pour soutenir des politiques et pratiques adaptées au contexte régional.",
     domains: "Nutrition · Santé publique · Sciences de l'environnement",
+    slug: "ednes",
   },
 ];
 
@@ -77,6 +80,14 @@ export default function EcoleDoctoralePage() {
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{school.overview}</p>
               <p className="text-xs uppercase text-slate-400 tracking-[0.2em]">Domaines prioritaires</p>
               <p className="text-sm text-slate-700 dark:text-slate-200">{school.domains}</p>
+              <Link
+                href={`/etablissements/${school.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-auto inline-flex items-center justify-center rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-400 dark:hover:text-blue-400"
+              >
+                Consulter la fiche
+              </Link>
             </article>
           ))}
         </div>
