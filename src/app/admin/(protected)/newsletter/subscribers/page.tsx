@@ -11,6 +11,9 @@ import {
   CheckCircle,
   XCircle,
   Search,
+  Users,
+  AlertCircle,
+  Copy,
 } from "lucide-react";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
@@ -28,13 +31,23 @@ type Subscriber = {
   unsubscribed_at?: string;
 };
 
+type BulkImportResult = {
+  imported: number;
+  duplicates: number;
+  invalid: number;
+  total_processed: number;
+} | null;
+
 export default function AdminSubscribersPage() {
   const [items, setItems] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedSubscriber, setSelectedSubscriber] = useState<Subscriber | null>(null);
   const [formData, setFormData] = useState({ email: "", name: "" });
+  const [bulkEmails, setBulkEmails] = useState("");
+  const [bulkResult, setBulkResult] = useState<BulkImportResult>(null);
   const [saving, setSaving] = useState(false);
 
   async function load() {
@@ -82,6 +95,32 @@ export default function AdminSubscribersPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleBulkImport() {
+    if (!bulkEmails.trim()) return;
+    setSaving(true);
+    setBulkResult(null);
+    try {
+      const res = await fetch("/api/admin/newsletter/subscribers/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emails: bulkEmails, status: "active" }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setBulkResult(json.data);
+        load();
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function closeBulkModal() {
+    setBulkModalOpen(false);
+    setBulkEmails("");
+    setBulkResult(null);
   }
 
   const getStatusBadge = (status: string) => {
@@ -149,6 +188,9 @@ export default function AdminSubscribersPage() {
         <div className="flex items-center gap-3">
           <Button variant="outline" icon={<Download className="w-4 h-4" />}>
             Exporter CSV
+          </Button>
+          <Button variant="outline" icon={<Upload className="w-4 h-4" />} onClick={() => setBulkModalOpen(true)}>
+            Import en masse
           </Button>
           <Button icon={<Plus className="w-4 h-4" />} onClick={() => setCreateModalOpen(true)}>
             Ajouter
@@ -245,6 +287,73 @@ export default function AdminSubscribersPage() {
         variant="danger"
         loading={saving}
       />
+
+      {/* Bulk Import Modal */}
+      <Modal
+        isOpen={bulkModalOpen}
+        onClose={closeBulkModal}
+        title="Ajouter des emails en masse"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Liste d&apos;emails (un par ligne)
+            </label>
+            <textarea
+              className="w-full h-64 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none font-mono text-sm"
+              placeholder={"exemple1@email.com\nexemple2@email.com\nexemple3@email.com"}
+              value={bulkEmails}
+              onChange={(e) => setBulkEmails(e.target.value)}
+              disabled={saving}
+            />
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5" />
+              Les emails invalides ou déjà existants seront ignorés
+            </p>
+          </div>
+
+          {/* Results */}
+          {bulkResult && (
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-800/50">
+              <h4 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                Résultat de l&apos;import
+              </h4>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{bulkResult.imported}</p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300">Importés</p>
+                </div>
+                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{bulkResult.duplicates}</p>
+                  <p className="text-xs text-amber-700 dark:text-amber-300">Doublons</p>
+                </div>
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{bulkResult.invalid}</p>
+                  <p className="text-xs text-red-700 dark:text-red-300">Invalides</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-3 mt-6">
+          <Button variant="ghost" onClick={closeBulkModal}>
+            {bulkResult ? "Fermer" : "Annuler"}
+          </Button>
+          {!bulkResult && (
+            <Button
+              onClick={handleBulkImport}
+              loading={saving}
+              disabled={!bulkEmails.trim()}
+              icon={<Upload className="w-4 h-4" />}
+            >
+              Importer
+            </Button>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }
