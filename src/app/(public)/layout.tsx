@@ -6,6 +6,7 @@ import SiteFooter from "@/components/SiteFooter";
 import type { Metadata } from "next";
 import { getRequestLang } from "@/i18n/server";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
+import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -15,17 +16,76 @@ const nunito = Nunito({
 
 export const revalidate = 60;
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mahajanga-univ.mg";
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings().catch(() => null);
+  const siteName = settings?.site_name || "Université de Mahajanga";
+  const siteDescription = settings?.site_description || "Site officiel de l'Université de Mahajanga - Enseignement supérieur, recherche et formation à Madagascar";
+  const siteKeywords = settings?.site_keywords || "université, mahajanga, madagascar, enseignement supérieur, formation, recherche, faculté, école";
+  const logoUrl = settings?.logo_url || `${BASE_URL}/icons/icon.svg`;
+
   return {
     title: {
-      default: settings?.site_name || "Université de Mahajanga",
-      template: `%s | ${settings?.site_name || "Université de Mahajanga"}`,
+      default: siteName,
+      template: `%s | ${siteName}`,
     },
-    description: settings?.site_description || "Site officiel de l'Université de Mahajanga",
+    description: siteDescription,
+    keywords: siteKeywords.split(",").map((k: string) => k.trim()),
+    authors: [{ name: siteName, url: BASE_URL }],
+    creator: siteName,
+    publisher: siteName,
+    metadataBase: new URL(BASE_URL),
+    alternates: {
+      canonical: "/",
+      languages: {
+        "fr-MG": "/",
+        "en": "/en",
+      },
+    },
     icons: {
       icon: settings?.favicon_url || "/favicon.ico",
+      apple: settings?.favicon_url || "/icons/icon.svg",
     },
+    openGraph: {
+      type: "website",
+      locale: "fr_MG",
+      alternateLocale: ["en_US"],
+      url: BASE_URL,
+      siteName: siteName,
+      title: siteName,
+      description: siteDescription,
+      images: [
+        {
+          url: logoUrl,
+          width: 1200,
+          height: 630,
+          alt: siteName,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: siteName,
+      description: siteDescription,
+      images: [logoUrl],
+      creator: settings?.social?.twitter || "@UnivMahajanga",
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
+    },
+    category: "education",
   };
 }
 
@@ -35,6 +95,8 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <LanguageProvider initialLang={lang}>
+      <OrganizationJsonLd settings={settings} />
+      <WebSiteJsonLd settings={settings} />
       <div className={`min-h-screen flex flex-col ${nunito.className} bg-[#f6f6f8] dark:bg-[#101622] text-[#111318] dark:text-white transition-colors duration-300`}>
         {/* Material Symbols */}
         <link 

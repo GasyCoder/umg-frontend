@@ -1,9 +1,14 @@
 import Container from "@/components/Container";
-import { publicGet } from "@/lib/public-api";
+import { publicGet, getSiteSettings } from "@/lib/public-api";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { EtablissementTabs } from "@/components/public";
+import { EtablissementJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import type { Metadata } from "next";
+import type { SiteSettings } from "@/lib/types";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mahajanga-univ.mg";
 
 type Etablissement = {
   id: number;
@@ -32,16 +37,47 @@ const formations = [
   "Doctorat Sciences Sociales",
 ];
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const etab = await publicGet<{ data: Etablissement }>(`/etablissements/${slug}`, 60);
+    const [res, settings] = await Promise.all([
+      publicGet<{ data: Etablissement }>(`/etablissements/${slug}`, 60),
+      getSiteSettings().catch(() => null),
+    ]);
+    const etab = res.data;
+    const siteName = settings?.site_name || "Université de Mahajanga";
+    const description = etab.description?.replace(/<[^>]*>/g, "").slice(0, 160) || `${etab.name} - Faculté de l'Université de Mahajanga`;
+    const pageUrl = `${BASE_URL}/etablissements/${slug}`;
+    const imageUrl = etab.cover_image?.url || etab.logo?.url || settings?.logo_url;
+
     return {
-      title: `${etab.data.name} - Université de Mahajanga`,
-      description: etab.data.description?.replace(/<[^>]*>/g, "").slice(0, 160) || "",
+      title: etab.name,
+      description,
+      keywords: [etab.name, etab.acronym, "faculté", "école", "université", "mahajanga", "formation", "enseignement supérieur"].filter(Boolean) as string[],
+      alternates: {
+        canonical: pageUrl,
+      },
+      openGraph: {
+        type: "website",
+        locale: "fr_MG",
+        url: pageUrl,
+        siteName,
+        title: `${etab.name}${etab.acronym ? ` (${etab.acronym})` : ""}`,
+        description,
+        images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: etab.name }] : undefined,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: etab.name,
+        description,
+        images: imageUrl ? [imageUrl] : undefined,
+      },
     };
   } catch {
-    return { title: "Établissement - Université de Mahajanga" };
+    return {
+      title: "Établissement",
+      robots: { index: false, follow: true },
+    };
   }
 }
 
@@ -53,9 +89,14 @@ export default async function EtablissementDetailPage({
   const { slug } = await params;
 
   let etab: Etablissement;
+  let settings: SiteSettings | null = null;
   try {
-    const res = await publicGet<{ data: Etablissement }>(`/etablissements/${slug}`, 60);
+    const [res, settingsRes] = await Promise.all([
+      publicGet<{ data: Etablissement }>(`/etablissements/${slug}`, 60),
+      getSiteSettings().catch(() => null),
+    ]);
     etab = res.data;
+    settings = settingsRes;
   } catch {
     notFound();
   }
@@ -65,8 +106,30 @@ export default async function EtablissementDetailPage({
     etab.cover_image?.url ||
     "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80";
 
+  const breadcrumbItems = [
+    { name: "Accueil", url: "/" },
+    { name: "Établissements", url: "/etablissements" },
+    { name: etab.name, url: `/etablissements/${slug}` },
+  ];
+
+  // Convert to Etablissement type for JSON-LD
+  const etablissementForJsonLd = {
+    id: etab.id,
+    name: etab.name,
+    slug: etab.slug,
+    short_name: etab.acronym,
+    description: etab.description,
+    logo_url: etab.logo?.url,
+    address: etab.address,
+    phone: etab.phone,
+    email: etab.email,
+    website: etab.website,
+  };
+
   return (
     <main className="bg-white dark:bg-slate-950">
+      <EtablissementJsonLd etablissement={etablissementForJsonLd} settings={settings} />
+      <BreadcrumbJsonLd items={breadcrumbItems} />
       <section className="relative overflow-hidden bg-slate-900 text-white">
         <img src={cover} alt={etab.name} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/60 to-slate-950/90" />

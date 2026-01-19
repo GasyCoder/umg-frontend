@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Calendar, ArrowRight, Clock, Eye } from 'lucide-react';
+import { Calendar, ArrowRight, Clock, Eye, Star } from 'lucide-react';
 import type { Post } from '@/lib/types';
 
 type NewsCardVariant = 'default' | 'featured' | 'compact' | 'horizontal';
@@ -55,7 +55,8 @@ export default function NewsCard({
               {categoryName}
             </span>
             {isImportant ? (
-              <span className="inline-block rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-white">
+                <Star className="w-3 h-3 fill-current" />
                 Important
               </span>
             ) : null}
@@ -120,7 +121,8 @@ export default function NewsCard({
               {categoryName}
             </span>
             {isImportant ? (
-              <span className="rounded-full bg-indigo-600/10 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:text-indigo-300 dark:bg-indigo-900/30">
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 dark:bg-amber-900/30">
+                <Star className="w-2.5 h-2.5 fill-current" />
                 Important
               </span>
             ) : null}
@@ -172,7 +174,8 @@ export default function NewsCard({
             {categoryName}
           </span>
           {isImportant ? (
-            <span className="rounded-full bg-indigo-600/90 px-3 py-1 text-xs font-semibold text-white">
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/90 px-3 py-1 text-xs font-semibold text-white">
+              <Star className="w-3 h-3 fill-current" />
               Important
             </span>
           ) : null}
@@ -247,7 +250,8 @@ export default function NewsCard({
             {categoryName}
           </span>
           {isImportant ? (
-            <span className="rounded-full bg-indigo-600/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+              <Star className="w-3 h-3 fill-current" />
               Important
             </span>
           ) : null}

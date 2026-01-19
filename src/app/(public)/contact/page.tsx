@@ -3,8 +3,39 @@ import { getSiteSettings } from "@/lib/public-api";
 import { Mail, MapPin, Phone, Clock } from "lucide-react";
 import ContactForm from "./ContactForm";
 import { getServerI18n } from "@/i18n/server";
+import type { Metadata } from "next";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mahajanga-univ.mg";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings().catch(() => null);
+  const siteName = settings?.site_name || "Université de Mahajanga";
+  const pageUrl = `${BASE_URL}/contact`;
+
+  return {
+    title: "Contact",
+    description: "Contactez l'Université de Mahajanga. Adresse, téléphone, email et formulaire de contact pour toutes vos questions et demandes d'information.",
+    keywords: ["contact", "adresse", "téléphone", "email", "université", "mahajanga", "inscription", "admission"],
+    alternates: {
+      canonical: pageUrl,
+    },
+    openGraph: {
+      type: "website",
+      locale: "fr_MG",
+      url: pageUrl,
+      siteName,
+      title: `Contact | ${siteName}`,
+      description: "Contactez l'Université de Mahajanga pour toutes vos questions",
+    },
+    twitter: {
+      card: "summary",
+      title: `Contact | ${siteName}`,
+      description: "Contactez l'Université de Mahajanga pour toutes vos questions",
+    },
+  };
+}
 
 export default async function ContactPage() {
   const { t } = await getServerI18n();

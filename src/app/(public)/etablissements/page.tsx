@@ -1,12 +1,38 @@
-import { publicGet } from "@/lib/public-api";
+import { publicGet, getSiteSettings } from "@/lib/public-api";
+import type { Metadata } from "next";
 import EtablissementsPageClient from "./EtablissementsPageClient";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mahajanga-univ.mg";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Établissements - Université de Mahajanga",
-  description: "Les facultés, écoles et instituts de l'Université de Mahajanga",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings().catch(() => null);
+  const siteName = settings?.site_name || "Université de Mahajanga";
+  const pageUrl = `${BASE_URL}/etablissements`;
+
+  return {
+    title: "Établissements",
+    description: "Découvrez les facultés, écoles et instituts de l'Université de Mahajanga. Formations universitaires, recherche et vie étudiante à Madagascar.",
+    keywords: ["établissements", "facultés", "écoles", "instituts", "formation", "université", "mahajanga", "madagascar"],
+    alternates: {
+      canonical: pageUrl,
+    },
+    openGraph: {
+      type: "website",
+      locale: "fr_MG",
+      url: pageUrl,
+      siteName,
+      title: `Établissements | ${siteName}`,
+      description: "Les facultés, écoles et instituts de l'Université de Mahajanga",
+    },
+    twitter: {
+      card: "summary",
+      title: `Établissements | ${siteName}`,
+      description: "Les facultés, écoles et instituts de l'Université de Mahajanga",
+    },
+  };
+}
 
 type Etablissement = {
   id: number;

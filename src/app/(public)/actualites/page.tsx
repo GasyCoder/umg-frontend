@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
-import { publicGet } from '@/lib/public-api';
+import { publicGet, getSiteSettings } from '@/lib/public-api';
 import type { Post, Category, Tag, Event, Announcement, PaginatedResponse } from '@/lib/types';
+import type { Metadata } from 'next';
 import Container from '@/components/Container';
 import PageLayout from '@/components/layout/PageLayout';
 import { SidebarWidget } from '@/components/layout/SidebarLeft';
@@ -13,7 +14,37 @@ import Link from 'next/link';
 import ArchiveMonthSelect, { type ArchiveMonth } from '@/components/public/ArchiveMonthSelect';
 import { getServerI18n } from '@/i18n/server';
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mahajanga-univ.mg";
+
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings().catch(() => null);
+  const siteName = settings?.site_name || "Université de Mahajanga";
+  const pageUrl = `${BASE_URL}/actualites`;
+
+  return {
+    title: "Actualités",
+    description: "Retrouvez toutes les actualités, événements et annonces de l'Université de Mahajanga. Restez informé des dernières nouvelles de notre établissement.",
+    keywords: ["actualités", "news", "événements", "université", "mahajanga", "madagascar", "enseignement supérieur"],
+    alternates: {
+      canonical: pageUrl,
+    },
+    openGraph: {
+      type: "website",
+      locale: "fr_MG",
+      url: pageUrl,
+      siteName,
+      title: `Actualités | ${siteName}`,
+      description: "Retrouvez toutes les actualités et événements de l'Université de Mahajanga",
+    },
+    twitter: {
+      card: "summary",
+      title: `Actualités | ${siteName}`,
+      description: "Retrouvez toutes les actualités et événements de l'Université de Mahajanga",
+    },
+  };
+}
 
 const NEWS_FETCH_OPTIONS = { cache: "no-store" as const };
 

@@ -2,14 +2,18 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
-import { publicGet } from '@/lib/public-api';
-import type { Post, Event } from '@/lib/types';
+import { publicGet, getSiteSettings } from '@/lib/public-api';
+import type { Post, Event, SiteSettings } from '@/lib/types';
+import type { Metadata } from 'next';
 import Container from '@/components/Container';
 import { Breadcrumb } from '@/components/layout';
 import SidebarRight, { EventsWidget, NewsletterWidget } from '@/components/layout/SidebarRight';
 import { ArticleGallery, ShareButtons, NewsCard, EventList } from '@/components/public';
 import { markdownToHtml } from "@/lib/markdown";
 import PostViewsCount from "@/components/public/posts/PostViewsCount";
+import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mahajanga-univ.mg";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -80,16 +84,17 @@ const heroImage =
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  
+
   const post = await fetchPost(slug);
-  
+
   if (!post) {
     notFound();
   }
 
-  const [relatedPosts, events] = await Promise.all([
+  const [relatedPosts, events, settings] = await Promise.all([
     fetchRelatedPosts(post),
     fetchEvents(),
+    getSiteSettings().catch(() => null) as Promise<SiteSettings | null>,
   ]);
 
   const formattedDate = post.published_at
@@ -112,8 +117,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         : post.content_html
       : "";
 
+  const breadcrumbItems = [
+    { name: "Accueil", url: "/" },
+    { name: post.status === "archived" ? "Archives" : "Actualités", url: post.status === "archived" ? "/actualites/archives" : "/actualites" },
+    { name: post.title, url: `/actualites/${slug}` },
+  ];
+
   return (
     <main className="bg-white dark:bg-slate-950">
+      <ArticleJsonLd post={post} settings={settings} />
+      <BreadcrumbJsonLd items={breadcrumbItems} />
       {post.status === "archived" ? (
         <div className="bg-amber-50 text-amber-900 border-b border-amber-200 dark:bg-amber-900/20 dark:text-amber-100 dark:border-amber-800/50">
           <Container>
@@ -303,23 +316,68 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: ArticlePageProps) {
+export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await fetchPost(slug);
+  const [post, settings] = await Promise.all([
+    fetchPost(slug),
+    getSiteSettings().catch(() => null),
+  ]);
 
   if (!post) {
     return {
       title: 'Article non trouvé',
+      robots: { index: false, follow: false },
     };
   }
 
+  const siteName = settings?.site_name || "Université de Mahajanga";
+  const articleUrl = `${BASE_URL}/actualites/${slug}`;
+  const description = post.excerpt || `Découvrez : ${post.title}`;
+  const imageUrl = post.cover_image?.url || settings?.logo_url || `${BASE_URL}/icons/icon.svg`;
+  const keywords = [
+    ...(post.categories?.map(c => c.name) || []),
+    ...(post.tags?.map(t => t.name) || []),
+    "actualités",
+    "université",
+    "mahajanga",
+  ];
+
   return {
-    title: `${post.title} | Université de Mahajanga`,
-    description: post.excerpt || `Découvrez : ${post.title}`,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt || undefined,
-      images: post.cover_image?.url ? [post.cover_image.url] : undefined,
+    title: post.title,
+    description,
+    keywords,
+    authors: [{ name: siteName }],
+    alternates: {
+      canonical: articleUrl,
     },
+    openGraph: {
+      type: "article",
+      locale: "fr_MG",
+      url: articleUrl,
+      siteName,
+      title: post.title,
+      description,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+      publishedTime: post.published_at || undefined,
+      authors: [siteName],
+      section: post.categories?.[0]?.name || "Actualités",
+      tags: post.tags?.map(t => t.name),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: [imageUrl],
+    },
+    robots: post.status === "archived"
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
   };
 }
