@@ -38,8 +38,16 @@ type BulkImportResult = {
   total_processed: number;
 } | null;
 
+type Stats = {
+  total: number;
+  active: number;
+  unsubscribed: number;
+  pending: number;
+};
+
 export default function AdminSubscribersPage() {
   const [items, setItems] = useState<Subscriber[]>([]);
+  const [stats, setStats] = useState<Stats>({ total: 0, active: 0, unsubscribed: 0, pending: 0 });
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
@@ -49,18 +57,52 @@ export default function AdminSubscribersPage() {
   const [bulkEmails, setBulkEmails] = useState("");
   const [bulkResult, setBulkResult] = useState<BulkImportResult>(null);
   const [saving, setSaving] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/admin/newsletter/subscribers?per_page=100");
+    // Fetch paginated data
+    const res = await fetch(`/api/admin/newsletter/subscribers?per_page=50&page=${page}`);
     const json = await res.json();
     setItems(json?.data ?? []);
+
+    // Get pagination meta
+    const meta = json?.meta;
+    if (meta) {
+      setTotalPages(meta.last_page || 1);
+    }
+
+    // Fetch stats separately (all statuses)
+    const [activeRes, unsubRes, pendingRes] = await Promise.all([
+      fetch("/api/admin/newsletter/subscribers?per_page=1&status=active"),
+      fetch("/api/admin/newsletter/subscribers?per_page=1&status=unsubscribed"),
+      fetch("/api/admin/newsletter/subscribers?per_page=1&status=pending"),
+    ]);
+
+    const [activeJson, unsubJson, pendingJson] = await Promise.all([
+      activeRes.json(),
+      unsubRes.json(),
+      pendingRes.json(),
+    ]);
+
+    const activeCount = activeJson?.meta?.total || 0;
+    const unsubCount = unsubJson?.meta?.total || 0;
+    const pendingCount = pendingJson?.meta?.total || 0;
+
+    setStats({
+      total: activeCount + unsubCount + pendingCount,
+      active: activeCount,
+      unsubscribed: unsubCount,
+      pending: pendingCount,
+    });
+
     setLoading(false);
   }
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [page]);
 
   async function handleCreate() {
     setSaving(true);
@@ -174,16 +216,13 @@ export default function AdminSubscribersPage() {
     },
   ];
 
-  const activeCount = items.filter((i) => i.status === "active").length;
-  const unsubscribedCount = items.filter((i) => i.status === "unsubscribed").length;
-
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Abonnés Newsletter</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-1">Gérez votre liste d'abonnés</p>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">Gérez votre liste d&apos;abonnés</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" icon={<Download className="w-4 h-4" />}>
@@ -199,22 +238,28 @@ export default function AdminSubscribersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <StatCard
           title="Total abonnés"
-          value={items.length}
+          value={stats.total}
           icon={<Mail className="w-6 h-6" />}
           color="indigo"
         />
         <StatCard
           title="Actifs"
-          value={activeCount}
+          value={stats.active}
           icon={<CheckCircle className="w-6 h-6" />}
           color="emerald"
         />
         <StatCard
+          title="En attente"
+          value={stats.pending}
+          icon={<Users className="w-6 h-6" />}
+          color="blue"
+        />
+        <StatCard
           title="Désabonnés"
-          value={unsubscribedCount}
+          value={stats.unsubscribed}
           icon={<XCircle className="w-6 h-6" />}
           color="amber"
         />
@@ -241,6 +286,31 @@ export default function AdminSubscribersPage() {
           </button>
         )}
       />
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Précédent
+          </Button>
+          <span className="px-4 text-sm text-slate-600 dark:text-slate-400">
+            Page {page} sur {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            Suivant
+          </Button>
+        </div>
+      )}
 
       {/* Create Modal */}
       <Modal
