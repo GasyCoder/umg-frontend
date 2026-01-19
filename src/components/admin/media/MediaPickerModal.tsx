@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Search, Upload, Check, Image as ImageIcon, Loader2, Video, FileText } from "lucide-react";
+import { Search, Upload, Check, Image as ImageIcon, Loader2, Video, FileText, Folder } from "lucide-react";
 import { clsx } from "clsx";
 import { compressImageFile } from "@/lib/image-compress";
 
@@ -266,78 +266,86 @@ export function MediaPickerModal({
             </div>
 
             {/* Grid */}
-            <div className="flex-1 overflow-y-auto min-h-0 bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4">
-              {loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
-                </div>
-              ) : medias.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-slate-500">
-                  <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
-                  <p>Aucun média trouvé</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {medias.map((media) => {
-                    const isFolder = media.entry_type === "folder";
-                    const isImage = media.mime?.startsWith("image/");
-                    const isVideo = media.mime?.startsWith("video/");
-                    const isPdf = media.mime === "application/pdf";
-
-                    const handleItemClick = () => {
-                      if (isFolder) {
-                        setCurrentFolderId(media.id);
-                        setBreadcrumbs((prev) => [...prev, { id: media.id, name: getFolderLabel(media) }]);
-                        setSelectedIds([]);
-                        return;
-                      }
-                      handleSelect(media);
-                    };
-
-                    return (
-                      <div
-                        key={media.id}
-                        onClick={handleItemClick}
-                        className={clsx(
-                          "group relative aspect-square rounded-lg overflow-hidden border cursor-pointer transition-all",
-                          selectedIds.includes(media.id)
-                            ? "border-indigo-600 ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-slate-900"
-                            : "border-slate-200 dark:border-slate-700 hover:border-indigo-300"
-                        )}
-                      >
-                        {isFolder ? (
-                          <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center gap-2 text-slate-500 dark:text-slate-300">
-                            <Folder className="w-10 h-10 text-yellow-500" />
-                            <span className="text-[12px] font-semibold uppercase tracking-wider">
-                              {getFolderLabel(media)}
-                            </span>
-                          </div>
-                        ) : isImage ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={media.url}
-                            alt={media.alt || "Media"}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center gap-2 text-slate-500 dark:text-slate-300">
-                            {isVideo ? <Video className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
-                            <span className="text-[10px] font-semibold uppercase tracking-wider">
-                              {isVideo ? "Video" : isPdf ? "PDF" : "Fichier"}
-                            </span>
-                          </div>
-                        )}
-
-                        {selectedIds.includes(media.id) && (
-                          <div className="absolute inset-0 bg-indigo-900/40 flex items-center justify-center">
-                            <Check className="w-8 h-8 text-white drop-shadow-md" />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+            <div className="flex-1 overflow-y-auto min-h-0 bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 relative">
+              {loading && (
+                <div className="absolute inset-0 z-10 grid place-items-center gap-2 text-slate-600 dark:text-slate-300 bg-white/80 dark:bg-black/60">
+                  <Loader2 className="w-10 h-10 animate-spin text-slate-400" />
+                  <p className="text-sm font-medium">Chargement des médias en cours…</p>
                 </div>
               )}
+              <div className={clsx("relative z-0 h-full", loading && "opacity-30 pointer-events-none")}>
+                {loading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
+                  </div>
+                ) : medias.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                    <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
+                    <p>Aucun média trouvé</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {medias.map((media) => {
+                      const isFolder = media.entry_type === "folder";
+                      const isImage = media.mime?.startsWith("image/");
+                      const isVideo = media.mime?.startsWith("video/");
+                      const isPdf = media.mime === "application/pdf";
+
+                      const handleItemClick = () => {
+                        if (isFolder) {
+                          setCurrentFolderId(media.id);
+                          setBreadcrumbs((prev) => [...prev, { id: media.id, name: getFolderLabel(media) }]);
+                          setSelectedIds([]);
+                          return;
+                        }
+                        handleSelect(media);
+                      };
+
+                      return (
+                        <div
+                          key={media.id}
+                          onClick={handleItemClick}
+                          className={clsx(
+                            "group relative aspect-square rounded-lg overflow-hidden border cursor-pointer transition-all",
+                            selectedIds.includes(media.id)
+                              ? "border-indigo-600 ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-slate-900"
+                              : "border-slate-200 dark:border-slate-700 hover:border-indigo-300"
+                          )}
+                        >
+                          {isFolder ? (
+                            <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center gap-2 text-slate-500 dark:text-slate-300">
+                              <Folder className="w-10 h-10 text-yellow-500" />
+                              <span className="text-[12px] font-semibold uppercase tracking-wider">
+                                {getFolderLabel(media)}
+                              </span>
+                            </div>
+                          ) : isImage ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={media.url}
+                              alt={media.alt || "Media"}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center gap-2 text-slate-500 dark:text-slate-300">
+                              {isVideo ? <Video className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">
+                                {isVideo ? "Video" : isPdf ? "PDF" : "Fichier"}
+                              </span>
+                            </div>
+                          )}
+
+                          {selectedIds.includes(media.id) && (
+                            <div className="absolute inset-0 bg-indigo-900/40 flex items-center justify-center">
+                              <Check className="w-8 h-8 text-white drop-shadow-md" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Pagination */}
