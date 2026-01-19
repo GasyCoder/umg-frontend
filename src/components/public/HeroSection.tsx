@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useCallback, useState } from "react";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade, Pagination, Navigation } from "swiper/modules";
@@ -10,6 +11,8 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { ArrowRight, CheckCircle, Globe, ChevronLeft, ChevronRight } from "lucide-react";
 import { useI18n } from "@/components/i18n/LanguageProvider";
+import type { Swiper as SwiperInstance } from "swiper";
+import { isHexColor } from "@/lib/colors";
 
 export interface Slide {
   id: number;
@@ -40,6 +43,9 @@ function buildBgClasses(lightColor?: string, darkColor?: string): string {
   return `bg-${light} dark:bg-${dark}`;
 }
 
+const FALLBACK_LIGHT_COLOR = "#002147";
+const FALLBACK_DARK_COLOR = "#0B1120";
+
 interface HeroSectionProps {
   slides: Slide[];
 }
@@ -66,21 +72,59 @@ export default function HeroSection({ slides }: HeroSectionProps) {
     return slides;
   }, [slides, t]);
 
-  // Get background colors from the first slide (all slides share the same background)
-  const bgClasses = buildBgClasses(
-    verifiedSlides[0]?.bg_color_light,
-    verifiedSlides[0]?.bg_color_dark
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+
+  const heroBackground = useMemo(() => {
+    const safeIndex = verifiedSlides.length
+      ? Math.min(Math.max(activeSlideIndex, 0), verifiedSlides.length - 1)
+      : 0;
+    const slide = verifiedSlides[safeIndex];
+    const lightColor = slide?.bg_color_light;
+    const darkColor = slide?.bg_color_dark;
+    const useCssVars = isHexColor(lightColor) && isHexColor(darkColor);
+
+    if (useCssVars) {
+      return {
+        classes: "bg-[var(--hero-light-color)] dark:bg-[var(--hero-dark-color)]",
+        style: {
+          "--hero-light-color": lightColor || FALLBACK_LIGHT_COLOR,
+          "--hero-dark-color": darkColor || FALLBACK_DARK_COLOR,
+        } as CSSProperties,
+      };
+    }
+
+    return {
+      classes: buildBgClasses(lightColor, darkColor),
+      style: undefined,
+    };
+  }, [verifiedSlides, activeSlideIndex]);
+
+  const handleSlideChange = useCallback(
+    (swiper: SwiperInstance) => {
+      if (verifiedSlides.length === 0) return;
+      const rawIndex = swiper.realIndex ?? swiper.activeIndex ?? 0;
+      const safeIndex = Math.min(
+        Math.max(rawIndex, 0),
+        verifiedSlides.length - 1
+      );
+      setActiveSlideIndex(safeIndex);
+    },
+    [verifiedSlides]
   );
 
   return (
-    <section className={`relative ${bgClasses} overflow-hidden pb-16 pt-8 lg:pt-16 lg:pb-20`}>
+    <section
+      className={`relative ${heroBackground.classes} overflow-hidden pb-16 pt-8 lg:pt-16 lg:pb-20`}
+      style={heroBackground.style}
+    >
       {/* Background Effects */}
       <div className="absolute top-0 right-0 h-[28rem] w-[28rem] sm:h-[42rem] sm:w-[42rem] lg:h-[50rem] lg:w-[50rem] bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-10 relative z-10">
-        <Swiper
-          modules={[Autoplay, EffectFade, Pagination, Navigation]}
-          effect="fade"
+        <div className="relative">
+          <Swiper
+            modules={[Autoplay, EffectFade, Pagination, Navigation]}
+            effect="fade"
           fadeEffect={{ crossFade: true }}
           speed={1000}
           autoplay={{
@@ -89,6 +133,7 @@ export default function HeroSection({ slides }: HeroSectionProps) {
             pauseOnMouseEnter: true
           }}
           loop={verifiedSlides.length > 1}
+          onSlideChange={handleSlideChange}
           className="w-full"
           navigation={{
             prevEl: '.custom-prev',
@@ -101,9 +146,9 @@ export default function HeroSection({ slides }: HeroSectionProps) {
             bulletActiveClass: '!bg-white !w-8'
           }}
         >
-          {verifiedSlides.map((slide) => (
-            <SwiperSlide key={slide.id}>
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {verifiedSlides.map((slide) => (
+              <SwiperSlide key={slide.id}>
+                <div className="grid lg:grid-cols-2 gap-12 items-center">
                 {/* Text Content */}
                 <div className="order-2 lg:order-1 flex flex-col gap-6">
                   {(slide.category || slide.subtitle) && (
@@ -158,20 +203,6 @@ export default function HeroSection({ slides }: HeroSectionProps) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
                   </div>
 
-                  {/* Slider Controls */}
-                  {verifiedSlides.length > 1 && (
-                    <div className="absolute bottom-6 right-6 flex items-center gap-3 z-20">
-                      <div className="custom-dots flex gap-1.5 mr-4"></div>
-
-                      <button type="button" title="Slide précédent" className="custom-prev w-10 h-10 rounded-full bg-white/10 hover:bg-white backdrop-blur-md text-white hover:text-blue-600 flex items-center justify-center transition-all border border-white/20">
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <button type="button" title="Slide suivant" className="custom-next w-10 h-10 rounded-full bg-white text-primary flex items-center justify-center transition-all shadow-lg hover:bg-accent hover:text-white">
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-
                   <div className="absolute bottom-6 left-6 text-white max-w-xs z-20">
                     <p className="font-bold text-sm">{slide.category?.name || t("hero.fallback.category")}</p>
                     <p className="text-xs text-white/70">{slide.subtitle || t("hero.fallback.subtitle")}</p>
@@ -181,7 +212,27 @@ export default function HeroSection({ slides }: HeroSectionProps) {
             </SwiperSlide>
           ))}
         </Swiper>
+        {verifiedSlides.length > 1 && (
+          <div className="absolute bottom-6 right-6 flex items-center gap-3 z-20">
+            <div className="custom-dots flex gap-1.5 mr-4"></div>
+            <button
+              type="button"
+              title="Slide précédent"
+              className="custom-prev nav-button-base bg-white/10 text-white hover:bg-white hover:text-blue-600 dark:text-white"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              title="Slide suivant"
+              className="custom-next nav-button-base bg-white text-primary hover:bg-accent hover:text-white"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
       </div>
-    </section>
+    </div>
+  </section>
   );
 }

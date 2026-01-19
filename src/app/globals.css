@@ -166,6 +166,19 @@ video {
   border-radius: 0.75rem;
 }
 
+/* Swiper navigation buttons styling */
+.nav-button-base {
+  width: 50px;
+  height: 30px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.35);
+  transition: all 0.2s ease-in-out;
+}
+
 .prose table {
   width: 100%;
   border-collapse: collapse;
