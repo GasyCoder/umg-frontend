@@ -6,7 +6,8 @@ export const messagesFr = {
 
   "nav.university": "Université",
   "nav.establishments": "Établissements",
-  "nav.internationalProjects": "Projets Internationale",
+  "nav.research": "Recherche",
+  "nav.research.doctoralSchool": "École doctorale",
   "nav.news": "Actualités",
   "nav.partners": "Partenaires",
   "nav.contact": "Contact",

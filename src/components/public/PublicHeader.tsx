@@ -16,7 +16,8 @@ import {
   FileText,
   Globe,
   Briefcase,
-  FolderKanban
+  FolderKanban,
+  GraduationCap
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { SiteSettings } from "@/lib/types";
@@ -289,8 +290,9 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
     },
     { label: t("nav.establishments"), href: '/etablissements' },
     {
-      label: t("nav.internationalProjects"),
+      label: t("nav.research"),
       children: [
+        { label: t("nav.research.doctoralSchool"), href: '/recherche/ecole-doctorale', icon: GraduationCap },
         { label: t("nav.project.infprev"), href: '/projets-internationale/infprev4frica', icon: FolderKanban },
         { label: t("nav.project.docet"), href: '/projets-internationale/docet4africa', icon: FolderKanban },
       ],

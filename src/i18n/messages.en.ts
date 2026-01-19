@@ -10,7 +10,8 @@ export const messagesEn: Record<TranslationKey, string> = {
 
   "nav.university": "University",
   "nav.establishments": "Schools",
-  "nav.internationalProjects": "International Projects",
+  "nav.research": "Research",
+  "nav.research.doctoralSchool": "Doctoral School",
   "nav.news": "News",
   "nav.partners": "Partners",
   "nav.contact": "Contact",
