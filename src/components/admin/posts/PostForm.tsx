@@ -293,12 +293,18 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
                 helperText="URL de l'article"
               />
 
-              <Input
-                label="Extrait"
-                value={formData.excerpt}
-                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                placeholder="Court résumé..."
-              />
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Extrait
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.excerpt}
+                  onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                  placeholder="Court résumé..."
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
 
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
