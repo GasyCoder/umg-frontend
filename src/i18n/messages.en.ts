@@ -126,7 +126,7 @@ export const messagesEn: Record<TranslationKey, string> = {
   "home.apply.title": "Apply to the university",
   "home.apply.subtitle": "Explore our programs, meet our academic teams, and choose the school that fits you best.",
   "home.apply.cta": "Apply now",
-  "home.apply.secondary": "Our schools",
+  "home.apply.secondary": "Our documents",
 
   "stats.students": "Students",
   "stats.teachers": "Faculty",

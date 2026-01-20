@@ -122,7 +122,7 @@ export const messagesFr = {
   "home.apply.title": "S'inscrire à l'Université",
   "home.apply.subtitle": "Explorez nos filières, rencontrez nos équipes pédagogiques et choisissez l'établissement qui vous correspond.",
   "home.apply.cta": "S'inscrire maintenant",
-  "home.apply.secondary": "Etablissements",
+  "home.apply.secondary": "Nos documents",
 
   "stats.students": "Étudiants",
   "stats.teachers": "Enseignants",
