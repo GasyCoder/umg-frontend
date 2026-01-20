@@ -29,6 +29,7 @@ type Etablissement = {
   cover_image: { url: string } | null;
   is_doctoral: boolean;
   formations: { title: string; level?: string | null; description?: string | null }[];
+  parcours: { title: string; mode?: string | null; description?: string | null }[];
   doctoral_teams: { name: string; focus?: string | null }[];
 };
 
@@ -104,18 +105,21 @@ export default async function EtablissementDetailPage({
 
   const mapQuery = encodeURIComponent(etab.address || "Université de Mahajanga");
 
-  const listLabel = etab.is_doctoral ? "Équipe d'accueil" : "Formations";
-  const doctorates = etab.doctoral_teams || [];
-  const formationsList = etab.formations || [];
-  const listItems = etab.is_doctoral
-    ? doctorates.map((team) => ({
-        title: team.name,
-        subtitle: team.focus || undefined,
-      }))
-    : formationsList.map((item) => {
-        const subtitleParts = [item.level, item.description].filter(Boolean);
-        return { title: item.title, subtitle: subtitleParts.join(" • ") || undefined };
-      });
+  // Format data for tabs
+  const formationsData = (etab.formations || []).map((item) => ({
+    title: item.title,
+    subtitle: [item.level, item.description].filter(Boolean).join(" • ") || undefined,
+  }));
+
+  const parcoursData = (etab.parcours || []).map((item) => ({
+    title: item.title,
+    subtitle: [item.mode, item.description].filter(Boolean).join(" • ") || undefined,
+  }));
+
+  const doctoralTeamsData = (etab.doctoral_teams || []).map((team) => ({
+    title: team.name,
+    subtitle: team.focus || undefined,
+  }));
 
   const breadcrumbItems = [
     { name: "Accueil", url: "/" },
@@ -182,8 +186,10 @@ export default async function EtablissementDetailPage({
             <div className="space-y-8">
               <EtablissementTabs
                 presentation={etab.description}
-                listLabel={listLabel}
-                listItems={listItems}
+                formations={formationsData}
+                parcours={parcoursData}
+                doctoralTeams={doctoralTeamsData}
+                isDoctoral={etab.is_doctoral}
                 contacts={{
                   address: etab.address,
                   phone: etab.phone,
