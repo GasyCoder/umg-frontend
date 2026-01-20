@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Mail, ArrowUpRight, Send, CheckCircle2, AlertCircle } from "lucide-react";
+import { Mail, ArrowUpRight, Send, CheckCircle2, AlertCircle, Folder } from "lucide-react";
 import { useI18n } from "@/components/i18n/LanguageProvider";
 
 export default function NewsletterSection() {
@@ -141,13 +141,14 @@ export default function NewsletterSection() {
 	                  {t("home.apply.cta")}
 	                  <ArrowUpRight className="w-4 h-4" />
 	                </Link>
-	                <Link
-                  href="/documents"
-	                  className="inline-flex items-center gap-2 rounded-xl border border-slate-600 hover:border-slate-500 text-white px-6 py-3 text-sm font-bold hover:bg-slate-700/50 transition-colors"
-	                >
-	                  {t("home.apply.secondary")}
-	                </Link>
-              </div>
+		                <Link
+	                  href="/documents"
+		                  className="inline-flex items-center gap-2 rounded-xl border border-slate-600 hover:border-slate-500 text-white px-6 py-3 text-sm font-bold hover:bg-slate-700/50 transition-colors"
+		                >
+		                  <Folder className="w-4 h-4" />
+		                  {t("home.apply.secondary")}
+		                </Link>
+	              </div>
             </div>
           </div>
         </div>
