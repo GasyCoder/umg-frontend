@@ -94,7 +94,10 @@ export default async function EtablissementDetailPage({
     ]);
     etab = res.data;
     settings = settingsRes;
-    otherEtablissements = allRes.data.filter((e) => e.slug !== slug).slice(0, 4);
+    // Filter by same type (doctoral or not) and exclude current
+    otherEtablissements = allRes.data
+      .filter((e) => e.slug !== slug && e.is_doctoral === res.data.is_doctoral)
+      .slice(0, 4);
   } catch {
     notFound();
   }
@@ -228,8 +231,14 @@ export default async function EtablissementDetailPage({
       {otherEtablissements.length > 0 && (
         <section className="border-t border-slate-200 bg-slate-50 py-16 dark:border-slate-800 dark:bg-slate-900/50">
           <Container>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Voir aussi</h2>
-            <p className="mt-2 text-slate-600 dark:text-slate-400">Découvrez nos autres établissements</p>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+              {etab.is_doctoral ? "Autres écoles doctorales" : "Établissements similaires"}
+            </h2>
+            <p className="mt-2 text-slate-600 dark:text-slate-400">
+              {etab.is_doctoral
+                ? "Découvrez nos autres écoles doctorales"
+                : "Découvrez nos autres facultés et écoles"}
+            </p>
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {otherEtablissements.map((other) => (
                 <Link
