@@ -4,8 +4,6 @@ import PublicHeader from "@/components/public/PublicHeader";
 import ScrollToTop from "@/components/public/ScrollToTop";
 import SiteFooter from "@/components/SiteFooter";
 import type { Metadata } from "next";
-import { getRequestLang } from "@/i18n/server";
-import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 
 const nunito = Nunito({
@@ -90,11 +88,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const lang = await getRequestLang();
   const settings = await getSiteSettings().catch(() => null);
 
   return (
-    <LanguageProvider initialLang={lang}>
+    <>
       <OrganizationJsonLd settings={settings} />
       <WebSiteJsonLd settings={settings} />
       <div className={`min-h-screen flex flex-col ${nunito.className} bg-[#f6f6f8] dark:bg-[#101622] text-[#111318] dark:text-white transition-colors duration-300`}>
@@ -120,6 +117,6 @@ export default async function PublicLayout({ children }: { children: React.React
         <ScrollToTop />
         <SiteFooter settings={settings} />
       </div>
-    </LanguageProvider>
+    </>
   );
 }

@@ -235,4 +235,28 @@ export const messagesEn: Record<TranslationKey, string> = {
   "footer.legal": "Legal notice",
   "footer.privacy": "Privacy policy",
   "footer.sitemap": "Sitemap",
+
+  "cookie.banner.title": "This website uses cookies",
+  "cookie.banner.description":
+    "We use cookies to enhance your browsing experience, analyze site traffic, and understand where our visitors are coming from.",
+  "cookie.banner.acceptAll": "Accept All",
+  "cookie.banner.managePreferences": "Manage Preferences",
+
+  "cookie.preferences.title": "Privacy Preferences",
+  "cookie.preferences.description":
+    "Choose which types of cookies you accept. You can change your preferences at any time.",
+  "cookie.preferences.necessary.title": "Strictly Necessary",
+  "cookie.preferences.necessary.description":
+    "These cookies are essential for the website to function properly. They cannot be disabled.",
+  "cookie.preferences.preferences.title": "Preferences",
+  "cookie.preferences.preferences.description":
+    "These cookies remember your choices and preferences to personalize your experience.",
+  "cookie.preferences.analytics.title": "Analytics",
+  "cookie.preferences.analytics.description":
+    "These cookies help us understand how visitors interact with the website, anonymously.",
+  "cookie.preferences.marketing.title": "Marketing",
+  "cookie.preferences.marketing.description":
+    "These cookies are used to track visitors across websites to display relevant ads.",
+  "cookie.preferences.save": "Save Preferences",
+  "cookie.preferences.acceptAll": "Accept All",
 };

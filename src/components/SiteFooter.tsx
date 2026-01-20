@@ -120,9 +120,9 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
             <div className="pt-8 border-t border-white/10 text-center md:text-left flex flex-col md:flex-row justify-between items-center text-xs text-blue-200/60">
                 <p>© {currentYear} {settings?.site_name || "Université de Mahajanga"}. Tous droits réservés.</p>
                 <div className="flex gap-6 mt-4 md:mt-0">
-                    <Link className="hover:text-blue-400 transition-colors" href="#">{t("footer.legal")}</Link>
-                    <Link className="hover:text-blue-400 transition-colors" href="#">{t("footer.privacy")}</Link>
-                    <Link className="hover:text-blue-400 transition-colors" href="#">{t("footer.sitemap")}</Link>
+                    <Link className="hover:text-blue-400 transition-colors" href="/mentions-legales">{t("footer.legal")}</Link>
+                    <Link className="hover:text-blue-400 transition-colors" href="/politique-de-confidentialite">{t("footer.privacy")}</Link>
+                    <Link className="hover:text-blue-400 transition-colors" href="/plan-du-site">{t("footer.sitemap")}</Link>
                 </div>
             </div>
         </div>

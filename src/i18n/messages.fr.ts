@@ -231,4 +231,28 @@ export const messagesFr = {
   "footer.legal": "Mentions légales",
   "footer.privacy": "Politique de confidentialité",
   "footer.sitemap": "Plan du site",
+
+  "cookie.banner.title": "Ce site utilise des cookies",
+  "cookie.banner.description":
+    "Nous utilisons des cookies pour améliorer votre expérience de navigation, analyser le trafic du site et comprendre d'où viennent nos visiteurs.",
+  "cookie.banner.acceptAll": "Accepter tout",
+  "cookie.banner.managePreferences": "Gérer les préférences",
+
+  "cookie.preferences.title": "Préférences de confidentialité",
+  "cookie.preferences.description":
+    "Choisissez les types de cookies que vous acceptez. Vous pouvez modifier vos préférences à tout moment.",
+  "cookie.preferences.necessary.title": "Strictement nécessaires",
+  "cookie.preferences.necessary.description":
+    "Ces cookies sont essentiels pour que le site fonctionne correctement. Ils ne peuvent pas être désactivés.",
+  "cookie.preferences.preferences.title": "Préférences",
+  "cookie.preferences.preferences.description":
+    "Ces cookies mémorisent vos choix et préférences pour personnaliser votre expérience.",
+  "cookie.preferences.analytics.title": "Analytiques",
+  "cookie.preferences.analytics.description":
+    "Ces cookies nous aident à comprendre comment les visiteurs interagissent avec le site, de manière anonyme.",
+  "cookie.preferences.marketing.title": "Marketing",
+  "cookie.preferences.marketing.description":
+    "Ces cookies sont utilisés pour suivre les visiteurs sur les sites web afin d'afficher des publicités pertinentes.",
+  "cookie.preferences.save": "Enregistrer les préférences",
+  "cookie.preferences.acceptAll": "Accepter tout",
 } as const;
