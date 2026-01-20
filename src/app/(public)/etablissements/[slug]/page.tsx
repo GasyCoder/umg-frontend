@@ -135,8 +135,8 @@ export default async function EtablissementDetailPage({
     <main className="bg-white dark:bg-slate-950">
       <EtablissementJsonLd etablissement={etablissementForJsonLd} settings={settings} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
-      <section className="relative min-h-[320px] md:min-h-[380px] overflow-hidden bg-gray-200 dark:bg-slate-800">
-        <Container className="relative z-10 flex h-full min-h-[320px] md:min-h-[380px] flex-col justify-end pb-10">
+      <section className="relative min-h-[200px] md:min-h-[240px] overflow-hidden bg-gray-200 dark:bg-slate-800">
+        <Container className="relative z-10 flex h-full min-h-[200px] md:min-h-[240px] flex-col justify-end pb-8">
           <Link
             href="/etablissements"
             className="absolute left-4 top-6 inline-flex items-center gap-2 rounded-full bg-slate-900/10 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-900/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
