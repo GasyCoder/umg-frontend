@@ -139,7 +139,7 @@ export default async function EtablissementDetailPage({
       <EtablissementJsonLd etablissement={etablissementForJsonLd} settings={settings} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
       <section className="relative overflow-hidden bg-slate-900 text-white">
-        <img src={cover} alt={etab.name} className="absolute inset-0 h-full w-full object-cover" />
+        <img src={cover} alt={etab.name} className="absolute inset-0 h-full w-full object-cover object-top" />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/60 to-slate-950/90" />
         <Container>
           <div className="relative z-10 py-16 md:py-20">
@@ -174,7 +174,7 @@ export default async function EtablissementDetailPage({
 
       <section className="py-16">
         <Container>
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-8">
               <EtablissementTabs
                 presentation={etab.description}
