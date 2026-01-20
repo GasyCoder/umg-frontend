@@ -7,7 +7,7 @@ const doctoralSchools = [
     name: "École Doctorale Génie du Vivant et Modélisation",
     overview:
       "Former des doctorants capables de modéliser les systèmes vivants, dʼinnover en biotechnologie et de valoriser les ressources naturelles de Madagascar.",
-    domains: "Biologie quantitative · Modélisation mathématique · Biotechnologies",
+    teamFocus: "Équipe Génie du Vivant et Modélisation",
     slug: "edgvm",
   },
   {
@@ -15,7 +15,7 @@ const doctoralSchools = [
     name: "École Doctorale des Écosystèmes Naturels",
     overview:
       "Développer des recherches sur les écosystèmes terrestres et marins, la conservation de la biodiversité et lʼadaptation aux changements climatiques.",
-    domains: "Écologie · Gestion des ressources naturelles · Climatologie",
+    teamFocus: "Équipe Écosystèmes Naturels",
     slug: "eden",
   },
   {
@@ -23,7 +23,7 @@ const doctoralSchools = [
     name: "École Doctorale Nutrition–Environnement–Santé",
     overview:
       "Articuler nutrition durable, santé publique et environnement pour soutenir des politiques et pratiques adaptées au contexte régional.",
-    domains: "Nutrition · Santé publique · Sciences de l'environnement",
+    teamFocus: "Équipe Nutrition–Environnement–Santé",
     slug: "ednes",
   },
 ];
@@ -78,8 +78,8 @@ export default function EcoleDoctoralePage() {
                 <GraduationCap className="w-6 h-6 text-amber-500" />
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{school.overview}</p>
-              <p className="text-xs uppercase text-slate-400 tracking-[0.2em]">Domaines prioritaires</p>
-              <p className="text-sm text-slate-700 dark:text-slate-200">{school.domains}</p>
+              <p className="text-xs uppercase text-slate-400 tracking-[0.2em]">Équipe d'accueil</p>
+              <p className="text-sm text-slate-700 dark:text-slate-200">{school.teamFocus}</p>
               <Link
                 href={`/etablissements/${school.slug}`}
                 target="_blank"

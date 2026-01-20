@@ -39,9 +39,6 @@ type Parcours = {
 type DoctoralTeam = {
   id?: number;
   name: string;
-  discipline: string | null;
-  contact: string | null;
-  email: string | null;
   focus: string | null;
 };
 
@@ -136,7 +133,7 @@ export default function AdminEtablissementsPage() {
     const template: any = {
       formations: { title: "", level: "", description: "" },
       parcours: { title: "", mode: "", description: "" },
-      doctoral_teams: { name: "", discipline: "", contact: "", email: "", focus: "" },
+      doctoral_teams: { name: "", focus: "" },
     };
     setForm({ ...form, [key]: [...(form[key] as any[]), template[key]] });
   };
@@ -714,33 +711,12 @@ export default function AdminEtablissementsPage() {
             <div className="space-y-3">
               {form.doctoral_teams.map((team, index) => (
                 <div key={`doctoral-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3">
                     <Input
                       label="Nom de l'équipe"
                       value={team.name}
                       onChange={(event) => handleListChange("doctoral_teams", index, "name", event.target.value)}
-                      placeholder="Equipe Génie du Vivant"
-                    />
-                    <Input
-                      label="Discipline"
-                      value={team.discipline ?? ""}
-                      onChange={(event) => handleListChange("doctoral_teams", index, "discipline", event.target.value)}
-                      placeholder="Ex: Biotechnologie"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                    <Input
-                      label="Contact"
-                      value={team.contact ?? ""}
-                      onChange={(event) => handleListChange("doctoral_teams", index, "contact", event.target.value)}
-                      placeholder="Nom / téléphone"
-                    />
-                    <Input
-                      label="Email"
-                      type="email"
-                      value={team.email ?? ""}
-                      onChange={(event) => handleListChange("doctoral_teams", index, "email", event.target.value)}
-                      placeholder="coordo@umg.mg"
+                      placeholder="Équipe Génie du Vivant"
                     />
                   </div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-3">
