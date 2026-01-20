@@ -134,6 +134,7 @@ export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionP
               )}
           </div>
         </div>
+        </div>
       </div>
     </section>
   );
