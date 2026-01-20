@@ -174,7 +174,7 @@ export default async function EtablissementDetailPage({
 
       <section className="py-16">
         <Container>
-          <div className="grid gap-10 lg:grid-cols-[3fr_1fr]">
+          <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-8">
               <EtablissementTabs
                 presentation={etab.description}
