@@ -104,13 +104,15 @@ export default async function EtablissementDetailPage({
   const listLabel = etab.is_doctoral ? "Équipe d'accueil" : "Formations";
   const doctorates = etab.doctoral_teams || [];
   const formationsList = etab.formations || [];
-  const listItems = (etab.is_doctoral ? doctorates : formationsList).map((item) => {
-    if (etab.is_doctoral) {
-      return { title: item.name, subtitle: item.focus || undefined };
-    }
-    const subtitleParts = [item.level, item.description].filter(Boolean);
-    return { title: item.title, subtitle: subtitleParts.join(" • ") || undefined };
-  });
+  const listItems = etab.is_doctoral
+    ? doctorates.map((team) => ({
+        title: team.name,
+        subtitle: team.focus || undefined,
+      }))
+    : formationsList.map((item) => {
+        const subtitleParts = [item.level, item.description].filter(Boolean);
+        return { title: item.title, subtitle: subtitleParts.join(" • ") || undefined };
+      });
 
   const breadcrumbItems = [
     { name: "Accueil", url: "/" },
