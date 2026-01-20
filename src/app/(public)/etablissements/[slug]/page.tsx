@@ -85,13 +85,16 @@ export default async function EtablissementDetailPage({
 
   let etab: Etablissement;
   let settings: SiteSettings | null = null;
+  let otherEtablissements: Etablissement[] = [];
   try {
-    const [res, settingsRes] = await Promise.all([
+    const [res, settingsRes, allRes] = await Promise.all([
       publicGet<{ data: Etablissement }>(`/etablissements/${slug}`, 60),
       getSiteSettings().catch(() => null),
+      publicGet<{ data: Etablissement[] }>("/etablissements", 60).catch(() => ({ data: [] })),
     ]);
     etab = res.data;
     settings = settingsRes;
+    otherEtablissements = allRes.data.filter((e) => e.slug !== slug).slice(0, 4);
   } catch {
     notFound();
   }
@@ -221,6 +224,44 @@ export default async function EtablissementDetailPage({
           </div>
         </Container>
       </section>
+
+      {otherEtablissements.length > 0 && (
+        <section className="border-t border-slate-200 bg-slate-50 py-16 dark:border-slate-800 dark:bg-slate-900/50">
+          <Container>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Voir aussi</h2>
+            <p className="mt-2 text-slate-600 dark:text-slate-400">Découvrez nos autres établissements</p>
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {otherEtablissements.map((other) => (
+                <Link
+                  key={other.id}
+                  href={`/etablissements/${other.slug}`}
+                  className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:hover:border-emerald-600"
+                >
+                  <div className="flex items-center gap-4">
+                    {other.logo ? (
+                      <div className="h-14 w-14 shrink-0 rounded-xl bg-slate-100 p-2 dark:bg-slate-700">
+                        <img src={other.logo.url} alt={other.name} className="h-full w-full object-contain" />
+                      </div>
+                    ) : (
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-xl font-bold text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                        {other.acronym?.[0] || other.name[0]}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="truncate font-semibold text-slate-900 group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400">
+                        {other.acronym || other.name}
+                      </h3>
+                      {other.acronym && (
+                        <p className="truncate text-sm text-slate-500 dark:text-slate-400">{other.name}</p>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </Container>
+        </section>
+      )}
     </main>
   );
 }
