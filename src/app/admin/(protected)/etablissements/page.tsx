@@ -22,6 +22,31 @@ import { Input } from "@/components/ui/Input";
 import { SkeletonListPage } from "@/components/ui/Skeleton";
 import { MediaPickerModal } from "@/components/admin/media/MediaPickerModal";
 
+type Formation = {
+  id?: number;
+  title: string;
+  level: string | null;
+  description: string | null;
+};
+
+type Parcours = {
+  id?: number;
+  title: string;
+  mode: string | null;
+  description: string | null;
+};
+
+type DoctoralTeam = {
+  id?: number;
+  name: string;
+  discipline: string | null;
+  contact: string | null;
+  email: string | null;
+  focus: string | null;
+};
+
+type ListKey = "formations" | "parcours" | "doctoral_teams";
+
 type Etablissement = {
   id: number;
   name: string;
@@ -42,6 +67,9 @@ type Etablissement = {
   order: number;
   is_active: boolean;
   created_at: string;
+  formations: Formation[];
+  parcours: Parcours[];
+  doctoral_teams: DoctoralTeam[];
 };
 
 const emptyForm = {
@@ -60,6 +88,9 @@ const emptyForm = {
   logo_id: null as number | null,
   cover_image_id: null as number | null,
   is_active: true,
+  formations: [] as Formation[],
+  parcours: [] as Parcours[],
+  doctoral_teams: [] as DoctoralTeam[],
 };
 
 export default function AdminEtablissementsPage() {
@@ -75,6 +106,46 @@ export default function AdminEtablissementsPage() {
   const [deleting, setDeleting] = useState(false);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [pickingFor, setPickingFor] = useState<"logo" | "cover" | null>(null);
+  const listKeys: Record<ListKey, { label: string; description: string }> = {
+    formations: {
+      label: "Formations",
+      description: "Ajouter les diplômes ou formations proposées par cet établissement.",
+    },
+    parcours: {
+      label: "Parcours",
+      description: "Précisez les parcours ou spécialités et leurs modes (présentiel, distanciel).",
+    },
+    doctoral_teams: {
+      label: "Équipes doctorales",
+      description: "Listez les équipes d’accueil (doctoriales) liées à cet établissement.",
+    },
+  };
+
+  const handleListChange = (
+    key: ListKey,
+    index: number,
+    field: keyof Formation | keyof Parcours | keyof DoctoralTeam,
+    value: string | number | null
+  ) => {
+    const updated = [...(form[key] as any[])];
+    updated[index] = { ...updated[index], [field]: value };
+    setForm({ ...form, [key]: updated });
+  };
+
+  const handleAddListItem = (key: ListKey) => {
+    const template: any = {
+      formations: { title: "", level: "", description: "" },
+      parcours: { title: "", mode: "", description: "" },
+      doctoral_teams: { name: "", discipline: "", contact: "", email: "", focus: "" },
+    };
+    setForm({ ...form, [key]: [...(form[key] as any[]), template[key]] });
+  };
+
+  const handleRemoveListItem = (key: ListKey, index: number) => {
+    const updated = [...(form[key] as any[])];
+    updated.splice(index, 1);
+    setForm({ ...form, [key]: updated });
+  };
 
   async function load() {
     setLoading(true);
@@ -121,6 +192,9 @@ export default function AdminEtablissementsPage() {
       logo_id: item.logo?.id || null,
       cover_image_id: item.cover_image?.id || null,
       is_active: item.is_active,
+      formations: item.formations ?? [],
+      parcours: item.parcours ?? [],
+      doctoral_teams: item.doctoral_teams ?? [],
     });
     setLogoPreviewUrl(item.logo?.url || null);
     setCoverPreviewUrl(item.cover_image?.url || null);
@@ -518,6 +592,175 @@ export default function AdminEtablissementsPage() {
             <label htmlFor="is_active" className="text-sm text-slate-700 dark:text-slate-300">
               Établissement actif (visible sur le site public)
             </label>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Formations</p>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Diplômes & licences</h4>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => handleAddListItem("formations")}>
+                + Ajouter
+              </Button>
+            </div>
+            {form.formations.length === 0 && (
+              <p className="text-sm text-slate-500 dark:text-slate-400">Aucune formation définie pour le moment.</p>
+            )}
+            <div className="space-y-3">
+              {form.formations.map((formation, index) => (
+                <div key={`formation-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                  <div className="flex flex-col gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Input
+                        label="Titre"
+                        value={formation.title}
+                        onChange={(event) => handleListChange("formations", index, "title", event.target.value)}
+                        placeholder="Ex: Master en biologie"
+                      />
+                      <Input
+                        label="Niveau"
+                        value={formation.level ?? ""}
+                        onChange={(event) => handleListChange("formations", index, "level", event.target.value)}
+                        placeholder="Licence, Master, Doctorat..."
+                      />
+                    </div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Description
+                    </label>
+                    <textarea
+                      value={formation.description ?? ""}
+                      onChange={(event) => handleListChange("formations", index, "description", event.target.value)}
+                      rows={2}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      placeholder="Courte description de la formation"
+                    />
+                    <div className="flex justify-end">
+                      <Button variant="ghost" size="sm" onClick={() => handleRemoveListItem("formations", index)}>
+                        Supprimer
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Parcours</p>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Spécialités & modes</h4>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => handleAddListItem("parcours")}>
+                + Ajouter
+              </Button>
+            </div>
+            {form.parcours.length === 0 && (
+              <p className="text-sm text-slate-500 dark:text-slate-400">Aucun parcours renseigné.</p>
+            )}
+            <div className="space-y-3">
+              {form.parcours.map((parcours, index) => (
+                <div key={`parcours-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Input
+                      label="Titre"
+                      value={parcours.title}
+                      onChange={(event) => handleListChange("parcours", index, "title", event.target.value)}
+                      placeholder="Ex: Parcours architecture durable"
+                    />
+                    <Input
+                      label="Mode"
+                      value={parcours.mode ?? ""}
+                      onChange={(event) => handleListChange("parcours", index, "mode", event.target.value)}
+                      placeholder="Présentiel | Distanciel | Mixte"
+                    />
+                  </div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-3">
+                    Description
+                  </label>
+                  <textarea
+                    value={parcours.description ?? ""}
+                    onChange={(event) => handleListChange("parcours", index, "description", event.target.value)}
+                    rows={2}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    placeholder="Détaillez les spécificités du parcours"
+                  />
+                  <div className="flex justify-end mt-2">
+                    <Button variant="ghost" size="sm" onClick={() => handleRemoveListItem("parcours", index)}>
+                      Supprimer
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Équipes doctorales</p>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Accueil des doctorants</h4>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => handleAddListItem("doctoral_teams")}>
+                + Ajouter
+              </Button>
+            </div>
+            {form.doctoral_teams.length === 0 && (
+              <p className="text-sm text-slate-500 dark:text-slate-400">Les écoles doctorales peuvent être liées ici.</p>
+            )}
+            <div className="space-y-3">
+              {form.doctoral_teams.map((team, index) => (
+                <div key={`doctoral-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Input
+                      label="Nom de l'équipe"
+                      value={team.name}
+                      onChange={(event) => handleListChange("doctoral_teams", index, "name", event.target.value)}
+                      placeholder="Equipe Génie du Vivant"
+                    />
+                    <Input
+                      label="Discipline"
+                      value={team.discipline ?? ""}
+                      onChange={(event) => handleListChange("doctoral_teams", index, "discipline", event.target.value)}
+                      placeholder="Ex: Biotechnologie"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                    <Input
+                      label="Contact"
+                      value={team.contact ?? ""}
+                      onChange={(event) => handleListChange("doctoral_teams", index, "contact", event.target.value)}
+                      placeholder="Nom / téléphone"
+                    />
+                    <Input
+                      label="Email"
+                      type="email"
+                      value={team.email ?? ""}
+                      onChange={(event) => handleListChange("doctoral_teams", index, "email", event.target.value)}
+                      placeholder="coordo@umg.mg"
+                    />
+                  </div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-3">
+                    Focus de recherche
+                  </label>
+                  <textarea
+                    value={team.focus ?? ""}
+                    onChange={(event) => handleListChange("doctoral_teams", index, "focus", event.target.value)}
+                    rows={2}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    placeholder="Décrivez brièvement les axes de l'équipe"
+                  />
+                  <div className="flex justify-end mt-2">
+                    <Button variant="ghost" size="sm" onClick={() => handleRemoveListItem("doctoral_teams", index)}>
+                      Supprimer
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
