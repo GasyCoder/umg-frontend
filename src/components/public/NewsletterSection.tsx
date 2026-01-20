@@ -135,7 +135,7 @@ export default function NewsletterSection() {
 
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/universite"
+                  href="/documents"
                   className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-3 text-sm font-bold transition-colors shadow-lg"
                 >
                   {t("home.apply.cta")}
