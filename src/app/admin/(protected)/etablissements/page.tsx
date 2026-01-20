@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Plus,
+  Minus,
   Pencil,
   Trash2,
   Building2,
@@ -12,6 +13,8 @@ import {
   Mail,
   Globe,
   Search,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
@@ -103,6 +106,16 @@ export default function AdminEtablissementsPage() {
   const [deleting, setDeleting] = useState(false);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [pickingFor, setPickingFor] = useState<"logo" | "cover" | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Record<ListKey, boolean>>({
+    formations: false,
+    parcours: false,
+    doctoral_teams: false,
+  });
+
+  const toggleSection = (key: ListKey) => {
+    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const listKeys: Record<ListKey, { label: string; description: string }> = {
     formations: {
       label: "Formations",
@@ -592,151 +605,208 @@ export default function AdminEtablissementsPage() {
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Formations</p>
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Diplômes & licences</h4>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => handleAddListItem("formations")}>
-                + Ajouter
-              </Button>
-            </div>
-            {form.formations.length === 0 && (
-              <p className="text-sm text-slate-500 dark:text-slate-400">Aucune formation définie pour le moment.</p>
-            )}
-            <div className="space-y-3">
-              {form.formations.map((formation, index) => (
-                <div key={`formation-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-                  <div className="flex flex-col gap-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <Input
-                        label="Titre"
-                        value={formation.title}
-                        onChange={(event) => handleListChange("formations", index, "title", event.target.value)}
-                        placeholder="Ex: Master en biologie"
-                      />
-                      <Input
-                        label="Niveau"
-                        value={formation.level ?? ""}
-                        onChange={(event) => handleListChange("formations", index, "level", event.target.value)}
-                        placeholder="Licence, Master, Doctorat..."
-                      />
-                    </div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Description
-                    </label>
-                    <textarea
-                      value={formation.description ?? ""}
-                      onChange={(event) => handleListChange("formations", index, "description", event.target.value)}
-                      rows={2}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                      placeholder="Courte description de la formation"
-                    />
-                    <div className="flex justify-end">
-                      <Button variant="ghost" size="sm" onClick={() => handleRemoveListItem("formations", index)}>
-                        Supprimer
-                      </Button>
-                    </div>
-                  </div>
+        <div className="space-y-4 mt-6">
+          {/* Formations Section */}
+          <div className="rounded-2xl border border-slate-200 bg-white/60 dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => toggleSection("formations")}
+              className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${expandedSections.formations ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"}`}>
+                  {expandedSections.formations ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                 </div>
-              ))}
-            </div>
+                <div className="text-left">
+                  <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Formations</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Diplômes & licences</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                {form.formations.length}
+              </span>
+            </button>
+            {expandedSections.formations && (
+              <div className="p-4 pt-0 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex justify-end mb-3">
+                  <Button variant="outline" size="sm" onClick={() => handleAddListItem("formations")}>
+                    <Plus className="w-3 h-3 mr-1" /> Ajouter
+                  </Button>
+                </div>
+                {form.formations.length === 0 && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Aucune formation définie pour le moment.</p>
+                )}
+                <div className="space-y-3">
+                  {form.formations.map((formation, index) => (
+                    <div key={`formation-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                      <div className="flex flex-col gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <Input
+                            label="Titre"
+                            value={formation.title}
+                            onChange={(event) => handleListChange("formations", index, "title", event.target.value)}
+                            placeholder="Ex: Master en biologie"
+                          />
+                          <Input
+                            label="Niveau"
+                            value={formation.level ?? ""}
+                            onChange={(event) => handleListChange("formations", index, "level", event.target.value)}
+                            placeholder="Licence, Master, Doctorat..."
+                          />
+                        </div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Description
+                        </label>
+                        <textarea
+                          value={formation.description ?? ""}
+                          onChange={(event) => handleListChange("formations", index, "description", event.target.value)}
+                          rows={2}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                          placeholder="Courte description de la formation"
+                        />
+                        <div className="flex justify-end">
+                          <Button variant="ghost" size="sm" onClick={() => handleRemoveListItem("formations", index)}>
+                            Supprimer
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Parcours</p>
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Spécialités & modes</h4>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => handleAddListItem("parcours")}>
-                + Ajouter
-              </Button>
-            </div>
-            {form.parcours.length === 0 && (
-              <p className="text-sm text-slate-500 dark:text-slate-400">Aucun parcours renseigné.</p>
-            )}
-            <div className="space-y-3">
-              {form.parcours.map((parcours, index) => (
-                <div key={`parcours-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Input
-                      label="Titre"
-                      value={parcours.title}
-                      onChange={(event) => handleListChange("parcours", index, "title", event.target.value)}
-                      placeholder="Ex: Parcours architecture durable"
-                    />
-                    <Input
-                      label="Mode"
-                      value={parcours.mode ?? ""}
-                      onChange={(event) => handleListChange("parcours", index, "mode", event.target.value)}
-                      placeholder="Présentiel | Distanciel | Mixte"
-                    />
-                  </div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-3">
-                    Description
-                  </label>
-                  <textarea
-                    value={parcours.description ?? ""}
-                    onChange={(event) => handleListChange("parcours", index, "description", event.target.value)}
-                    rows={2}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                    placeholder="Détaillez les spécificités du parcours"
-                  />
-                  <div className="flex justify-end mt-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleRemoveListItem("parcours", index)}>
-                      Supprimer
-                    </Button>
-                  </div>
+          {/* Parcours Section */}
+          <div className="rounded-2xl border border-slate-200 bg-white/60 dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => toggleSection("parcours")}
+              className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${expandedSections.parcours ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"}`}>
+                  {expandedSections.parcours ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                 </div>
-              ))}
-            </div>
+                <div className="text-left">
+                  <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Parcours</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Spécialités & modes</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                {form.parcours.length}
+              </span>
+            </button>
+            {expandedSections.parcours && (
+              <div className="p-4 pt-0 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex justify-end mb-3">
+                  <Button variant="outline" size="sm" onClick={() => handleAddListItem("parcours")}>
+                    <Plus className="w-3 h-3 mr-1" /> Ajouter
+                  </Button>
+                </div>
+                {form.parcours.length === 0 && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Aucun parcours renseigné.</p>
+                )}
+                <div className="space-y-3">
+                  {form.parcours.map((parcours, index) => (
+                    <div key={`parcours-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <Input
+                          label="Titre"
+                          value={parcours.title}
+                          onChange={(event) => handleListChange("parcours", index, "title", event.target.value)}
+                          placeholder="Ex: Parcours architecture durable"
+                        />
+                        <Input
+                          label="Mode"
+                          value={parcours.mode ?? ""}
+                          onChange={(event) => handleListChange("parcours", index, "mode", event.target.value)}
+                          placeholder="Présentiel | Distanciel | Mixte"
+                        />
+                      </div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-3">
+                        Description
+                      </label>
+                      <textarea
+                        value={parcours.description ?? ""}
+                        onChange={(event) => handleListChange("parcours", index, "description", event.target.value)}
+                        rows={2}
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        placeholder="Détaillez les spécificités du parcours"
+                      />
+                      <div className="flex justify-end mt-2">
+                        <Button variant="ghost" size="sm" onClick={() => handleRemoveListItem("parcours", index)}>
+                          Supprimer
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Équipes doctorales</p>
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Accueil des doctorants</h4>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => handleAddListItem("doctoral_teams")}>
-                + Ajouter
-              </Button>
-            </div>
-            {form.doctoral_teams.length === 0 && (
-              <p className="text-sm text-slate-500 dark:text-slate-400">Les écoles doctorales peuvent être liées ici.</p>
-            )}
-            <div className="space-y-3">
-              {form.doctoral_teams.map((team, index) => (
-                <div key={`doctoral-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-                  <div className="grid grid-cols-1 gap-3">
-                    <Input
-                      label="Nom de l'équipe"
-                      value={team.name}
-                      onChange={(event) => handleListChange("doctoral_teams", index, "name", event.target.value)}
-                      placeholder="Équipe Génie du Vivant"
-                    />
-                  </div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-3">
-                    Focus de recherche
-                  </label>
-                  <textarea
-                    value={team.focus ?? ""}
-                    onChange={(event) => handleListChange("doctoral_teams", index, "focus", event.target.value)}
-                    rows={2}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                    placeholder="Décrivez brièvement les axes de l'équipe"
-                  />
-                  <div className="flex justify-end mt-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleRemoveListItem("doctoral_teams", index)}>
-                      Supprimer
-                    </Button>
-                  </div>
+          {/* Équipes doctorales Section */}
+          <div className="rounded-2xl border border-slate-200 bg-white/60 dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => toggleSection("doctoral_teams")}
+              className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${expandedSections.doctoral_teams ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"}`}>
+                  {expandedSections.doctoral_teams ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                 </div>
-              ))}
-            </div>
+                <div className="text-left">
+                  <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Équipes doctorales</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Accueil des doctorants</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                {form.doctoral_teams.length}
+              </span>
+            </button>
+            {expandedSections.doctoral_teams && (
+              <div className="p-4 pt-0 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex justify-end mb-3">
+                  <Button variant="outline" size="sm" onClick={() => handleAddListItem("doctoral_teams")}>
+                    <Plus className="w-3 h-3 mr-1" /> Ajouter
+                  </Button>
+                </div>
+                {form.doctoral_teams.length === 0 && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Les écoles doctorales peuvent être liées ici.</p>
+                )}
+                <div className="space-y-3">
+                  {form.doctoral_teams.map((team, index) => (
+                    <div key={`doctoral-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                      <div className="grid grid-cols-1 gap-3">
+                        <Input
+                          label="Nom de l'équipe"
+                          value={team.name}
+                          onChange={(event) => handleListChange("doctoral_teams", index, "name", event.target.value)}
+                          placeholder="Équipe Génie du Vivant"
+                        />
+                      </div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-3">
+                        Focus de recherche
+                      </label>
+                      <textarea
+                        value={team.focus ?? ""}
+                        onChange={(event) => handleListChange("doctoral_teams", index, "focus", event.target.value)}
+                        rows={2}
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        placeholder="Décrivez brièvement les axes de l'équipe"
+                      />
+                      <div className="flex justify-end mt-2">
+                        <Button variant="ghost" size="sm" onClick={() => handleRemoveListItem("doctoral_teams", index)}>
+                          Supprimer
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
