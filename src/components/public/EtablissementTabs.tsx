@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MapPin, Phone, Mail, Globe } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 type ListItem = {
   title: string;
@@ -54,7 +55,7 @@ export default function EtablissementTabs({
         {active === "Présentation" && (
           <div className="prose prose-slate dark:prose-invert max-w-none">
             {presentation ? (
-              <div dangerouslySetInnerHTML={{ __html: presentation }} />
+              <ReactMarkdown>{presentation}</ReactMarkdown>
             ) : (
               <p>Présentation en cours de rédaction.</p>
             )}
