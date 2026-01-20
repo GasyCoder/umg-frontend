@@ -9,6 +9,17 @@ type AboutSectionProps = {
   videoPosterUrl?: string | null;
 };
 
+// Optimize poster image URL through Next.js Image API for WebP conversion
+function getOptimizedPosterUrl(url: string | null | undefined): string {
+  const defaultPoster = "https://lh3.googleusercontent.com/aida-public/AB6AXuDcpjwCYNIEJfBuhZ1IHDeBOHrR4PVVxEDu_xqJVpLCisZNz5JjtFVICSnSujXPhiUJ6EVumFAE4I6jfhzazjnR_Y-9PzjLWcjF7e9_f1ysmQAhRjSqVM__i9m03z70PIfh5xJIQ33pbumIqE17sm3vvjaPw1MdxHC9RwwmI4kLvditZqu5mzrpUfvVcGIeQyTyEe830Ao7OuMZNARkWqb1B6mupfZnwtC5oTZm9gqGYvA_Ehq64Yka-Pqvguf1SK3cRwqaamk4xPo";
+  
+  const posterUrl = url || defaultPoster;
+  
+  // Use Next.js Image optimization API - converts to WebP, quality 75, width 1280
+  // This reduces the 2.7MB PNG poster to ~50-100KB WebP
+  return `/_next/image?url=${encodeURIComponent(posterUrl)}&w=1280&q=75`;
+}
+
 export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionProps) {
   const { t } = useI18n();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -98,10 +109,7 @@ export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionP
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
                 onEnded={() => setIsPlaying(false)}
-                poster={
-                  videoPosterUrl ||
-                  "https://lh3.googleusercontent.com/aida-public/AB6AXuDcpjwCYNIEJfBuhZ1IHDeBOHrR4PVVxEDu_xqJVpLCisZNz5JjtFVICSnSujXPhiUJ6EVumFAE4I6jfhzazjnR_Y-9PzjLWcjF7e9_f1ysmQAhRjSqVM__i9m03z70PIfh5xJIQ33pbumIqE17sm3vvjaPw1MdxHC9RwwmI4kLvditZqu5mzrpUfvVcGIeQyTyEe830Ao7OuMZNARkWqb1B6mupfZnwtC5oTZm9gqGYvA_Ehq64Yka-Pqvguf1SK3cRwqaamk4xPo"
-                }
+                poster={getOptimizedPosterUrl(videoPosterUrl)}
               >
                 <source src={videoUrl || "/videos/umg-about.mp4"} type="video/mp4" />
                 {t("about.video.unsupported")}
