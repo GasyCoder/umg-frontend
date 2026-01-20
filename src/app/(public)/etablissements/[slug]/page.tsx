@@ -97,9 +97,6 @@ export default async function EtablissementDetailPage({
   }
 
   const mapQuery = encodeURIComponent(etab.address || "Université de Mahajanga");
-  const cover =
-    etab.cover_image?.url ||
-    "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80";
 
   const listLabel = etab.is_doctoral ? "Équipe d'accueil" : "Formations";
   const doctorates = etab.doctoral_teams || [];
@@ -138,43 +135,34 @@ export default async function EtablissementDetailPage({
     <main className="bg-white dark:bg-slate-950">
       <EtablissementJsonLd etablissement={etablissementForJsonLd} settings={settings} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
-      <section className="relative min-h-[320px] md:min-h-[380px] overflow-hidden bg-slate-900">
-        <div className="absolute inset-0">
-          <img
-            src={cover}
-            alt=""
-            className="h-full w-full object-cover object-bottom"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-transparent" />
-        </div>
+      <section className="relative min-h-[320px] md:min-h-[380px] overflow-hidden bg-gray-200 dark:bg-slate-800">
         <Container className="relative z-10 flex h-full min-h-[320px] md:min-h-[380px] flex-col justify-end pb-10">
           <Link
             href="/etablissements"
-            className="absolute left-4 top-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-sm transition hover:bg-white/20"
+            className="absolute left-4 top-6 inline-flex items-center gap-2 rounded-full bg-slate-900/10 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-900/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour
           </Link>
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:gap-8">
             {etab.logo && (
-              <div className="h-24 w-24 shrink-0 rounded-2xl border-2 border-white/20 bg-white p-2 shadow-2xl md:h-28 md:w-28">
+              <div className="h-24 w-24 shrink-0 rounded-2xl border-2 border-slate-300 bg-white p-2 shadow-xl dark:border-slate-600 md:h-28 md:w-28">
                 <img src={etab.logo.url} alt={etab.name} className="h-full w-full object-contain" />
               </div>
             )}
             <div className="space-y-3">
-              <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
                 {etab.name}
                 {etab.acronym && (
-                  <span className="ml-3 inline-block rounded-lg bg-emerald-500/20 px-3 py-1 text-lg font-semibold text-emerald-300 md:text-xl">
+                  <span className="ml-3 inline-block rounded-lg bg-emerald-600/20 px-3 py-1 text-lg font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 md:text-xl">
                     {etab.acronym}
                   </span>
                 )}
               </h1>
               {etab.director_name && (
-                <p className="text-base text-slate-300 md:text-lg">
-                  <span className="text-slate-400">{etab.director_title}:</span>{" "}
-                  <span className="font-medium text-white">{etab.director_name}</span>
+                <p className="text-base text-slate-600 dark:text-slate-300 md:text-lg">
+                  <span className="text-slate-500 dark:text-slate-400">{etab.director_title}:</span>{" "}
+                  <span className="font-medium text-slate-800 dark:text-white">{etab.director_name}</span>
                 </p>
               )}
             </div>
