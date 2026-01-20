@@ -216,61 +216,49 @@ export default async function EtablissementDetailPage({
                 <p className="mt-2 text-sm text-emerald-100">
                   Notre équipe vous répond pour toute question sur les formations et admissions.
                 </p>
-                <button
-                  type="button"
-                  className="mt-4 w-full rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white hover:bg-white/20"
+                <Link
+                  href="/contact"
+                  className="mt-4 block w-full rounded-2xl bg-white/10 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-white/20"
                 >
                   Prendre rendez-vous
-                </button>
+                </Link>
               </div>
+
+              {otherEtablissements.length > 0 && (
+                <div className="rounded-3xl border border-slate-200/70 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    {etab.is_doctoral ? "Autres écoles doctorales" : "Voir aussi"}
+                  </h3>
+                  <div className="mt-4 space-y-3">
+                    {otherEtablissements.map((other) => (
+                      <Link
+                        key={other.id}
+                        href={`/etablissements/${other.slug}`}
+                        className="group flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 transition hover:border-emerald-200 hover:bg-emerald-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-emerald-700 dark:hover:bg-slate-700"
+                      >
+                        {other.logo ? (
+                          <div className="h-10 w-10 shrink-0 rounded-lg bg-white p-1.5 dark:bg-slate-600">
+                            <img src={other.logo.url} alt={other.name} className="h-full w-full object-contain" />
+                          </div>
+                        ) : (
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-sm font-bold text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                            {other.acronym?.[0] || other.name[0]}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-slate-900 group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400">
+                            {other.acronym || other.name}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </Container>
       </section>
-
-      {otherEtablissements.length > 0 && (
-        <section className="border-t border-slate-200 bg-slate-50 py-16 dark:border-slate-800 dark:bg-slate-900/50">
-          <Container>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {etab.is_doctoral ? "Autres écoles doctorales" : "Établissements similaires"}
-            </h2>
-            <p className="mt-2 text-slate-600 dark:text-slate-400">
-              {etab.is_doctoral
-                ? "Découvrez nos autres écoles doctorales"
-                : "Découvrez nos autres facultés et écoles"}
-            </p>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {otherEtablissements.map((other) => (
-                <Link
-                  key={other.id}
-                  href={`/etablissements/${other.slug}`}
-                  className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:hover:border-emerald-600"
-                >
-                  <div className="flex items-center gap-4">
-                    {other.logo ? (
-                      <div className="h-14 w-14 shrink-0 rounded-xl bg-slate-100 p-2 dark:bg-slate-700">
-                        <img src={other.logo.url} alt={other.name} className="h-full w-full object-contain" />
-                      </div>
-                    ) : (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-xl font-bold text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
-                        {other.acronym?.[0] || other.name[0]}
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <h3 className="truncate font-semibold text-slate-900 group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400">
-                        {other.acronym || other.name}
-                      </h3>
-                      {other.acronym && (
-                        <p className="truncate text-sm text-slate-500 dark:text-slate-400">{other.name}</p>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </Container>
-        </section>
-      )}
     </main>
   );
 }
