@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Save, Upload, X, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Save, Image as ImageIcon, X } from "lucide-react";
 import SlideColorField from "@/components/admin/slides/SlideColorField";
+import { MediaPickerModal, Media } from "@/components/admin/media/MediaPickerModal";
+import { Button } from "@/components/ui/Button";
 
 interface Post {
   id: number;
@@ -27,8 +29,8 @@ export default function CreateSlidePage() {
   const [saving, setSaving] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<Media | null>(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -42,6 +44,7 @@ export default function CreateSlidePage() {
     bg_color_dark: DEFAULT_BG_DARK,
     order: "0",
     is_active: true,
+    image_id: null as number | null,
   });
 
   useEffect(() => {
@@ -67,21 +70,17 @@ export default function CreateSlidePage() {
     fetchData();
   }, []);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleSelectImage = (medias: Media[]) => {
+    if (medias.length > 0) {
+      setSelectedImage(medias[0]);
+      setForm({ ...form, image_id: medias[0].id });
     }
+    setShowMediaPicker(false);
   };
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setForm({ ...form, image_id: null });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,24 +88,26 @@ export default function CreateSlidePage() {
     setSaving(true);
 
     try {
-      const formData = new FormData();
-      formData.append("title", form.title);
-      if (form.subtitle) formData.append("subtitle", form.subtitle);
-      if (form.description) formData.append("description", form.description);
-      if (form.cta_text) formData.append("cta_text", form.cta_text);
-      if (form.cta_url) formData.append("cta_url", form.cta_url);
-      if (form.post_id) formData.append("post_id", form.post_id);
-      if (form.category_id) formData.append("category_id", form.category_id);
-      formData.append("bg_color_light", form.bg_color_light);
-      formData.append("bg_color_dark", form.bg_color_dark);
-      formData.append("order", form.order);
-      formData.append("is_active", form.is_active ? "1" : "0");
-      if (imageFile) formData.append("image", imageFile);
+      const payload = {
+        title: form.title,
+        subtitle: form.subtitle || null,
+        description: form.description || null,
+        cta_text: form.cta_text || null,
+        cta_url: form.cta_url || null,
+        post_id: form.post_id ? parseInt(form.post_id) : null,
+        category_id: form.category_id ? parseInt(form.category_id) : null,
+        bg_color_light: form.bg_color_light,
+        bg_color_dark: form.bg_color_dark,
+        order: parseInt(form.order),
+        is_active: form.is_active,
+        image_id: form.image_id,
+      };
 
       const res = await fetch("/api/admin/slides", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: formData,
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
@@ -146,43 +147,53 @@ export default function CreateSlidePage() {
       <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Image Upload */}
+          {/* Image Selection */}
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">
               Image du slide
             </h3>
-            {imagePreview ? (
-              <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
+            {selectedImage ? (
+              <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 group">
                 <Image
-                  src={imagePreview}
+                  src={selectedImage.url}
                   alt="Preview"
                   fill
                   className="object-cover"
+                  unoptimized
                 />
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowMediaPicker(true)}
+                    className="bg-white/90 hover:bg-white"
+                  >
+                    Changer
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    onClick={handleRemoveImage}
+                  >
+                    <X className="w-4 h-4 mr-1" /> Retirer
+                  </Button>
+                </div>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center aspect-[16/9] border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 transition-colors">
-                <Upload className="w-10 h-10 text-slate-400 mb-2" />
+              <div
+                onClick={() => setShowMediaPicker(true)}
+                className="flex flex-col items-center justify-center aspect-[16/9] border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+              >
+                <ImageIcon className="w-10 h-10 text-slate-400 mb-2" />
                 <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Cliquez pour télécharger
+                  Choisir depuis la médiathèque
                 </span>
                 <span className="text-xs text-slate-400 mt-1">
-                  PNG, JPG jusqu&apos;à 5MB (1920x1080 recommandé)
+                  1920x1080 recommandé
                 </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
+              </div>
             )}
           </div>
 
@@ -366,6 +377,14 @@ export default function CreateSlidePage() {
           </div>
         </div>
       </form>
+
+      {/* Media Picker Modal */}
+      <MediaPickerModal
+        isOpen={showMediaPicker}
+        onClose={() => setShowMediaPicker(false)}
+        onSelect={handleSelectImage}
+        multiple={false}
+      />
     </div>
   );
 }
