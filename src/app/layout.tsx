@@ -5,6 +5,7 @@ import { NetworkStatusBanner } from "@/components/ui/NetworkStatusBanner";
 import { CookieConsentProvider } from "@/components/cookie-consent-provider";
 import { getRequestLang } from "@/i18n/server";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
+import { ApiPreconnect } from "@/components/ApiPreconnect";
 import "./globals.css";
 
 import { Nunito } from "next/font/google"; // Updated font requested by user
@@ -44,6 +45,7 @@ export default async function RootLayout({
         >
           <LanguageProvider initialLang={lang}>
             <CookieConsentProvider>
+              <ApiPreconnect />
               <PwaRegister />
               <NetworkStatusBanner />
               {children}
