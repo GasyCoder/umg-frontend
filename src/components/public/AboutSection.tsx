@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { Lightbulb, Users, Globe, Award, Play } from "lucide-react";
 import { useI18n } from "@/components/i18n/LanguageProvider";
 
@@ -8,17 +9,6 @@ type AboutSectionProps = {
   videoUrl?: string | null;
   videoPosterUrl?: string | null;
 };
-
-// Optimize poster image URL through Next.js Image API for WebP conversion
-function getOptimizedPosterUrl(url: string | null | undefined): string {
-  const defaultPoster = "https://lh3.googleusercontent.com/aida-public/AB6AXuDcpjwCYNIEJfBuhZ1IHDeBOHrR4PVVxEDu_xqJVpLCisZNz5JjtFVICSnSujXPhiUJ6EVumFAE4I6jfhzazjnR_Y-9PzjLWcjF7e9_f1ysmQAhRjSqVM__i9m03z70PIfh5xJIQ33pbumIqE17sm3vvjaPw1MdxHC9RwwmI4kLvditZqu5mzrpUfvVcGIeQyTyEe830Ao7OuMZNARkWqb1B6mupfZnwtC5oTZm9gqGYvA_Ehq64Yka-Pqvguf1SK3cRwqaamk4xPo";
-  
-  const posterUrl = url || defaultPoster;
-  
-  // Use Next.js Image optimization API - converts to WebP, quality 75, width 1280
-  // This reduces the 2.7MB PNG poster to ~50-100KB WebP
-  return `/_next/image?url=${encodeURIComponent(posterUrl)}&w=1280&q=75`;
-}
 
 export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionProps) {
   const { t } = useI18n();
@@ -100,30 +90,48 @@ export default function AboutSection({ videoUrl, videoPosterUrl }: AboutSectionP
           {/* Video / Image */}
           <div className="w-full lg:w-1/2 relative">
             <div className="absolute -right-4 -bottom-4 w-2/3 h-2/3 bg-slate-100 dark:bg-slate-800 rounded-2xl -z-10"></div>
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-slate-900 aspect-video">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-slate-900 aspect-video group">
               <video
                 ref={videoRef}
                 className="h-full w-full object-cover"
                 controls
-                preload="metadata"
+                preload="none"
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
                 onEnded={() => setIsPlaying(false)}
-                poster={getOptimizedPosterUrl(videoPosterUrl)}
               >
                 <source src={videoUrl || "/videos/umg-about.mp4"} type="video/mp4" />
                 {t("about.video.unsupported")}
               </video>
-              <div
-                className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-                  isPlaying ? "opacity-0" : "opacity-100"
-                }`}
-              >
-                <div className="size-14 rounded-full bg-white/85 text-primary shadow-lg flex items-center justify-center transition-transform duration-300">
-                  <Play className="w-6 h-6 fill-current" />
+              
+              {/* Custom Poster Image Overlay using Next.js Image for optimization */}
+              {!isPlaying && (
+                <div 
+                  className="absolute inset-0 z-10 cursor-pointer"
+                  onClick={() => {
+                    if (videoRef.current) {
+                      videoRef.current.play();
+                      setIsPlaying(true);
+                    }
+                  }}
+                >
+                  <Image
+                    src={videoPosterUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuDcpjwCYNIEJfBuhZ1IHDeBOHrR4PVVxEDu_xqJVpLCisZNz5JjtFVICSnSujXPhiUJ6EVumFAE4I6jfhzazjnR_Y-9PzjLWcjF7e9_f1ysmQAhRjSqVM__i9m03z70PIfh5xJIQ33pbumIqE17sm3vvjaPw1MdxHC9RwwmI4kLvditZqu5mzrpUfvVcGIeQyTyEe830Ao7OuMZNARkWqb1B6mupfZnwtC5oTZm9gqGYvA_Ehq64Yka-Pqvguf1SK3cRwqaamk4xPo"}
+                    alt="Présentation UMG"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    priority
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
+                  
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="size-16 rounded-full bg-white/90 text-primary shadow-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:bg-white pl-1">
+                      <Play className="w-7 h-7 fill-current" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              )}
           </div>
         </div>
       </div>
