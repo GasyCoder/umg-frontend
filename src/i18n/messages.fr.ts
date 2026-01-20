@@ -155,13 +155,13 @@ export const messagesFr = {
   "hero.fallback.cta": "Découvrir",
   "hero.fallback.category": "Université de Mahajanga",
 
-  "president.kicker": "Gouvernance",
+  "president.kicker": "Message de la Présidence",
   "president.title": "Le mot du Président",
-  "president.more": "Lire la suite",
+  "president.more": "Lire le message complet",
   "president.less": "Réduire",
-  "president.fallback.quote": "L'Université de Mahajanga s'engage à être un phare de savoir et d'innovation pour l'Océan Indien. Nous croyons en la force de la diversité et en la capacité de nos étudiants à transformer le monde de demain.",
-  "president.fallback.lead": "En rejoignant l'UMG, vous intégrez une communauté dynamique, solidaire et tournée vers l'excellence. Ensemble, construisons l'avenir de Madagascar.",
-  "president.fallback.title": "Président de l'Université",
+  "president.fallback.quote": "Notre mission est de former les leaders de demain, en alliant excellence académique, innovation et ancrage territorial. L'Université de Mahajanga est un carrefour de savoirs où chaque étudiant trouve sa voie vers la réussite.",
+  "president.fallback.lead": "Bienvenue à l'Université de Mahajanga. En intégrant notre communauté universitaire, vous rejoignez une institution engagée dans la recherche, l'innovation pédagogique et le développement durable de notre région. Ensemble, construisons l'avenir de Madagascar.",
+  "president.fallback.title": "Président de l'Université de Mahajanga",
 
   "services.kicker": "Services",
   "services.title": "Services administratifs et académiques",
