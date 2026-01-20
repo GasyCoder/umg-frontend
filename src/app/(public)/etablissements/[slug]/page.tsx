@@ -143,7 +143,7 @@ export default async function EtablissementDetailPage({
           <img
             src={cover}
             alt=""
-            className="h-full w-full object-cover object-center"
+            className="h-full w-full object-cover object-top"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-transparent" />
