@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Load dark mode preference on mount
+  // Load dark mode preference on mount and check auth
   useEffect(() => {
     setMounted(true);
     const saved = localStorage.getItem("admin-dark-mode");
@@ -42,7 +42,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     } else {
       document.documentElement.classList.remove("dark");
     }
+
+    // Check authentication
+    checkAuth();
   }, []);
+
+  async function checkAuth() {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.status === 401 || res.status === 419) {
+        // Session expired or invalid
+        window.location.href = "/admin/login";
+      }
+    } catch (e) {
+      console.error("Auth check failed", e);
+    }
+  }
 
   // Toggle dark mode
   const toggleDarkMode = () => {
