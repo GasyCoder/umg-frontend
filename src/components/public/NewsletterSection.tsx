@@ -133,13 +133,13 @@ export default function NewsletterSection() {
                 {t("home.apply.subtitle")}
               </p>
 
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/documents"
-                  className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-3 text-sm font-bold transition-colors shadow-lg"
-                >
-                  {t("home.apply.cta")}
-                  <ArrowUpRight className="w-4 h-4" />
+	              <div className="flex flex-wrap gap-3">
+	                <Link
+	                  href="/etablissements"
+	                  className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-3 text-sm font-bold transition-colors shadow-lg"
+	                >
+	                  {t("home.apply.cta")}
+	                  <ArrowUpRight className="w-4 h-4" />
                 </Link>
                 <Link
                   href="/etablissements"
