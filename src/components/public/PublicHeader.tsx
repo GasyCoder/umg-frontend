@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
 import {
@@ -413,11 +414,13 @@ export default function PublicHeader({ settings }: PublicHeaderProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Link href="/" className="flex items-center gap-3 group min-w-0">
-              <div className="size-10 flex items-center justify-center">
-                <img
+              <div className="relative size-10 flex items-center justify-center">
+                <Image
                   src={settings?.logo_url || "/images/placeholder.jpg"}
                   alt="Logo"
-                  className="w-full h-full object-contain p-1"
+                  fill
+                  sizes="40px"
+                  className="object-contain p-1"
                 />
               </div>
               <div className="min-w-0">

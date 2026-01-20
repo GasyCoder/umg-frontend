@@ -45,6 +45,7 @@ export default function NewsCard({
             alt={post.title}
             fill
             priority={priority}
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
@@ -111,6 +112,7 @@ export default function NewsCard({
             src={imageUrl}
             alt={post.title}
             fill
+            sizes="80px"
             className="object-cover transition-transform duration-300 group-hover:scale-110"
           />
         </div>
@@ -165,6 +167,7 @@ export default function NewsCard({
             src={imageUrl}
             alt={post.title}
             fill
+            sizes="(max-width: 768px) 100vw, 256px"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         <div className="absolute top-3 left-3 flex flex-wrap gap-2">
@@ -240,6 +243,7 @@ export default function NewsCard({
           alt={post.title}
           fill
           priority={priority}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute left-4 top-4 flex flex-wrap gap-2">

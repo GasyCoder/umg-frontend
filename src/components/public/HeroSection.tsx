@@ -3,6 +3,7 @@
 import { useMemo, useCallback, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
@@ -196,12 +197,15 @@ export default function HeroSection({ slides }: HeroSectionProps) {
 
                 {/* Media Content */}
                 <div className="order-1 lg:order-2 relative w-full aspect-[4/3] lg:aspect-[16/11] rounded-2xl overflow-hidden shadow-2xl shadow-black/20 group">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transform transition-transform duration-[3000ms] hover:scale-105"
-                    style={{ backgroundImage: `url(${slide.image_url || "/images/placeholder.jpg"})` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
-                  </div>
+                  <Image
+                    src={slide.image_url || "/images/placeholder.jpg"}
+                    alt={slide.title}
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-[3000ms] group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60" />
 
                   <div className="absolute bottom-6 left-6 text-white max-w-xs z-20">
                     <p className="font-bold text-sm">{slide.category?.name || t("hero.fallback.category")}</p>
