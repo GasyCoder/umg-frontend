@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
 import { compressImageFile } from "@/lib/image-compress";
+import { fetchWithTimeout, getFriendlyNetworkErrorMessage, getNetworkProblemKind } from "@/lib/network";
 
 type MediaItem = {
   id: number;
@@ -47,6 +48,7 @@ type MediaItem = {
 export default function AdminMediaPage() {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -75,6 +77,7 @@ export default function AdminMediaPage() {
 
   async function load(folderId: number | null, fileType: string, q: string) {
     setLoading(true);
+    setListError(null);
     let url = "/api/admin/media?per_page=100";
     if (folderId) {
       url += `&parent_id=${folderId}`;
@@ -87,15 +90,28 @@ export default function AdminMediaPage() {
     if (q) {
         url += `&q=${encodeURIComponent(q)}`;
     }
-    const res = await fetch(url);
-    const json = await res.json();
-    const nextItems = (json?.data ?? []) as MediaItem[];
-    nextItems.sort((a, b) => {
-      if (a.entry_type !== b.entry_type) return a.entry_type === 'folder' ? -1 : 1;
-      return (a.name || '').localeCompare((b.name || ''), "fr", { sensitivity: "base" });
-    });
-    setItems(nextItems);
-    setLoading(false);
+    try {
+      const res = await fetchWithTimeout(url, {}, 20_000);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.message || `Chargement impossible (code ${res.status}).`);
+      }
+      const json = await res.json().catch(() => null);
+      const nextItems = (json?.data ?? []) as MediaItem[];
+      nextItems.sort((a, b) => {
+        if (a.entry_type !== b.entry_type) return a.entry_type === "folder" ? -1 : 1;
+        return (a.name || "").localeCompare((b.name || ""), "fr", { sensitivity: "base" });
+      });
+      setItems(nextItems);
+    } catch (err) {
+      console.error("Failed to load medias", err);
+      setItems([]);
+      setListError(
+        getNetworkProblemKind(err) ? getFriendlyNetworkErrorMessage(err) : err instanceof Error ? err.message : "Erreur."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -374,11 +390,11 @@ export default function AdminMediaPage() {
       await load(currentFolderId, selectedFileType, search.trim()); // Refresh list
     } catch (e: any) {
       console.error("Upload failed", e);
-      if (e instanceof TypeError && String(e.message).includes("fetch")) {
-        setUploadError("Erreur réseau/CORS. Vérifiez l'accès au backend.");
+      if (getNetworkProblemKind(e)) {
+        setUploadError(getFriendlyNetworkErrorMessage(e));
         return;
       }
-      setUploadError(e.message || "Erreur lors de l'upload. Vérifiez la taille/format du fichier.");
+      setUploadError(e?.message || "Erreur lors de l'upload. Vérifiez la taille/format du fichier.");
     } finally {
       setOptimizing(false);
       setUploading(false);
@@ -642,6 +658,17 @@ export default function AdminMediaPage() {
           {[...Array(12)].map((_, i) => (
             <div key={i} className="aspect-square bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
           ))}
+        </div>
+      ) : listError ? (
+        <div className="flex flex-col items-center justify-center py-16 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center px-6">
+          <Folder className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" />
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Impossible de charger la médiathèque</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{listError}</p>
+          <div className="mt-6 flex items-center gap-3">
+            <Button variant="outline" onClick={() => load(currentFolderId, selectedFileType, search.trim())}>
+              Réessayer
+            </Button>
+          </div>
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">

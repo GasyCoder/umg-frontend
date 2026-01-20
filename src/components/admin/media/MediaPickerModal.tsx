@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { Search, Upload, Check, Image as ImageIcon, Loader2, Video, FileText, Folder } from "lucide-react";
 import { clsx } from "clsx";
 import { compressImageFile } from "@/lib/image-compress";
+import { fetchWithTimeout, getFriendlyNetworkErrorMessage, getNetworkProblemKind } from "@/lib/network";
 
 export interface Media {
   id: number;
@@ -47,6 +48,7 @@ export function MediaPickerModal({
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: number | null; name: string }[]>([
     { id: null, name: "Accueil" },
   ]);
+  const [libraryError, setLibraryError] = useState<string | null>(null);
   
   // Pagination / Search state
   const [page, setPage] = useState(1);
@@ -57,22 +59,31 @@ export function MediaPickerModal({
   const [uploading, setUploading] = useState(false);
   const [optimizing, setOptimizing] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<FileList | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const fetchMedias = useCallback(
     async (p = 1, q = "", folderId: number | null = null) => {
       setLoading(true);
+      setLibraryError(null);
       try {
         const typeParam = filterType ? `&type=${filterType}` : "";
         const parentParam = folderId ? `&parent_id=${folderId}` : "&parent_id=root";
-        const res = await fetch(
-          `/api/admin/media?page=${p}&q=${q}&per_page=18${typeParam}${parentParam}`
+        const res = await fetchWithTimeout(
+          `/api/admin/media?page=${p}&q=${encodeURIComponent(q)}&per_page=18${typeParam}${parentParam}`,
+          {},
+          20_000
         );
-        const data = await res.json();
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => null);
+          throw new Error(errorData?.message || `Chargement impossible (code ${res.status}).`);
+        }
+        const data = await res.json().catch(() => null);
         setMedias(data.data || []);
         setTotalPages(data.meta?.last_page || 1);
         setPage(data.meta?.current_page || 1);
       } catch (err) {
         console.error(err);
+        setLibraryError(getFriendlyNetworkErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -91,6 +102,9 @@ export function MediaPickerModal({
       setCurrentFolderId(null);
       setBreadcrumbs([{ id: null, name: "Accueil" }]);
       setSelectedIds([]);
+      setUploadFiles(null);
+      setUploadError(null);
+      setLibraryError(null);
     }
   }, [isOpen]);
 
@@ -116,11 +130,12 @@ export function MediaPickerModal({
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!uploadFiles || uploadFiles.length === 0) return;
+    setUploadError(null);
 
     if (accept === "video/mp4") {
       const invalidFile = Array.from(uploadFiles).find((file) => file.type !== "video/mp4");
       if (invalidFile) {
-        alert("Veuillez sélectionner uniquement des vidéos MP4.");
+        setUploadError("Veuillez sélectionner uniquement des vidéos MP4.");
         return;
       }
     }
@@ -130,7 +145,7 @@ export function MediaPickerModal({
     
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
-      const tokenRes = await fetch("/api/auth/token", { credentials: "include" });
+      const tokenRes = await fetchWithTimeout("/api/auth/token", { credentials: "include" }, 15_000);
       const tokenData = tokenRes.ok ? await tokenRes.json().catch(() => null) : null;
       const token = tokenData?.token as string | undefined;
       const authHeader: HeadersInit | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
@@ -162,19 +177,18 @@ export function MediaPickerModal({
       await Promise.all(uploadPromises);
 
       setUploadFiles(null);
+      setUploadError(null);
       setActiveTab("library");
       fetchMedias(1, ""); // Refresh library
     } catch (err) {
       console.error(err);
-      if (err instanceof TypeError && String(err.message).includes("fetch")) {
-        alert("Erreur réseau/CORS. Vérifiez l'accès au backend.");
+      if (getNetworkProblemKind(err)) {
+        setUploadError(getFriendlyNetworkErrorMessage(err));
         return;
       }
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Erreur lors de l'upload. Vérifiez la taille/format du fichier.";
-      alert(message);
+      setUploadError(
+        err instanceof Error ? err.message : "Erreur lors de l'upload. Vérifiez la taille/format du fichier."
+      );
     } finally {
       setOptimizing(false);
       setUploading(false);
@@ -208,24 +222,30 @@ export function MediaPickerModal({
     >
       <div className="flex flex-col h-[60vh]">
         {/* Tabs */}
-        <div className="flex gap-4 border-b border-slate-100 dark:border-slate-700 mb-4">
-          <button
-            onClick={() => setActiveTab("library")}
-            className={clsx(
-              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-              activeTab === "library"
-                ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
-                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400"
+	        <div className="flex gap-4 border-b border-slate-100 dark:border-slate-700 mb-4">
+	          <button
+	            onClick={() => {
+                setActiveTab("library");
+                setUploadError(null);
+              }}
+	            className={clsx(
+	              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+	              activeTab === "library"
+	                ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+	                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400"
             )}
           >
             Bibliothèque
-          </button>
-          <button
-            onClick={() => setActiveTab("upload")}
-            className={clsx(
-              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-              activeTab === "upload"
-                ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+	          </button>
+	          <button
+	            onClick={() => {
+                setActiveTab("upload");
+                setUploadError(null);
+              }}
+	            className={clsx(
+	              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+	              activeTab === "upload"
+	                ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400"
             )}
           >
@@ -273,16 +293,29 @@ export function MediaPickerModal({
                   <p className="text-sm font-medium">Chargement des médias en cours…</p>
                 </div>
               )}
-              <div className={clsx("relative z-0 h-full", loading && "opacity-30 pointer-events-none")}>
-                {loading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
-                  </div>
-                ) : medias.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-slate-500">
-                    <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
-                    <p>Aucun média trouvé</p>
-                  </div>
+	              <div className={clsx("relative z-0 h-full", loading && "opacity-30 pointer-events-none")}>
+	                {loading ? (
+	                  <div className="flex items-center justify-center h-full">
+	                    <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
+	                  </div>
+	                ) : libraryError ? (
+	                  <div className="flex flex-col items-center justify-center h-full text-slate-600 dark:text-slate-300 text-center px-6">
+	                    <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
+	                    <p className="font-medium">Impossible de charger la médiathèque</p>
+	                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{libraryError}</p>
+	                    <Button
+	                      className="mt-4"
+	                      variant="outline"
+	                      onClick={() => fetchMedias(1, search, currentFolderId)}
+	                    >
+	                      Réessayer
+	                    </Button>
+	                  </div>
+	                ) : medias.length === 0 ? (
+	                  <div className="flex flex-col items-center justify-center h-full text-slate-500">
+	                    <ImageIcon className="w-12 h-12 mb-2 opacity-20" />
+	                    <p>Aucun média trouvé</p>
+	                  </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {medias.map((media) => {
@@ -412,16 +445,21 @@ export function MediaPickerModal({
                   <div className="text-sm font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-700 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600">
                     {uploadFiles.length} fichier(s) sélectionné(s)
                   </div>
-                <div className="flex gap-2 justify-center">
-                  <Button variant="ghost" onClick={() => setUploadFiles(null)}>Annuler</Button>
-                  <Button onClick={handleUpload} loading={uploading}>Envoyer</Button>
-                </div>
-                {optimizing && (
-                  <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
-                    Optimisation des images en cours...
-                  </div>
-                )}
-              </div>
+	                <div className="flex gap-2 justify-center">
+	                  <Button variant="ghost" onClick={() => setUploadFiles(null)}>Annuler</Button>
+	                  <Button onClick={handleUpload} loading={uploading}>Envoyer</Button>
+	                </div>
+                  {uploadError && (
+                    <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                      {uploadError}
+                    </div>
+                  )}
+	                {optimizing && (
+	                  <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
+	                    Optimisation des images en cours...
+	                  </div>
+	                )}
+	              </div>
             )}
             </div>
           </div>

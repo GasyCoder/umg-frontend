@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PwaRegister } from "@/components/PwaRegister";
+import { NetworkStatusBanner } from "@/components/ui/NetworkStatusBanner";
 import "./globals.css";
 
 import { Nunito } from "next/font/google"; // Updated font requested by user
@@ -38,6 +39,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <PwaRegister />
+          <NetworkStatusBanner />
           {children}
         </ThemeProvider>
       </body>
