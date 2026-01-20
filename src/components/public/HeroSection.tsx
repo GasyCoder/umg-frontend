@@ -147,7 +147,7 @@ export default function HeroSection({ slides }: HeroSectionProps) {
             bulletActiveClass: '!bg-white !w-8'
           }}
         >
-            {verifiedSlides.map((slide) => (
+          {verifiedSlides.map((slide, index) => (
               <SwiperSlide key={slide.id}>
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                 {/* Text Content */}
@@ -201,7 +201,7 @@ export default function HeroSection({ slides }: HeroSectionProps) {
                     src={slide.image_url || "/images/placeholder.jpg"}
                     alt={slide.title}
                     fill
-                    priority
+                    priority={index === 0}
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover transition-transform duration-[3000ms] group-hover:scale-105"
                   />
