@@ -82,8 +82,6 @@ export default function EcoleDoctoralePage() {
               <p className="text-sm text-slate-700 dark:text-slate-200">{school.teamFocus}</p>
               <Link
                 href={`/etablissements/${school.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="mt-auto inline-flex items-center justify-center rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-400 dark:hover:text-blue-400"
               >
                 Consulter la fiche
