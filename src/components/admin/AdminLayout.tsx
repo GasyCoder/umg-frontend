@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   async function checkAuth() {
     try {
-      const res = await fetch("/api/auth/me");
+      const res = await fetch("/api/admin/me");
       if (res.status === 401 || res.status === 419) {
         // Session expired or invalid
         window.location.href = "/admin/login";

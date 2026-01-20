@@ -262,7 +262,15 @@ export default function AdminPostsPage() {
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => null);
-      throw new Error(errorData?.message || "Échec d'envoi newsletter.");
+      console.error("[Newsletter] Erreur envoi:", {
+        status: res.status,
+        statusText: res.statusText,
+        body: errorData
+      });
+      throw new Error(
+        errorData?.message || 
+        (res.status === 502 ? "Backend Laravel non accessible. Vérifiez que le serveur est démarré." : `Échec d'envoi newsletter (${res.status})`)
+      );
     }
 
     const json = await res.json().catch(() => null);

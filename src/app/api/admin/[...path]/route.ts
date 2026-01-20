@@ -41,7 +41,12 @@ async function forward(req: Request, parts: string[]) {
       cache: "no-store",
     });
   } catch (error) {
-    return NextResponse.json({ message: "API unreachable" }, { status: 502 });
+    console.error("[API Proxy] Failed to reach backend:", target, error instanceof Error ? error.message : error);
+    return NextResponse.json({ 
+      message: "API unreachable", 
+      target,
+      hint: "Vérifiez que le serveur Laravel est démarré (php artisan serve)"
+    }, { status: 502 });
   }
 
   const buffer = await r.arrayBuffer();
