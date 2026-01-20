@@ -289,11 +289,11 @@ export default function EtablissementsExplorer({
                 style={{ backgroundImage: `url("${etab.cover_image?.url || FALLBACK_IMAGE}")` }}
               />
               {etab.logo?.url && (
-                <div className="absolute top-4 left-4 rounded-xl bg-white/90 p-2 shadow-sm ring-1 ring-white/60 backdrop-blur-sm dark:bg-black/60">
+                <div className="absolute top-4 left-4 rounded-2xl bg-white/95 p-3 shadow-md ring-1 ring-white/80 backdrop-blur-sm dark:bg-black/60">
                   <img
                     src={etab.logo.url}
                     alt={`Logo ${etab.name}`}
-                    className="h-10 w-10 object-contain"
+                    className="h-14 w-14 object-contain"
                   />
                 </div>
               )}
