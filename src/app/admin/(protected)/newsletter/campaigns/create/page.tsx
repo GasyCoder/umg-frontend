@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Mail, Send, Eye } from "lucide-react";
+import { ArrowLeft, Save, Mail, Send, Eye, Users } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
+import { RecipientSelector, RecipientSelection } from "@/components/admin/newsletter/RecipientSelector";
 
 export default function CreateCampaignPage() {
   const router = useRouter();
@@ -17,11 +18,27 @@ export default function CreateCampaignPage() {
     content_html: "",
   });
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [recipientSelection, setRecipientSelection] = useState<RecipientSelection>({
+    mode: "subscribers",
+    status: "active",
+    subscriber_ids: [],
+    extra_emails: [],
+    totalRecipients: 0,
+  });
+
+  const handleRecipientChange = useCallback((selection: RecipientSelection) => {
+    setRecipientSelection(selection);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent, sendNow = false) {
     e.preventDefault();
     if (!formData.subject.trim() || !formData.content_html.trim()) {
       alert("Veuillez remplir le sujet et le contenu.");
+      return;
+    }
+
+    if (sendNow && recipientSelection.totalRecipients === 0) {
+      alert("Aucun destinataire sélectionné.");
       return;
     }
 
@@ -36,18 +53,26 @@ export default function CreateCampaignPage() {
 
       if (res.ok) {
         const data = await res.json();
-        
+
         if (sendNow && data.data?.id) {
-          // Immediately send the campaign
+          // Immediately send the campaign with recipient options
           const sendRes = await fetch(`/api/admin/newsletter/campaigns/${data.data.id}/send`, {
             method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: recipientSelection.mode,
+              status: recipientSelection.status,
+              subscriber_ids: recipientSelection.subscriber_ids,
+              extra_emails: recipientSelection.extra_emails,
+            }),
           });
-          
+
           if (!sendRes.ok) {
-            alert("Campagne créée mais l'envoi a échoué. Vous pouvez l'envoyer depuis la liste.");
+            const errData = await sendRes.json().catch(() => null);
+            alert(errData?.message || "Campagne créée mais l'envoi a échoué. Vous pouvez l'envoyer depuis la liste.");
           }
         }
-        
+
         router.push("/admin/newsletter");
       } else {
         const err = await res.json();
@@ -119,6 +144,26 @@ export default function CreateCampaignPage() {
                     />
                   </div>
                 </div>
+              </CardBody>
+            </Card>
+
+            {/* Destinataires */}
+            <Card className="mt-6">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="font-medium text-slate-900 dark:text-white">Destinataires</span>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {recipientSelection.totalRecipients} destinataire(s) sélectionné(s)
+                    </p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardBody>
+                <RecipientSelector onChange={handleRecipientChange} />
               </CardBody>
             </Card>
 

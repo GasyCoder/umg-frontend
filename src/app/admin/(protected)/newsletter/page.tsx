@@ -16,12 +16,17 @@ import {
   Archive,
   RotateCcw,
   Filter,
+  X,
+  Copy,
+  Download,
+  CalendarRange,
 } from "lucide-react";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { ConfirmModal } from "@/components/ui/Modal";
+import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { StatCard } from "@/components/ui/StatCard";
+import { useToast } from "@/components/ui/Toast";
 
 type CampaignStatus = "draft" | "scheduled" | "sent" | "sending" | "archived";
 
@@ -35,11 +40,13 @@ type Campaign = {
   scheduled_at?: string;
   sent_at?: string;
   created_at: string;
+  content_html?: string;
 };
 
 type StatusFilter = "all" | "draft" | "sending" | "sent" | "archived";
 
 export default function AdminNewsletterPage() {
+  const toast = useToast();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -52,18 +59,32 @@ export default function AdminNewsletterPage() {
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const [bulkArchiving, setBulkArchiving] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkRestoring, setBulkRestoring] = useState(false);
+  const [bulkSending, setBulkSending] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewContent, setPreviewContent] = useState<string>("");
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [showDateFilter, setShowDateFilter] = useState(false);
 
   async function load() {
     setLoading(true);
-    let url = "/api/admin/newsletter/campaigns?per_page=50";
-    
+    let url = "/api/admin/newsletter/campaigns?per_page=100";
+
     if (statusFilter === "archived") {
       url += "&status=archived";
     } else if (statusFilter !== "all") {
       url += `&status=${statusFilter}`;
     }
-    // For "all", API excludes archived by default
-    
+
+    if (dateFrom) url += `&date_from=${dateFrom}`;
+    if (dateTo) url += `&date_to=${dateTo}`;
+
     const res = await fetch(url);
     const json = await res.json();
     setCampaigns(json?.data ?? []);
@@ -71,8 +92,9 @@ export default function AdminNewsletterPage() {
   }
 
   useEffect(() => {
+    setSelectedKeys(new Set());
     void load();
-  }, [statusFilter]);
+  }, [statusFilter, dateFrom, dateTo]);
 
   async function handleSend() {
     if (!selectedCampaign) return;
@@ -84,10 +106,11 @@ export default function AdminNewsletterPage() {
       if (res.ok) {
         setSendModalOpen(false);
         setSelectedCampaign(null);
+        toast.success("Campagne envoyée avec succès");
         load();
       } else {
         const body = await res.json();
-        alert(body.message || "Erreur lors de l'envoi");
+        toast.error(body.message || "Erreur lors de l'envoi");
       }
     } finally {
       setSending(false);
@@ -104,10 +127,11 @@ export default function AdminNewsletterPage() {
       if (res.ok) {
         setDeleteModalOpen(false);
         setSelectedCampaign(null);
+        toast.success("Campagne supprimée");
         load();
       } else {
         const body = await res.json();
-        alert(body.message || "Erreur lors de la suppression");
+        toast.error(body.message || "Erreur lors de la suppression");
       }
     } finally {
       setDeleting(false);
@@ -124,10 +148,11 @@ export default function AdminNewsletterPage() {
       if (res.ok) {
         setArchiveModalOpen(false);
         setSelectedCampaign(null);
+        toast.success("Campagne archivée");
         load();
       } else {
         const body = await res.json();
-        alert(body.message || "Erreur lors de l'archivage");
+        toast.error(body.message || "Erreur lors de l'archivage");
       }
     } finally {
       setArchiving(false);
@@ -144,14 +169,175 @@ export default function AdminNewsletterPage() {
       if (res.ok) {
         setRestoreModalOpen(false);
         setSelectedCampaign(null);
+        toast.success("Campagne restaurée");
         load();
       } else {
         const body = await res.json();
-        alert(body.message || "Erreur lors de la restauration");
+        toast.error(body.message || "Erreur lors de la restauration");
       }
     } finally {
       setRestoring(false);
     }
+  }
+
+  async function handleDuplicate(campaign: Campaign) {
+    setDuplicating(true);
+    try {
+      const res = await fetch(`/api/admin/newsletter/campaigns/${campaign.id}/duplicate`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        toast.success("Campagne dupliquée");
+        load();
+      } else {
+        const body = await res.json();
+        toast.error(body.message || "Erreur lors de la duplication");
+      }
+    } finally {
+      setDuplicating(false);
+    }
+  }
+
+  async function handlePreview(campaign: Campaign) {
+    setPreviewLoading(true);
+    setPreviewModalOpen(true);
+    try {
+      const res = await fetch(`/api/admin/newsletter/campaigns/${campaign.id}?include_content=true`);
+      if (res.ok) {
+        const data = await res.json();
+        setPreviewContent(data.data?.content_html || "<p>Aucun contenu</p>");
+      } else {
+        setPreviewContent("<p>Erreur lors du chargement</p>");
+      }
+    } finally {
+      setPreviewLoading(false);
+    }
+  }
+
+  // Bulk actions
+  async function handleBulkSend() {
+    const draftIds = Array.from(selectedKeys)
+      .map(Number)
+      .filter((id) => campaigns.find((c) => c.id === id)?.status === "draft");
+
+    if (draftIds.length === 0) {
+      toast.warning("Aucun brouillon sélectionné");
+      return;
+    }
+
+    setBulkSending(true);
+    try {
+      const results = await Promise.allSettled(
+        draftIds.map((id) =>
+          fetch(`/api/admin/newsletter/campaigns/${id}/send`, { method: "POST" })
+        )
+      );
+      const successCount = results.filter((r) => r.status === "fulfilled").length;
+      const failedCount = results.filter((r) => r.status === "rejected").length;
+
+      if (failedCount > 0) {
+        toast.warning(`${successCount} envoyée(s), ${failedCount} échouée(s)`);
+      } else {
+        toast.success(`${successCount} campagne(s) envoyée(s)`);
+      }
+      setSelectedKeys(new Set());
+      load();
+    } finally {
+      setBulkSending(false);
+    }
+  }
+
+  async function handleBulkArchive() {
+    if (selectedKeys.size === 0) return;
+    setBulkArchiving(true);
+    try {
+      const ids = Array.from(selectedKeys).map(Number);
+      const results = await Promise.allSettled(
+        ids.map((id) =>
+          fetch(`/api/admin/newsletter/campaigns/${id}/archive`, { method: "POST" })
+        )
+      );
+      const failedCount = results.filter((r) => r.status === "rejected").length;
+      if (failedCount > 0) {
+        toast.warning(`${failedCount} campagne(s) n'ont pas pu être archivée(s)`);
+      } else {
+        toast.success(`${ids.length} campagne(s) archivée(s)`);
+      }
+      setSelectedKeys(new Set());
+      load();
+    } finally {
+      setBulkArchiving(false);
+    }
+  }
+
+  async function handleBulkRestore() {
+    if (selectedKeys.size === 0) return;
+    setBulkRestoring(true);
+    try {
+      const ids = Array.from(selectedKeys).map(Number);
+      const results = await Promise.allSettled(
+        ids.map((id) =>
+          fetch(`/api/admin/newsletter/campaigns/${id}/restore`, { method: "POST" })
+        )
+      );
+      const failedCount = results.filter((r) => r.status === "rejected").length;
+      if (failedCount > 0) {
+        toast.warning(`${failedCount} campagne(s) n'ont pas pu être restaurée(s)`);
+      } else {
+        toast.success(`${ids.length} campagne(s) restaurée(s)`);
+      }
+      setSelectedKeys(new Set());
+      load();
+    } finally {
+      setBulkRestoring(false);
+    }
+  }
+
+  async function handleBulkDelete() {
+    if (selectedKeys.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const ids = Array.from(selectedKeys).map(Number);
+      const results = await Promise.allSettled(
+        ids.map((id) =>
+          fetch(`/api/admin/newsletter/campaigns/${id}`, { method: "DELETE" })
+        )
+      );
+      const failedCount = results.filter((r) => r.status === "rejected").length;
+      if (failedCount > 0) {
+        toast.warning(`${failedCount} campagne(s) n'ont pas pu être supprimée(s)`);
+      } else {
+        toast.success(`${ids.length} campagne(s) supprimée(s)`);
+      }
+      setSelectedKeys(new Set());
+      load();
+    } finally {
+      setBulkDeleting(false);
+    }
+  }
+
+  function handleExportCSV() {
+    const headers = ["ID", "Sujet", "Statut", "Destinataires", "Ouvertures", "Taux ouverture", "Date envoi", "Date création"];
+    const rows = campaigns.map((c) => [
+      c.id,
+      `"${c.subject.replace(/"/g, '""')}"`,
+      c.status,
+      c.recipients_count,
+      c.opens_count,
+      c.recipients_count > 0 ? `${Math.round((c.opens_count / c.recipients_count) * 100)}%` : "0%",
+      c.sent_at ? new Date(c.sent_at).toLocaleDateString("fr-FR") : "",
+      new Date(c.created_at).toLocaleDateString("fr-FR"),
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `campagnes-newsletter-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Export CSV téléchargé");
   }
 
   const getStatusBadge = (status: string) => {
@@ -230,6 +416,11 @@ export default function AdminNewsletterPage() {
     { value: "archived", label: "Archivées" },
   ];
 
+  // Check if any selected item is a draft (for bulk send button)
+  const hasSelectedDrafts = Array.from(selectedKeys).some(
+    (id) => campaigns.find((c) => c.id === Number(id))?.status === "draft"
+  );
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
@@ -239,6 +430,14 @@ export default function AdminNewsletterPage() {
           <p className="text-slate-600 dark:text-slate-400 mt-1">Gérez vos campagnes et abonnés</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            icon={<Download className="w-4 h-4" />}
+            onClick={handleExportCSV}
+          >
+            Export CSV
+          </Button>
           <Link href="/admin/newsletter/subscribers">
             <Button variant="outline" icon={<Users className="w-4 h-4" />}>
               Abonnés
@@ -272,34 +471,160 @@ export default function AdminNewsletterPage() {
         />
         <StatCard
           title="Taux d'ouverture moy."
-          value="45%"
+          value={(() => {
+            const sentCampaigns = campaigns.filter((c) => c.status === "sent" && c.recipients_count > 0);
+            if (sentCampaigns.length === 0) return "—";
+            const totalOpens = sentCampaigns.reduce((sum, c) => sum + c.opens_count, 0);
+            const totalRecipients = sentCampaigns.reduce((sum, c) => sum + c.recipients_count, 0);
+            if (totalRecipients === 0) return "0%";
+            return `${Math.round((totalOpens / totalRecipients) * 100)}%`;
+          })()}
           icon={<Eye className="w-6 h-6" />}
           color="blue"
         />
       </div>
 
-      {/* Status Filter */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
-          <Filter className="w-4 h-4" />
-          <span>Filtrer :</span>
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        {/* Status Filter */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+            <Filter className="w-4 h-4" />
+            <span>Statut :</span>
+          </div>
+          <div className="flex gap-1 flex-wrap">
+            {statusFilters.map((filter) => (
+              <button
+                key={filter.value}
+                onClick={() => setStatusFilter(filter.value)}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  statusFilter === filter.value
+                    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-1 flex-wrap">
-          {statusFilters.map((filter) => (
+
+        {/* Date Filter Toggle */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowDateFilter(!showDateFilter)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              showDateFilter || dateFrom || dateTo
+                ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <CalendarRange className="w-4 h-4" />
+            Date
+          </button>
+          {(dateFrom || dateTo) && (
             <button
-              key={filter.value}
-              onClick={() => setStatusFilter(filter.value)}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                statusFilter === filter.value
-                  ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-              }`}
+              onClick={() => {
+                setDateFrom("");
+                setDateTo("");
+              }}
+              className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
+              title="Effacer les dates"
             >
-              {filter.label}
+              <X className="w-4 h-4" />
             </button>
-          ))}
+          )}
         </div>
       </div>
+
+      {/* Date Range Filter */}
+      {showDateFilter && (
+        <div className="flex flex-wrap items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-slate-600 dark:text-slate-400">Du :</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-slate-600 dark:text-slate-400">Au :</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Selection Bar */}
+      {selectedKeys.size > 0 && (
+        <div className="flex items-center justify-between gap-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-200 dark:border-indigo-800">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+              {selectedKeys.size} campagne{selectedKeys.size > 1 ? "s" : ""} sélectionnée{selectedKeys.size > 1 ? "s" : ""}
+            </span>
+            <button
+              onClick={() => setSelectedKeys(new Set())}
+              className="p-1 rounded hover:bg-indigo-100 dark:hover:bg-indigo-800 text-indigo-600 dark:text-indigo-400"
+              title="Désélectionner tout"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            {statusFilter === "archived" ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={<RotateCcw className="w-4 h-4" />}
+                  onClick={handleBulkRestore}
+                  loading={bulkRestoring}
+                >
+                  Restaurer
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  icon={<Trash2 className="w-4 h-4" />}
+                  onClick={handleBulkDelete}
+                  loading={bulkDeleting}
+                >
+                  Supprimer
+                </Button>
+              </>
+            ) : (
+              <>
+                {hasSelectedDrafts && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    icon={<Send className="w-4 h-4" />}
+                    onClick={handleBulkSend}
+                    loading={bulkSending}
+                  >
+                    Envoyer
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={<Archive className="w-4 h-4" />}
+                  onClick={handleBulkArchive}
+                  loading={bulkArchiving}
+                >
+                  Archiver
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Table */}
       <Table
@@ -309,8 +634,21 @@ export default function AdminNewsletterPage() {
         loading={loading}
         emptyMessage="Aucune campagne trouvée"
         searchPlaceholder="Rechercher une campagne..."
+        rowSelection={{
+          selectedKeys,
+          onChange: setSelectedKeys,
+        }}
         actions={(item) => (
           <div className="flex items-center gap-1">
+            {/* Preview button - always visible */}
+            <button
+              onClick={() => handlePreview(item)}
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              title="Aperçu"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+
             {item.status !== "archived" ? (
               <>
                 {/* Send button - only for drafts */}
@@ -326,7 +664,7 @@ export default function AdminNewsletterPage() {
                     <Send className="w-4 h-4" />
                   </button>
                 )}
-                
+
                 {/* Edit button - always visible for non-archived */}
                 <Link
                   href={`/admin/newsletter/campaigns/${item.id}/edit`}
@@ -335,6 +673,16 @@ export default function AdminNewsletterPage() {
                 >
                   <Pencil className="w-4 h-4" />
                 </Link>
+
+                {/* Duplicate button */}
+                <button
+                  onClick={() => handleDuplicate(item)}
+                  disabled={duplicating}
+                  className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors disabled:opacity-50"
+                  title="Dupliquer"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
 
                 {/* Archive button */}
                 <button
@@ -426,6 +774,30 @@ export default function AdminNewsletterPage() {
         variant="primary"
         loading={restoring}
       />
+
+      {/* Preview Modal */}
+      <Modal
+        isOpen={previewModalOpen}
+        onClose={() => {
+          setPreviewModalOpen(false);
+          setPreviewContent("");
+        }}
+        title="Aperçu de la campagne"
+        size="lg"
+      >
+        <div className="p-4">
+          {previewLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div
+              className="prose dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: previewContent }}
+            />
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

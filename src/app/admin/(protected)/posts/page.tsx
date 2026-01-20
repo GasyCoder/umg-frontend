@@ -7,8 +7,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { ConfirmModal, Modal } from "@/components/ui/Modal";
-import { Input } from "@/components/ui/Input";
+import { ConfirmModal } from "@/components/ui/Modal";
+import { SendNewsletterModal, SendPayload } from "@/components/admin/newsletter/SendNewsletterModal";
 
 type Post = {
   id: number;
@@ -54,7 +54,6 @@ export default function AdminPostsPage() {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [sendSubject, setSendSubject] = useState("");
-  const [sendingDigest, setSendingDigest] = useState(false);
   const [counts, setCounts] = useState<Record<StatusFilter, number>>({
     all: 0,
     published: 0,
@@ -236,52 +235,50 @@ export default function AdminPostsPage() {
     }
   }
 
-  async function handleSendDigest() {
-    if (selectedIds.length === 0) return;
-    const subject = sendSubject.trim();
-    if (!subject) return;
-
+  async function handleSendDigest(payload: SendPayload) {
+    // Filtrer uniquement les articles publiés
     const selected = items.filter((i) => selectedKeys.has(String(i.id)));
-    const invalid = selected.filter((p) => p.status !== "published");
-    if (invalid.length) {
-      alert("Sélection invalide: uniquement des articles Publiés peuvent être envoyés par email.");
+    const publishedIds = selected
+      .filter((p) => p.status === "published")
+      .map((p) => p.id);
+
+    if (publishedIds.length === 0) {
+      throw new Error("Aucun article publié sélectionné.");
+    }
+
+    const res = await fetch("/api/admin/newsletter/campaigns/from-posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        post_ids: publishedIds,
+        subject: payload.subject,
+        send_now: true,
+        mode: payload.mode,
+        status: payload.status,
+        subscriber_ids: payload.subscriber_ids,
+        extra_emails: payload.extra_emails,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => null);
+      throw new Error(errorData?.message || "Échec d'envoi newsletter.");
+    }
+
+    const json = await res.json().catch(() => null);
+    const queued = Number(json?.meta?.newsletter?.queued ?? 0);
+    const campaignId = Number(json?.meta?.newsletter?.campaign_id ?? 0);
+
+    setSendModalOpen(false);
+    setSelectedKeys(new Set());
+    void loadCounts();
+
+    if (campaignId > 0) {
+      pushWithNewsletterInfo(statusFilter, queued, campaignId);
       return;
     }
 
-    setSendingDigest(true);
-    try {
-      const res = await fetch("/api/admin/newsletter/campaigns/from-posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          post_ids: selectedIds,
-          subject,
-          send_now: true,
-        }),
-      });
-
-      if (!res.ok) {
-        alert("Échec d'envoi newsletter.");
-        return;
-      }
-
-      const json = await res.json().catch(() => null);
-      const queued = Number(json?.meta?.newsletter?.queued ?? 0);
-      const campaignId = Number(json?.meta?.newsletter?.campaign_id ?? 0);
-
-      setSendModalOpen(false);
-      setSelectedKeys(new Set());
-      void loadCounts();
-
-      if (campaignId > 0) {
-        pushWithNewsletterInfo(statusFilter, queued, campaignId);
-        return;
-      }
-
-      load();
-    } finally {
-      setSendingDigest(false);
-    }
+    load();
   }
 
   async function handleStatusUpdate() {
@@ -685,42 +682,15 @@ export default function AdminPostsPage() {
       />
 
       {/* Send newsletter modal */}
-      <Modal
+      <SendNewsletterModal
         isOpen={sendModalOpen}
         onClose={() => setSendModalOpen(false)}
-        title="Envoyer une newsletter (articles sélectionnés)"
-        size="md"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setSendModalOpen(false)}>
-              Annuler
-            </Button>
-            <Button
-              onClick={handleSendDigest}
-              loading={sendingDigest}
-              icon={<Mail className="w-4 h-4" />}
-              disabled={sendSubject.trim().length === 0 || selectedIds.length === 0}
-            >
-              Envoyer
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            {selectedIds.length} article(s) seront envoyés aux abonnés sous forme de cards dans un seul email.
-          </p>
-          <Input
-            label="Objet"
-            value={sendSubject}
-            onChange={(e) => setSendSubject(e.target.value)}
-            placeholder="Objet de la newsletter"
-          />
-          <div className="text-xs text-slate-500 dark:text-slate-400">
-            Astuce: sélectionne uniquement des articles publiés pour éviter un refus de l’API.
-          </div>
-        </div>
-      </Modal>
+        onSend={handleSendDigest}
+        selectedPosts={items
+          .filter((i) => selectedKeys.has(String(i.id)))
+          .map((p) => ({ id: p.id, title: p.title, status: p.status }))}
+        defaultSubject={sendSubject}
+      />
 
       {/* Status Confirmation */}
       <ConfirmModal

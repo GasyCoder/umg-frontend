@@ -18,6 +18,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
+import { ToastProvider } from "@/components/ui/Toast";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -83,6 +84,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
@@ -265,5 +267,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </main>
       </div>
     </div>
+    </ToastProvider>
   );
 }
