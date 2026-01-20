@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PwaRegister } from "@/components/PwaRegister";
 import { NetworkStatusBanner } from "@/components/ui/NetworkStatusBanner";
@@ -49,6 +50,7 @@ export default async function RootLayout({
               <PwaRegister />
               <NetworkStatusBanner />
               {children}
+              <Analytics />
             </CookieConsentProvider>
           </LanguageProvider>
         </ThemeProvider>
