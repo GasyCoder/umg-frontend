@@ -138,35 +138,45 @@ export default async function EtablissementDetailPage({
     <main className="bg-white dark:bg-slate-950">
       <EtablissementJsonLd etablissement={etablissementForJsonLd} settings={settings} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
-      <section className="relative overflow-hidden bg-slate-900 text-white">
-
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/60 to-slate-950/90" />
-        <Container>
-          <div className="relative z-10 py-16 md:py-20">
-            <Link
-              href="/etablissements"
-              className="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Retour aux établissements
-            </Link>
-            <div className="mt-6 flex flex-wrap items-center gap-6">
-              {etab.logo && (
-                <div className="h-20 w-20 rounded-2xl bg-white/90 p-2">
-                  <img src={etab.logo.url} alt={etab.name} className="h-full w-full object-contain" />
-                </div>
-              )}
-              <div>
-                <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
-                  {etab.name}
-                  {etab.acronym && <span className="ml-2 text-emerald-200">({etab.acronym})</span>}
-                </h1>
-                {etab.director_name && (
-                  <p className="mt-2 text-emerald-100">
-                    {etab.director_title}: {etab.director_name}
-                  </p>
-                )}
+      <section className="relative min-h-[320px] md:min-h-[380px] overflow-hidden bg-slate-900">
+        <div className="absolute inset-0">
+          <img
+            src={cover}
+            alt=""
+            className="h-full w-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-transparent" />
+        </div>
+        <Container className="relative z-10 flex h-full min-h-[320px] md:min-h-[380px] flex-col justify-end pb-10">
+          <Link
+            href="/etablissements"
+            className="absolute left-4 top-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-sm transition hover:bg-white/20"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour
+          </Link>
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:gap-8">
+            {etab.logo && (
+              <div className="h-24 w-24 shrink-0 rounded-2xl border-2 border-white/20 bg-white p-2 shadow-2xl md:h-28 md:w-28">
+                <img src={etab.logo.url} alt={etab.name} className="h-full w-full object-contain" />
               </div>
+            )}
+            <div className="space-y-3">
+              <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
+                {etab.name}
+                {etab.acronym && (
+                  <span className="ml-3 inline-block rounded-lg bg-emerald-500/20 px-3 py-1 text-lg font-semibold text-emerald-300 md:text-xl">
+                    {etab.acronym}
+                  </span>
+                )}
+              </h1>
+              {etab.director_name && (
+                <p className="text-base text-slate-300 md:text-lg">
+                  <span className="text-slate-400">{etab.director_title}:</span>{" "}
+                  <span className="font-medium text-white">{etab.director_name}</span>
+                </p>
+              )}
             </div>
           </div>
         </Container>
