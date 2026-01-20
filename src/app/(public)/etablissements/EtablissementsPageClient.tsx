@@ -7,6 +7,7 @@ import EtablissementsExplorer, {
   EtablissementsFilters,
 } from "@/components/public/EtablissementsExplorer";
 import { useI18n } from "@/components/i18n/LanguageProvider";
+import { GraduationCap } from "lucide-react";
 
 type Etablissement = {
   id: number;
@@ -62,21 +63,25 @@ export default function EtablissementsPageClient({
         />
 
         <div className="mb-8 rounded-2xl border border-slate-200 bg-white px-6 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Recherche</p>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Écoles doctorales</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Les écoles doctorales de l’Université de Mahajanga réunissent les doctorants autour des défis du
-                vivant, des écosystèmes et de la santé-environnement.
-              </p>
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-5">
+              <GraduationCap className="text-amber-500" size={46} />
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Recherche</p>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Écoles doctorales</h3>
+              </div>
             </div>
-            <Link
-              href="/recherche/ecole-doctorale"
-              className="inline-flex items-center justify-center rounded-full border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-600 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-slate-900"
-            >
-              Consulter les écoles doctorales
-            </Link>
+            <div className="space-y-2">
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Doctorats dédiés aux transitions du vivant et de l’environnement.
+              </p>
+              <Link
+                href="/recherche/ecole-doctorale"
+                className="inline-flex items-center justify-center rounded-full border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-600 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-slate-900"
+              >
+                Voir les écoles doctorales
+              </Link>
+            </div>
           </div>
         </div>
 
