@@ -27,15 +27,10 @@ type Etablissement = {
   linkedin: string | null;
   logo: { url: string } | null;
   cover_image: { url: string } | null;
+  is_doctoral: boolean;
+  formations: { title: string; level?: string | null; description?: string | null }[];
+  doctoral_teams: { name: string; focus?: string | null }[];
 };
-
-const formations = [
-  "Licence Sciences de la Santé",
-  "Master Management Public",
-  "Licence Informatique",
-  "Master Biodiversité",
-  "Doctorat Sciences Sociales",
-];
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -106,6 +101,17 @@ export default async function EtablissementDetailPage({
     etab.cover_image?.url ||
     "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80";
 
+  const listLabel = etab.is_doctoral ? "Équipe d'accueil" : "Formations";
+  const doctorates = etab.doctoral_teams || [];
+  const formationsList = etab.formations || [];
+  const listItems = (etab.is_doctoral ? doctorates : formationsList).map((item) => {
+    if (etab.is_doctoral) {
+      return { title: item.name, subtitle: item.focus || undefined };
+    }
+    const subtitleParts = [item.level, item.description].filter(Boolean);
+    return { title: item.title, subtitle: subtitleParts.join(" • ") || undefined };
+  });
+
   const breadcrumbItems = [
     { name: "Accueil", url: "/" },
     { name: "Établissements", url: "/etablissements" },
@@ -170,7 +176,8 @@ export default async function EtablissementDetailPage({
             <div className="space-y-8">
               <EtablissementTabs
                 presentation={etab.description}
-                formations={formations}
+                listLabel={listLabel}
+                listItems={listItems}
                 contacts={{
                   address: etab.address,
                   phone: etab.phone,

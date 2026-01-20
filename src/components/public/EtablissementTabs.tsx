@@ -3,20 +3,31 @@
 import { useState } from "react";
 import { MapPin, Phone, Mail, Globe } from "lucide-react";
 
+type ListItem = {
+  title: string;
+  subtitle?: string | null;
+};
+
 type EtablissementTabsProps = {
   presentation?: string | null;
-  formations?: string[];
   contacts: {
     address?: string | null;
     phone?: string | null;
     email?: string | null;
     website?: string | null;
   };
+  listLabel?: string;
+  listItems?: ListItem[];
 };
 
-const tabs = ["Présentation", "Formations", "Contacts"] as const;
+const tabs = ["Présentation", "Liste", "Contacts"] as const;
 
-export default function EtablissementTabs({ presentation, formations = [], contacts }: EtablissementTabsProps) {
+export default function EtablissementTabs({
+  presentation,
+  contacts,
+  listLabel = "Formations",
+  listItems = [],
+}: EtablissementTabsProps) {
   const [active, setActive] = useState<(typeof tabs)[number]>("Présentation");
 
   return (
@@ -50,21 +61,23 @@ export default function EtablissementTabs({ presentation, formations = [], conta
           </div>
         )}
 
-        {active === "Formations" && (
+        {active === "Liste" && (
           <div>
-            {formations.length ? (
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">{listLabel}</p>
+            {listItems.length ? (
               <ul className="grid gap-3 md:grid-cols-2">
-                {formations.map((formation) => (
+                {listItems.map((item, index) => (
                   <li
-                    key={formation}
+                    key={`${item.title}-${index}`}
                     className="rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-900/70 p-4 text-sm text-slate-600 dark:text-slate-300"
                   >
-                    {formation}
+                    <p className="font-semibold text-slate-900 dark:text-white">{item.title}</p>
+                    {item.subtitle && <p className="text-xs text-slate-500 dark:text-slate-400">{item.subtitle}</p>}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-slate-500 dark:text-slate-400">Liste des formations à venir.</p>
+              <p className="text-slate-500 dark:text-slate-400">Contenu à venir.</p>
             )}
           </div>
         )}
