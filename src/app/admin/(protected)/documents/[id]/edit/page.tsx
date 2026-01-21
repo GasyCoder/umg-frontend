@@ -32,6 +32,7 @@ export default function EditDocumentPage({ params }: { params: Promise<{ id: str
     description: "",
     category_id: "",
     is_public: true,
+    is_important: false,
     status: "draft",
   });
 
@@ -54,7 +55,8 @@ export default function EditDocumentPage({ params }: { params: Promise<{ id: str
             slug: doc.slug,
             description: doc.description || "",
             category_id: doc.category?.id || "",
-            is_public: !!doc.is_public, // Assuming API returns bool or 0/1, force bool
+            is_public: !!doc.is_public,
+            is_important: !!doc.is_important,
             status: doc.status,
         });
         setCurrentFile(doc.file);
@@ -109,6 +111,7 @@ export default function EditDocumentPage({ params }: { params: Promise<{ id: str
           data.append("document_category_id", formData.category_id);
       }
       data.append("is_public", formData.is_public ? "1" : "0");
+      data.append("is_important", formData.is_important ? "1" : "0");
       data.append("status", formData.status);
       
       if (file) {
@@ -331,7 +334,7 @@ export default function EditDocumentPage({ params }: { params: Promise<{ id: str
                         </select>
                     </div>
 
-                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-3">
                         <label className="flex items-center gap-2 cursor-pointer">
                             <input
                                 type="checkbox"
@@ -341,6 +344,17 @@ export default function EditDocumentPage({ params }: { params: Promise<{ id: str
                             />
                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                                 Visible par le public
+                            </span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={formData.is_important}
+                                onChange={(e) => setFormData({ ...formData, is_important: e.target.checked })}
+                                className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                            />
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                Marquer comme important
                             </span>
                         </label>
                     </div>
