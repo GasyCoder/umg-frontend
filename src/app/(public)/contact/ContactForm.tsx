@@ -125,7 +125,7 @@ export default function ContactForm() {
           value={form.message}
           onChange={(event) => setForm({ ...form, message: event.target.value })}
           minLength={10}
-          maxLength={350}
+          maxLength={1000}
           placeholder={t("contact.form.messagePlaceholder")}
           required
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
