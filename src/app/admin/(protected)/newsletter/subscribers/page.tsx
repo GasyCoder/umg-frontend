@@ -59,11 +59,13 @@ export default function AdminSubscribersPage() {
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   async function load() {
     setLoading(true);
-    // Fetch paginated data
-    const res = await fetch(`/api/admin/newsletter/subscribers?per_page=50&page=${page}`);
+    // Fetch paginated data with status filter
+    const statusParam = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+    const res = await fetch(`/api/admin/newsletter/subscribers?per_page=50&page=${page}${statusParam}`);
     const json = await res.json();
     setItems(json?.data ?? []);
 
@@ -102,7 +104,7 @@ export default function AdminSubscribersPage() {
 
   useEffect(() => {
     void load();
-  }, [page]);
+  }, [page, statusFilter]);
 
   async function handleCreate() {
     setSaving(true);
@@ -214,6 +216,21 @@ export default function AdminSubscribersPage() {
         </div>
       ),
     },
+    {
+      key: "unsubscribed_at" as keyof Subscriber,
+      header: "Date désabonnement",
+      sortable: true,
+      render: (item: Subscriber) => (
+        item.unsubscribed_at ? (
+          <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-sm">
+            <XCircle className="w-4 h-4" />
+            {new Date(item.unsubscribed_at).toLocaleDateString("fr-FR")}
+          </div>
+        ) : (
+          <span className="text-slate-400 dark:text-slate-500 text-sm">—</span>
+        )
+      ),
+    },
   ];
 
   return (
@@ -263,6 +280,31 @@ export default function AdminSubscribersPage() {
           icon={<XCircle className="w-6 h-6" />}
           color="amber"
         />
+      </div>
+
+      {/* Status Filter */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-slate-600 dark:text-slate-400">Filtrer par statut :</span>
+        <div className="flex gap-2">
+          {[
+            { value: "all", label: "Tous", count: stats.total },
+            { value: "active", label: "Actifs", count: stats.active },
+            { value: "unsubscribed", label: "Désabonnés", count: stats.unsubscribed },
+            { value: "pending", label: "En attente", count: stats.pending },
+          ].map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => { setStatusFilter(filter.value); setPage(1); }}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                statusFilter === filter.value
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }`}
+            >
+              {filter.label} ({filter.count})
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Table */}
