@@ -21,18 +21,16 @@ import {
   Star,
 } from "lucide-react";
 
-// Custom PDF Icon component
+// Custom PDF Icon component - clean and readable
 function PdfIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M14 2V8H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M7 13H8.5C8.89782 13 9.27936 13.158 9.56066 13.4393C9.84196 13.7206 10 14.1022 10 14.5C10 14.8978 9.84196 15.2794 9.56066 15.5607C9.27936 15.842 8.89782 16 8.5 16H7V13Z" fill="currentColor"/>
-      <path d="M7 16V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M12 13H13C13.5304 13 14.0391 13.2107 14.4142 13.5858C14.7893 13.9609 15 14.4696 15 15V16C15 16.5304 14.7893 17.0391 14.4142 17.4142C14.0391 17.7893 13.5304 18 13 18H12V13Z" fill="currentColor"/>
-      <path d="M17 13V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M17 13H18.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M17 15.5H18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Document shape */}
+      <path d="M6 2C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2H6Z" fill="currentColor" fillOpacity="0.15"/>
+      <path d="M14 2L20 8H15C14.4477 8 14 7.55228 14 7V2Z" fill="currentColor" fillOpacity="0.3"/>
+      <path d="M6 2C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8M14 2L20 8M14 2V7C14 7.55228 14.4477 8 15 8H20M14 2H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* PDF text */}
+      <text x="12" y="16" textAnchor="middle" fill="currentColor" fontSize="6" fontWeight="bold" fontFamily="system-ui, sans-serif">PDF</text>
     </svg>
   );
 }
