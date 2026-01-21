@@ -15,6 +15,7 @@ import {
   HardDrive,
   Grid,
   List,
+  Star,
 } from "lucide-react";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
@@ -29,6 +30,7 @@ type Document = {
   file_type: string;
   file_size: number;
   downloads_count: number;
+  is_important?: boolean;
   category?: { name: string };
   created_at: string;
 };
@@ -100,11 +102,19 @@ export default function AdminDocumentsPage() {
       sortable: true,
       render: (item: Document) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center relative">
             {getFileIcon(item.file_type)}
+            {item.is_important && (
+              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 absolute -top-1 -right-1" />
+            )}
           </div>
           <div className="min-w-0">
-            <p className="font-medium text-slate-900 dark:text-white truncate max-w-xs">{item.title}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-slate-900 dark:text-white truncate max-w-xs">{item.title}</p>
+              {item.is_important && (
+                <Star className="w-4 h-4 text-amber-500 fill-amber-500 flex-shrink-0" />
+              )}
+            </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 uppercase">{item.file_type}</p>
           </div>
         </div>
@@ -250,10 +260,18 @@ export default function AdminDocumentsPage() {
           {items.map((item) => (
             <Card key={item.id} hover padding="md" className="group">
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-3">
+                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-3 relative">
                   {getFileIcon(item.file_type)}
+                  {item.is_important && (
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-500 absolute -top-1 -right-1" />
+                  )}
                 </div>
-                <p className="font-medium text-slate-900 dark:text-white truncate w-full">{item.title}</p>
+                <div className="flex items-center gap-1.5 justify-center">
+                  <p className="font-medium text-slate-900 dark:text-white truncate max-w-[120px]">{item.title}</p>
+                  {item.is_important && (
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
+                  )}
+                </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   {formatFileSize(item.file_size)} • {item.downloads_count} téléchargements
                 </p>
