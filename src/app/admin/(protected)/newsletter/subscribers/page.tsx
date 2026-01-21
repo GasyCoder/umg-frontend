@@ -14,6 +14,7 @@ import {
   Users,
   AlertCircle,
   Copy,
+  Pencil,
 } from "lucide-react";
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
@@ -50,10 +51,11 @@ export default function AdminSubscribersPage() {
   const [stats, setStats] = useState<Stats>({ total: 0, active: 0, unsubscribed: 0, pending: 0 });
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedSubscriber, setSelectedSubscriber] = useState<Subscriber | null>(null);
-  const [formData, setFormData] = useState({ email: "", name: "" });
+  const [formData, setFormData] = useState({ email: "", name: "", status: "active" });
   const [bulkEmails, setBulkEmails] = useState("");
   const [bulkResult, setBulkResult] = useState<BulkImportResult>(null);
   const [saving, setSaving] = useState(false);
@@ -112,16 +114,46 @@ export default function AdminSubscribersPage() {
       const res = await fetch("/api/admin/newsletter/subscribers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ email: formData.email, name: formData.name }),
       });
       if (res.ok) {
         setCreateModalOpen(false);
-        setFormData({ email: "", name: "" });
+        setFormData({ email: "", name: "", status: "active" });
         load();
       }
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleEdit() {
+    if (!selectedSubscriber) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/newsletter/subscribers/${selectedSubscriber.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (res.ok) {
+        setEditModalOpen(false);
+        setSelectedSubscriber(null);
+        setFormData({ email: "", name: "", status: "active" });
+        load();
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function openEditModal(subscriber: Subscriber) {
+    setSelectedSubscriber(subscriber);
+    setFormData({
+      email: subscriber.email,
+      name: subscriber.name || "",
+      status: subscriber.status,
+    });
+    setEditModalOpen(true);
   }
 
   async function handleDelete() {
@@ -316,16 +348,25 @@ export default function AdminSubscribersPage() {
         emptyMessage="Aucun abonné trouvé"
         searchPlaceholder="Rechercher par email..."
         actions={(item) => (
-          <button
-            onClick={() => {
-              setSelectedSubscriber(item);
-              setDeleteModalOpen(true);
-            }}
-            className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-            title="Supprimer"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => openEditModal(item)}
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              title="Modifier"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                setSelectedSubscriber(item);
+                setDeleteModalOpen(true);
+              }}
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              title="Supprimer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         )}
       />
 
@@ -384,6 +425,55 @@ export default function AdminSubscribersPage() {
           </Button>
           <Button onClick={handleCreate} loading={saving}>
             Ajouter
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={editModalOpen}
+        onClose={() => { setEditModalOpen(false); setSelectedSubscriber(null); }}
+        title="Modifier l'abonné"
+        size="md"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Adresse email"
+            type="email"
+            placeholder="exemple@email.com"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            leftIcon={<Mail className="w-4 h-4" />}
+            required
+          />
+          <Input
+            label="Nom (optionnel)"
+            placeholder="Jean Dupont"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Statut
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="active">Actif</option>
+              <option value="unsubscribed">Désabonné</option>
+              <option value="pending">En attente</option>
+              <option value="bounced">Erreur</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-3 mt-6">
+          <Button variant="ghost" onClick={() => { setEditModalOpen(false); setSelectedSubscriber(null); }}>
+            Annuler
+          </Button>
+          <Button onClick={handleEdit} loading={saving}>
+            Enregistrer
           </Button>
         </div>
       </Modal>
