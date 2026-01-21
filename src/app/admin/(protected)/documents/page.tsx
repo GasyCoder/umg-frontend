@@ -11,12 +11,48 @@ import {
   File,
   FileSpreadsheet,
   FileImage,
+  FileVideo,
+  FileArchive,
+  Presentation,
   Calendar,
   HardDrive,
   Grid,
   List,
   Star,
 } from "lucide-react";
+
+// Custom PDF Icon component
+function PdfIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M14 2V8H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M7 13H8.5C8.89782 13 9.27936 13.158 9.56066 13.4393C9.84196 13.7206 10 14.1022 10 14.5C10 14.8978 9.84196 15.2794 9.56066 15.5607C9.27936 15.842 8.89782 16 8.5 16H7V13Z" fill="currentColor"/>
+      <path d="M7 16V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M12 13H13C13.5304 13 14.0391 13.2107 14.4142 13.5858C14.7893 13.9609 15 14.4696 15 15V16C15 16.5304 14.7893 17.0391 14.4142 17.4142C14.0391 17.7893 13.5304 18 13 18H12V13Z" fill="currentColor"/>
+      <path d="M17 13V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M17 13H18.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M17 15.5H18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// Custom Word Icon component
+function WordIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M14 2V8H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M7 13L8.5 18L10 14.5L11.5 18L13 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+interface FileIconConfig {
+  icon: React.ComponentType<{ className?: string }>;
+  bgColor: string;
+  iconColor: string;
+}
 import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -79,14 +115,51 @@ export default function AdminDocumentsPage() {
     }
   }
 
-  const getFileIcon = (type: string | undefined | null) => {
-    if (!type) return <File className="w-5 h-5 text-slate-400" />;
-    
-    if (type.includes("pdf")) return <FileText className="w-5 h-5 text-red-500" />;
-    if (type.includes("sheet") || type.includes("excel"))
-      return <FileSpreadsheet className="w-5 h-5 text-emerald-500" />;
-    if (type.includes("image")) return <FileImage className="w-5 h-5 text-blue-500" />;
-    return <File className="w-5 h-5 text-slate-500 dark:text-slate-400" />;
+  const getFileConfig = (type: string | undefined | null): FileIconConfig => {
+    const t = type?.toLowerCase() || '';
+
+    // PDF
+    if (t.includes('pdf')) {
+      return { icon: PdfIcon, bgColor: 'bg-red-100 dark:bg-red-900/30', iconColor: 'text-red-600 dark:text-red-400' };
+    }
+
+    // Word documents
+    if (t.includes('word') || t.includes('document') || t.includes('docx') || t.includes('doc') || t.includes('msword')) {
+      return { icon: WordIcon, bgColor: 'bg-blue-100 dark:bg-blue-900/30', iconColor: 'text-blue-600 dark:text-blue-400' };
+    }
+
+    // Excel/Spreadsheets
+    if (t.includes('spreadsheet') || t.includes('excel') || t.includes('xlsx') || t.includes('xls') || t.includes('csv')) {
+      return { icon: FileSpreadsheet, bgColor: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-600 dark:text-emerald-400' };
+    }
+
+    // PowerPoint
+    if (t.includes('presentation') || t.includes('powerpoint') || t.includes('pptx') || t.includes('ppt')) {
+      return { icon: Presentation, bgColor: 'bg-orange-100 dark:bg-orange-900/30', iconColor: 'text-orange-600 dark:text-orange-400' };
+    }
+
+    // Images
+    if (t.includes('image') || t.includes('png') || t.includes('jpg') || t.includes('jpeg') || t.includes('gif') || t.includes('webp')) {
+      return { icon: FileImage, bgColor: 'bg-purple-100 dark:bg-purple-900/30', iconColor: 'text-purple-600 dark:text-purple-400' };
+    }
+
+    // Videos
+    if (t.includes('video') || t.includes('mp4') || t.includes('avi') || t.includes('mov') || t.includes('webm')) {
+      return { icon: FileVideo, bgColor: 'bg-pink-100 dark:bg-pink-900/30', iconColor: 'text-pink-600 dark:text-pink-400' };
+    }
+
+    // Archives
+    if (t.includes('archive') || t.includes('zip') || t.includes('rar') || t.includes('7z') || t.includes('tar') || t.includes('gz')) {
+      return { icon: FileArchive, bgColor: 'bg-amber-100 dark:bg-amber-900/30', iconColor: 'text-amber-600 dark:text-amber-400' };
+    }
+
+    // Text files
+    if (t.includes('text') || t.includes('txt')) {
+      return { icon: FileText, bgColor: 'bg-slate-100 dark:bg-slate-700', iconColor: 'text-slate-600 dark:text-slate-300' };
+    }
+
+    // Default
+    return { icon: File, bgColor: 'bg-slate-100 dark:bg-slate-700', iconColor: 'text-slate-500 dark:text-slate-400' };
   };
 
   const formatFileSize = (bytes: number) => {
@@ -100,25 +173,29 @@ export default function AdminDocumentsPage() {
       key: "title" as keyof Document,
       header: "Document",
       sortable: true,
-      render: (item: Document) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center relative">
-            {getFileIcon(item.file_type)}
-            {item.is_important && (
-              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 absolute -top-1 -right-1" />
-            )}
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="font-medium text-slate-900 dark:text-white truncate max-w-xs">{item.title}</p>
+      render: (item: Document) => {
+        const config = getFileConfig(item.file_type);
+        const IconComponent = config.icon;
+        return (
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 ${config.bgColor} rounded-xl flex items-center justify-center relative`}>
+              <IconComponent className={`w-5 h-5 ${config.iconColor}`} />
               {item.is_important && (
-                <Star className="w-4 h-4 text-amber-500 fill-amber-500 flex-shrink-0" />
+                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 absolute -top-1 -right-1" />
               )}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 uppercase">{item.file_type}</p>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-slate-900 dark:text-white truncate max-w-xs">{item.title}</p>
+                {item.is_important && (
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-500 flex-shrink-0" />
+                )}
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase">{item.file_type?.split('/').pop() || 'Fichier'}</p>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: "category" as keyof Document,
@@ -257,11 +334,14 @@ export default function AdminDocumentsPage() {
         />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {items.map((item) => (
+          {items.map((item) => {
+            const config = getFileConfig(item.file_type);
+            const IconComponent = config.icon;
+            return (
             <Card key={item.id} hover padding="md" className="group">
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-3 relative">
-                  {getFileIcon(item.file_type)}
+                <div className={`w-16 h-16 ${config.bgColor} rounded-xl flex items-center justify-center mb-3 relative`}>
+                  <IconComponent className={`w-8 h-8 ${config.iconColor}`} />
                   {item.is_important && (
                     <Star className="w-4 h-4 text-amber-500 fill-amber-500 absolute -top-1 -right-1" />
                   )}
@@ -291,7 +371,8 @@ export default function AdminDocumentsPage() {
                 </div>
               </div>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
 
