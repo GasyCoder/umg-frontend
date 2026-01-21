@@ -299,7 +299,7 @@ export default function AdminMediaPage() {
 
   useEffect(() => {
     if (folderPickerOpen) void loadPickerFolders(pickerFolderId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [folderPickerOpen, pickerFolderId]);
 
   const handlePickerBreadcrumbClick = (id: number | null, index: number) => {
