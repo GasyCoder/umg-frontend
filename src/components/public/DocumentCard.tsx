@@ -288,9 +288,8 @@ export default async function DocumentCard({
               </span>
             )}
             {document.is_important && (
-              <span className="rounded-full bg-amber-100 dark:bg-amber-900/50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300 flex items-center gap-1">
+              <span className="rounded-full bg-amber-100 dark:bg-amber-900/50 p-1 text-xs font-medium text-amber-700 dark:text-amber-300 flex items-center">
                 <Star className="w-3 h-3 fill-current" />
-                Important
               </span>
             )}
             <span className="text-xs text-slate-500 dark:text-slate-400">
