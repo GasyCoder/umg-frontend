@@ -102,39 +102,57 @@ export default function EditDocumentPage({ params }: { params: Promise<{ id: str
     e.preventDefault();
     setSaving(true);
     try {
-      const data = new FormData();
-      data.append("_method", "PUT"); // Laravel method spoofing for FormData
-      data.append("title", formData.title);
-      data.append("slug", formData.slug);
-      data.append("description", formData.description);
-      if (formData.category_id) {
-          data.append("document_category_id", formData.category_id);
-      }
-      data.append("is_public", formData.is_public ? "1" : "0");
-      data.append("is_important", formData.is_important ? "1" : "0");
-      data.append("status", formData.status);
-      
-      if (file) {
-          data.append("file", file);
-      }
+      let res: Response;
 
-      // Note: When using FormData with PUT in Laravel/PHP, we often need to POST to a specific URL or use _method=PUT
-      // However, typical REST APIs might accept PUT with multipart/form-data if configured, but PHP defaults struggle with PUT+Multipart.
-      // Safe bet: POST with _method=PUT
-      const res = await fetch(`/api/admin/documents/${docId}`, {
-        method: "POST", 
-        body: data,
-      });
+      if (file) {
+        // If uploading a new file, use FormData with POST and _method=PUT
+        const data = new FormData();
+        data.append("_method", "PUT");
+        data.append("title", formData.title);
+        data.append("slug", formData.slug);
+        data.append("description", formData.description);
+        if (formData.category_id) {
+          data.append("document_category_id", formData.category_id);
+        }
+        data.append("is_public", formData.is_public ? "1" : "0");
+        data.append("is_important", formData.is_important ? "1" : "0");
+        data.append("status", formData.status);
+        data.append("file", file);
+
+        res = await fetch(`/api/admin/documents/${docId}`, {
+          method: "POST",
+          body: data,
+        });
+      } else {
+        // If no file, use JSON with PUT method directly
+        const jsonData = {
+          title: formData.title,
+          slug: formData.slug,
+          description: formData.description,
+          document_category_id: formData.category_id || null,
+          is_public: formData.is_public,
+          is_important: formData.is_important,
+          status: formData.status,
+        };
+
+        res = await fetch(`/api/admin/documents/${docId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(jsonData),
+        });
+      }
 
       if (res.ok) {
         router.push("/admin/documents");
       } else {
-          const err = await res.json();
-          alert("Erreur: " + (err.message || "Impossible de mettre à jour le document"));
+        const err = await res.json().catch(() => ({ message: "Erreur inconnue" }));
+        alert("Erreur: " + (err.message || "Impossible de mettre à jour le document"));
       }
     } catch (e) {
-        console.error(e);
-        alert("Erreur réseau");
+      console.error(e);
+      alert("Erreur réseau");
     } finally {
       setSaving(false);
     }
