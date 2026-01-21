@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FileText, FileSpreadsheet, FileArchive, FileImage, Download, ExternalLink } from 'lucide-react';
+import { FileText, FileSpreadsheet, FileArchive, FileImage, Download, ExternalLink, Star } from 'lucide-react';
 import type { Document } from '@/lib/types';
 import { getServerI18n } from "@/i18n/server";
 
@@ -61,11 +61,14 @@ export default async function DocumentCard({
   if (variant === 'compact') {
     return (
       <div className={`flex items-center gap-3 py-3 ${className}`}>
-        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center relative">
           <FileIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          {document.is_important && (
+            <Star className="w-3 h-3 text-amber-500 fill-amber-500 absolute -top-1 -right-1" />
+          )}
         </div>
         <div className="flex-1 min-w-0">
-          <Link 
+          <Link
             href={`/documents/${document.slug}`}
             className="text-sm font-medium text-slate-900 dark:text-white hover:text-blue-600 line-clamp-1"
           >
@@ -91,23 +94,31 @@ export default async function DocumentCard({
       <div
         className={`
           flex flex-col md:flex-row md:items-center md:justify-between gap-4
-          rounded-xl border border-slate-200/80 bg-white px-5 py-4 
+          rounded-xl border border-slate-200/80 bg-white px-5 py-4
           shadow-sm transition-all hover:shadow-lg
           dark:border-slate-800 dark:bg-slate-900
           ${className}
         `}
       >
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center relative">
             <FileIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            {document.is_important && (
+              <Star className="w-4 h-4 text-amber-500 fill-amber-500 absolute -top-1 -right-1" />
+            )}
           </div>
           <div className="min-w-0">
-            <Link
-              href={`/documents/${document.slug}`}
-              className="text-lg font-semibold text-slate-900 dark:text-white hover:text-blue-600 transition-colors"
-            >
-              {document.title}
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/documents/${document.slug}`}
+                className="text-lg font-semibold text-slate-900 dark:text-white hover:text-blue-600 transition-colors"
+              >
+                {document.title}
+              </Link>
+              {document.is_important && (
+                <Star className="w-4 h-4 text-amber-500 fill-amber-500 flex-shrink-0" />
+              )}
+            </div>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300 line-clamp-1">
               {document.excerpt || t("documents.fallbackExcerpt")}
             </p>
@@ -134,21 +145,30 @@ export default async function DocumentCard({
   return (
     <div
       className={`
-        rounded-2xl border border-slate-200/80 bg-white p-6 
+        rounded-2xl border border-slate-200/80 bg-white p-6
         shadow-sm transition-all hover:shadow-lg
         dark:border-slate-800 dark:bg-slate-900
         ${className}
       `}
     >
       <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 flex items-center justify-center">
+        <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 flex items-center justify-center relative">
           <FileIcon className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+          {document.is_important && (
+            <Star className="w-4 h-4 text-amber-500 fill-amber-500 absolute -top-1 -right-1" />
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             {document.category && (
               <span className="rounded-full bg-indigo-100 dark:bg-indigo-900/50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:text-indigo-300">
                 {document.category.name}
+              </span>
+            )}
+            {document.is_important && (
+              <span className="rounded-full bg-amber-100 dark:bg-amber-900/50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                <Star className="w-3 h-3 fill-current" />
+                Important
               </span>
             )}
             <span className="text-xs text-slate-500 dark:text-slate-400">

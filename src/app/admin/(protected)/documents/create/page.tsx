@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, FolderOpen, Upload, File as FileIcon, X, Eye } from "lucide-react";
+import { ArrowLeft, Save, FolderOpen, Upload, File as FileIcon, X, Eye, Library } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
+import { MediaPickerModal, type Media } from "@/components/admin/media/MediaPickerModal";
 
 interface DocumentCategory {
   id: number;
@@ -17,8 +18,10 @@ export default function CreateDocumentPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [categories, setCategories] = useState<DocumentCategory[]>([]);
   const [loadingConfig, setLoadingConfig] = useState(true);
 
@@ -119,6 +122,15 @@ export default function CreateDocumentPage() {
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
+      setSelectedMedia(null); // Clear selected media if uploading new file
+    }
+  }
+
+  function handleMediaSelect(medias: Media[]) {
+    if (medias.length > 0) {
+      setSelectedMedia(medias[0]);
+      setFile(null); // Clear uploaded file if selecting from library
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
@@ -133,8 +145,8 @@ export default function CreateDocumentPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) {
-        alert("Veuillez sélectionner un fichier");
+    if (!file && !selectedMedia) {
+        alert("Veuillez sélectionner un fichier ou choisir depuis la médiathèque");
         return;
     }
 
@@ -150,7 +162,13 @@ export default function CreateDocumentPage() {
       data.append("is_public", formData.is_public ? "1" : "0");
       data.append("is_important", formData.is_important ? "1" : "0");
       data.append("status", formData.status);
-      data.append("file", file);
+
+      // Use existing media or upload new file
+      if (selectedMedia) {
+        data.append("file_id", String(selectedMedia.id));
+      } else if (file) {
+        data.append("file", file);
+      }
 
       const res = await fetch("/api/admin/documents", {
         method: "POST",
@@ -211,38 +229,75 @@ export default function CreateDocumentPage() {
           <Card>
             <CardHeader>Fichier</CardHeader>
             <CardBody>
-                {!file ? (
-                    <div 
-                        className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-8 text-center hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors cursor-pointer bg-slate-50 dark:bg-slate-800/50"
-                        onClick={() => fileInputRef.current?.click()}
-                    >
-                        <Upload className="w-10 h-10 mx-auto text-slate-400 dark:text-slate-500 mb-3" />
-                        <p className="text-slate-600 dark:text-slate-400 font-medium mb-1">
-                            Cliquez pour sélectionner un fichier
-                        </p>
-                        <p className="text-sm text-slate-400 dark:text-slate-500">
-                            PDF, Word, Excel, Images (max 10MB)
-                        </p>
-                        <input 
-                            ref={fileInputRef}
-                            type="file" 
-                            className="hidden" 
-                            onChange={handleFileChange}
-                        />
-                        <Button 
-                            variant="outline" 
-                            className="mt-4"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                fileInputRef.current?.click();
-                            }}
+                {!file && !selectedMedia ? (
+                    <div className="space-y-4">
+                        {/* Option 1: Médiathèque */}
+                        <div
+                            className="border-2 border-dashed border-indigo-200 dark:border-indigo-700 rounded-xl p-6 text-center hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors cursor-pointer bg-indigo-50/50 dark:bg-indigo-900/20"
+                            onClick={() => setIsMediaPickerOpen(true)}
                         >
-                            Parcourir les fichiers
-                        </Button>
+                            <Library className="w-8 h-8 mx-auto text-indigo-500 dark:text-indigo-400 mb-2" />
+                            <p className="text-indigo-700 dark:text-indigo-300 font-medium mb-1">
+                                Choisir depuis la médiathèque
+                            </p>
+                            <p className="text-sm text-indigo-500/70 dark:text-indigo-400/70">
+                                Sélectionner un fichier existant
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+                            <span className="text-xs text-slate-400 dark:text-slate-500 uppercase">ou</span>
+                            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+                        </div>
+
+                        {/* Option 2: Téléverser */}
+                        <div
+                            className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-6 text-center hover:border-slate-400 dark:hover:border-slate-500 transition-colors cursor-pointer bg-slate-50 dark:bg-slate-800/50"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <Upload className="w-8 h-8 mx-auto text-slate-400 dark:text-slate-500 mb-2" />
+                            <p className="text-slate-600 dark:text-slate-400 font-medium mb-1">
+                                Téléverser un nouveau fichier
+                            </p>
+                            <p className="text-sm text-slate-400 dark:text-slate-500">
+                                PDF, Word, Excel, Images (max 50MB)
+                            </p>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="hidden"
+                                onChange={handleFileChange}
+                            />
+                        </div>
                     </div>
-                ) : (
+                ) : selectedMedia ? (
                     <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl p-4 flex items-center gap-4">
                         <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-lg flex items-center justify-center shrink-0">
+                            <Library className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-medium text-slate-900 dark:text-white truncate">
+                                {selectedMedia.name || selectedMedia.url?.split("/").pop() || "Fichier sélectionné"}
+                            </p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                {formatBytes(selectedMedia.size)} • Depuis la médiathèque
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedMedia(null)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+                ) : file ? (
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-xl p-4 flex items-center gap-4">
+                        <div className="w-12 h-12 bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-400 rounded-lg flex items-center justify-center shrink-0">
                             <FileIcon className="w-6 h-6" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -250,7 +305,7 @@ export default function CreateDocumentPage() {
                                 {file.name}
                             </p>
                             <p className="text-sm text-slate-500 dark:text-slate-400">
-                                {formatBytes(file.size)} • {file.type || 'Fichier inconnu'}
+                                {formatBytes(file.size)} • Nouveau fichier
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -267,7 +322,7 @@ export default function CreateDocumentPage() {
                             </Button>
                         </div>
                     </div>
-                )}
+                ) : null}
             </CardBody>
           </Card>
 
@@ -396,9 +451,9 @@ export default function CreateDocumentPage() {
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom</label>
-                    <Input 
-                        value={newCategoryName} 
-                        onChange={(e) => setNewCategoryName(e.target.value)} 
+                    <Input
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder="Ex: Rapports 2024"
                         autoFocus
                     />
@@ -410,6 +465,15 @@ export default function CreateDocumentPage() {
             </div>
         </div>
       )}
+
+      {/* Media Picker Modal */}
+      <MediaPickerModal
+        isOpen={isMediaPickerOpen}
+        onClose={() => setIsMediaPickerOpen(false)}
+        onSelect={handleMediaSelect}
+        multiple={false}
+        uploadHint="PDF, Word, Excel, Images (max 50MB)"
+      />
     </div>
   );
 }

@@ -72,6 +72,7 @@ export interface Document {
   file_size?: number | null;
   file_type?: string | null;
   category?: DocumentCategory | null;
+  is_important?: boolean;
   created_at: string;
   updated_at?: string;
 }
