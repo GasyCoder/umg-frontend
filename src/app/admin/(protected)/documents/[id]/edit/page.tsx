@@ -125,15 +125,21 @@ export default function EditDocumentPage({ params }: { params: Promise<{ id: str
         });
       } else {
         // If no file, use JSON with PUT method directly
-        const jsonData = {
+        const jsonData: Record<string, unknown> = {
           title: formData.title,
           slug: formData.slug,
-          description: formData.description,
-          document_category_id: formData.category_id || null,
+          description: formData.description || null,
           is_public: formData.is_public,
           is_important: formData.is_important,
           status: formData.status,
         };
+
+        // Only include category_id if it has a value
+        if (formData.category_id) {
+          jsonData.document_category_id = parseInt(formData.category_id, 10);
+        }
+
+        console.log("Sending update:", jsonData); // Debug log
 
         res = await fetch(`/api/admin/documents/${docId}`, {
           method: "PUT",
@@ -142,6 +148,8 @@ export default function EditDocumentPage({ params }: { params: Promise<{ id: str
           },
           body: JSON.stringify(jsonData),
         });
+
+        console.log("Response status:", res.status); // Debug log
       }
 
       if (res.ok) {
