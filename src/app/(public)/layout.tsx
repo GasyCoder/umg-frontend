@@ -3,6 +3,7 @@ import { getSiteSettings } from "@/lib/public-api";
 import PublicHeader from "@/components/public/PublicHeader";
 import ScrollToTop from "@/components/public/ScrollToTop";
 import SiteFooter from "@/components/SiteFooter";
+import WelcomePopup from "@/components/public/WelcomePopup";
 import type { Metadata } from "next";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 
@@ -116,6 +117,7 @@ export default async function PublicLayout({ children }: { children: React.React
         </main>
         <ScrollToTop />
         <SiteFooter settings={settings} />
+        <WelcomePopup />
       </div>
     </>
   );
