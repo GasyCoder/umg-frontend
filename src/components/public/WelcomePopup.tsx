@@ -214,7 +214,7 @@ export function WelcomePopup() {
 
       {/* Modal */}
       <div
-        className={`relative w-full sm:max-w-md bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl transform transition-all duration-300 max-h-[90vh] sm:max-h-[85vh] flex flex-col ${
+        className={`relative w-full sm:max-w-lg md:max-w-xl bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl transform transition-all duration-300 max-h-[90vh] sm:max-h-[85vh] flex flex-col ${
           isVisible ? "animate-slide-in-up scale-100 opacity-100" : "scale-95 opacity-0 translate-y-4"
         }`}
       >
