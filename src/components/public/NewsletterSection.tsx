@@ -29,17 +29,29 @@ export default function NewsletterSection() {
     setIsLoading(true);
     const emailToSend = newsletterEmail;
 
-    // Rediriger immédiatement pour une meilleure UX
-    router.push(`/newsletter/confirm?email=${encodeURIComponent(emailToSend)}`);
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ email: emailToSend }),
+      });
 
-    // Envoyer la requête en arrière-plan
-    fetch("/api/newsletter/subscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ email: emailToSend }),
-    }).catch((error) => {
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        // Email déjà existant ou autre erreur
+        toast.error(data?.message || t("home.newsletter.errorDefault"));
+        setIsLoading(false);
+        return;
+      }
+
+      // Succès - rediriger vers la page de confirmation
+      router.push(`/newsletter/confirm?email=${encodeURIComponent(emailToSend)}`);
+    } catch (error) {
       console.error("Newsletter subscribe error:", error);
-    });
+      toast.error(t("home.newsletter.errorDefault"));
+      setIsLoading(false);
+    }
   };
 
   return (
