@@ -54,7 +54,9 @@ export default function AdminSubscribersPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false);
   const [selectedSubscriber, setSelectedSubscriber] = useState<Subscriber | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({ email: "", name: "", status: "active" });
   const [bulkEmails, setBulkEmails] = useState("");
   const [bulkResult, setBulkResult] = useState<BulkImportResult>(null);
@@ -193,6 +195,25 @@ export default function AdminSubscribersPage() {
     }
   }
 
+  async function handleBulkDelete() {
+    if (selectedIds.size === 0) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/newsletter/subscribers/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selectedIds).map(Number) }),
+      });
+      if (res.ok) {
+        setBulkDeleteModalOpen(false);
+        setSelectedIds(new Set());
+        load();
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function closeBulkModal() {
     setBulkModalOpen(false);
     setBulkEmails("");
@@ -274,6 +295,15 @@ export default function AdminSubscribersPage() {
           <p className="text-slate-600 dark:text-slate-400 mt-1">Gérez votre liste d&apos;abonnés</p>
         </div>
         <div className="flex items-center gap-3">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="danger"
+              icon={<Trash2 className="w-4 h-4" />}
+              onClick={() => setBulkDeleteModalOpen(true)}
+            >
+              Supprimer ({selectedIds.size})
+            </Button>
+          )}
           <Button variant="outline" icon={<Download className="w-4 h-4" />}>
             Exporter CSV
           </Button>
@@ -347,6 +377,10 @@ export default function AdminSubscribersPage() {
         loading={loading}
         emptyMessage="Aucun abonné trouvé"
         searchPlaceholder="Rechercher par email..."
+        rowSelection={{
+          selectedKeys: selectedIds,
+          onChange: setSelectedIds,
+        }}
         actions={(item) => (
           <div className="flex items-center gap-1">
             <button
@@ -486,6 +520,18 @@ export default function AdminSubscribersPage() {
         title="Supprimer l'abonné"
         message={`Êtes-vous sûr de vouloir supprimer "${selectedSubscriber?.email}" ?`}
         confirmText="Supprimer"
+        variant="danger"
+        loading={saving}
+      />
+
+      {/* Bulk Delete Confirmation */}
+      <ConfirmModal
+        isOpen={bulkDeleteModalOpen}
+        onClose={() => setBulkDeleteModalOpen(false)}
+        onConfirm={handleBulkDelete}
+        title="Supprimer les abonnés sélectionnés"
+        message={`Êtes-vous sûr de vouloir supprimer ${selectedIds.size} abonné(s) ? Cette action est irréversible.`}
+        confirmText={`Supprimer (${selectedIds.size})`}
         variant="danger"
         loading={saving}
       />
