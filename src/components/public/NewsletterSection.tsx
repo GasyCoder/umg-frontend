@@ -1,42 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Mail, ArrowUpRight, Send, CheckCircle2, AlertCircle, Folder } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Mail, ArrowUpRight, Send, Folder } from "lucide-react";
 import { useI18n } from "@/components/i18n/LanguageProvider";
+import { useToast } from "@/components/ui/Toast";
 
 export default function NewsletterSection() {
   const { t } = useI18n();
+  const router = useRouter();
+  const toast = useToast();
   const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [newsletterMessage, setNewsletterMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Précharger la page de confirmation
+  useEffect(() => {
+    router.prefetch("/newsletter/confirm");
+  }, [router]);
 
   const handleNewsletterSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!newsletterEmail) {
-      setNewsletterStatus("error");
-      setNewsletterMessage(t("home.newsletter.requiredEmail"));
+      toast.warning(t("home.newsletter.requiredEmail"));
       return;
     }
 
-    try {
-      setNewsletterStatus("loading");
-      setNewsletterMessage("");
-      const res = await fetch("/api/newsletter/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ email: newsletterEmail }),
-      }).then((r) => r.json());
+    setIsLoading(true);
+    const emailToSend = newsletterEmail;
 
-      setNewsletterStatus("success");
-      setNewsletterMessage(res?.message || t("home.newsletter.successDefault"));
-      setNewsletterEmail("");
-    } catch (error) {
-      console.error(error);
-      const message = error instanceof Error ? error.message : t("home.newsletter.errorDefault");
-      setNewsletterStatus("error");
-      setNewsletterMessage(message);
-    }
+    // Rediriger immédiatement pour une meilleure UX
+    router.push(`/newsletter/confirm?email=${encodeURIComponent(emailToSend)}`);
+
+    // Envoyer la requête en arrière-plan
+    fetch("/api/newsletter/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ email: emailToSend }),
+    }).catch((error) => {
+      console.error("Newsletter subscribe error:", error);
+    });
   };
 
   return (
@@ -77,10 +80,10 @@ export default function NewsletterSection() {
                   </div>
                   <button
                     type="submit"
-                    disabled={newsletterStatus === "loading"}
+                    disabled={isLoading}
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50 whitespace-nowrap shadow-lg"
                   >
-                    {newsletterStatus === "loading" ? (
+                    {isLoading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
                         {t("home.newsletter.submitting")}
@@ -93,22 +96,6 @@ export default function NewsletterSection() {
                     )}
                   </button>
                 </div>
-
-                {/* Status Messages */}
-                {newsletterMessage && (
-                  <div className={`flex items-start gap-2 p-3 rounded-lg ${
-                    newsletterStatus === "success"
-                      ? "bg-emerald-500/20 text-emerald-100"
-                      : "bg-red-500/20 text-red-100"
-                  }`}>
-                    {newsletterStatus === "success" ? (
-                      <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                    )}
-                    <p className="text-sm">{newsletterMessage}</p>
-                  </div>
-                )}
               </form>
             </div>
           </div>

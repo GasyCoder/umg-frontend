@@ -4,6 +4,7 @@ import PublicHeader from "@/components/public/PublicHeader";
 import ScrollToTop from "@/components/public/ScrollToTop";
 import SiteFooter from "@/components/SiteFooter";
 import WelcomePopup from "@/components/public/WelcomePopup";
+import PublicProviders from "@/components/public/PublicProviders";
 import type { Metadata } from "next";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 
@@ -111,13 +112,15 @@ export default async function PublicLayout({ children }: { children: React.React
               font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
             }
         `}</style>
-        <PublicHeader settings={settings} />
-        <main className="flex-1 w-full flex flex-col">
-          {children}
-        </main>
-        <ScrollToTop />
-        <SiteFooter settings={settings} />
-        <WelcomePopup />
+        <PublicProviders>
+          <PublicHeader settings={settings} />
+          <main className="flex-1 w-full flex flex-col">
+            {children}
+          </main>
+          <ScrollToTop />
+          <SiteFooter settings={settings} />
+          <WelcomePopup />
+        </PublicProviders>
       </div>
     </>
   );
