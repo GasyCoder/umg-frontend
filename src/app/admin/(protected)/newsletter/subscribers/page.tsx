@@ -199,16 +199,29 @@ export default function AdminSubscribersPage() {
     if (selectedIds.size === 0) return;
     setSaving(true);
     try {
+      const idsToDelete = Array.from(selectedIds).map(Number);
+      console.log("Deleting IDs:", idsToDelete);
+
       const res = await fetch("/api/admin/newsletter/subscribers/bulk-delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: Array.from(selectedIds).map(Number) }),
+        body: JSON.stringify({ ids: idsToDelete }),
       });
+
+      const json = await res.json().catch(() => null);
+      console.log("Response:", res.status, json);
+
       if (res.ok) {
         setBulkDeleteModalOpen(false);
         setSelectedIds(new Set());
         load();
+      } else {
+        console.error("Bulk delete failed:", json);
+        alert(json?.message || "Erreur lors de la suppression");
       }
+    } catch (err) {
+      console.error("Bulk delete error:", err);
+      alert("Erreur lors de la suppression");
     } finally {
       setSaving(false);
     }
@@ -377,6 +390,7 @@ export default function AdminSubscribersPage() {
         loading={loading}
         emptyMessage="Aucun abonné trouvé"
         searchPlaceholder="Rechercher par email..."
+        pageSize={50}
         rowSelection={{
           selectedKeys: selectedIds,
           onChange: setSelectedIds,
