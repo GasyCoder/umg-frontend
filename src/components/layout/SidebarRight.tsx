@@ -122,9 +122,19 @@ export function NewsletterWidget({ className = '' }: NewsletterWidgetProps) {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ email }),
-      }).then((r) => r.json());
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        // Email déjà existant (409) ou autre erreur
+        setStatus('error');
+        setMessage(data?.message || t("home.newsletter.errorDefault"));
+        return;
+      }
+
       setStatus('success');
-      setMessage(res?.message || t("home.newsletter.successDefault"));
+      setMessage(data?.message || t("home.newsletter.successDefault"));
       setEmail('');
     } catch (error) {
       const msg = error instanceof Error ? error.message : t("home.newsletter.errorDefault");
