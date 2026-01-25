@@ -28,6 +28,25 @@ function looksLikeMarkdown(value: string) {
   return /(^|\n)\s{0,3}(#{1,6}\s|[-*+]\s|\d+\.\s|>\s)/.test(value) || /\*\*.+\*\*/.test(value);
 }
 
+function toAbsoluteUrl(url?: string | null) {
+  if (!url) return null;
+  try {
+    return new URL(url, BASE_URL).toString();
+  } catch {
+    return null;
+  }
+}
+
+function extractFirstImageUrl(post: Post) {
+  const html = post.content_html || "";
+  const markdown = post.content_markdown || "";
+  const htmlMatch = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (htmlMatch?.[1]) return htmlMatch[1];
+  const mdMatch = markdown.match(/!\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/);
+  if (mdMatch?.[1]) return mdMatch[1];
+  return post.gallery?.map((m) => m.url).find(Boolean) || null;
+}
+
 // Fetch single post
 async function fetchPost(slug: string) {
   try {
@@ -333,7 +352,12 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   const siteName = settings?.site_name || "Université de Mahajanga";
   const articleUrl = `${BASE_URL}/actualites/${slug}`;
   const description = post.excerpt || `Découvrez : ${post.title}`;
-  const imageUrl = post.cover_image?.url || settings?.logo_url || `${BASE_URL}/icons/icon.svg`;
+  const rawImageUrl =
+    post.cover_image?.url ||
+    extractFirstImageUrl(post) ||
+    settings?.logo_url ||
+    `${BASE_URL}/icons/icon.svg`;
+  const imageUrl = toAbsoluteUrl(rawImageUrl) || `${BASE_URL}/icons/icon.svg`;
   const keywords = [
     ...(post.categories?.map(c => c.name) || []),
     ...(post.tags?.map(t => t.name) || []),

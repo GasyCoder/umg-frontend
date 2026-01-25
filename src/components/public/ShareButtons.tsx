@@ -3,7 +3,7 @@
 import { Facebook, Linkedin, Twitter } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-const baseUrl = "https://www.univ-mahajanga.mg";
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mahajanga-univ.mg";
 
 export default function ShareButtons() {
   const pathname = usePathname();
@@ -27,7 +27,7 @@ export default function ShareButtons() {
         target="_blank"
         rel="noreferrer"
         className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-sky-500 hover:text-white dark:bg-slate-800 dark:text-slate-300"
-        aria-label="Partager sur Twitter"
+        aria-label="Partager sur X"
       >
         <Twitter className="h-4 w-4" />
       </a>
